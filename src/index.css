@@ -20,3 +20,34 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Aislar los estilos de FullCalendar */
+.fc {
+  isolation: isolate; /* Evita que los estilos de Tailwind interfieran */
+  width: 100% !important; /* Asegura que el calendario ocupe el ancho completo del contenedor */
+  height: 100% !important; /* Asegura que el calendario ocupe la altura completa del contenedor */
+}
+
+/* Aseguramos que los botones de la toolbar sean interactivos */
+.fc .fc-button {
+  cursor: pointer !important;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.fc .fc-button:hover {
+  background-color: #e6e6e6;
+}
+
+/* Ajustamos el contenedor de la toolbar para evitar desbordamiento */
+.fc .fc-toolbar {
+  flex-wrap: wrap; /* Permite que los botones se ajusten si no hay suficiente espacio */
+  margin-bottom: 10px;
+}
+
+/* Ajustamos el contenedor de eventos para evitar desbordamiento */
+.fc .fc-scroller {
+  overflow: auto !important; /* Asegura que el contenido del calendario sea desplazable si es necesario */
+}
