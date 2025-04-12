@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // Importamos useAuth
 import AuthHeader from '../components/auth/AuthHeader';
 import LoginForm from '../components/auth/LoginForm';
 import SignUpForm from '../components/auth/SignUpForm';
@@ -13,30 +13,37 @@ const Auth = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const { login } = useAuth(); // Usamos el login del contexto
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
-                username,
-                password,
-            });
-            localStorage.setItem('token', response.data.token);
-            navigate('/dashboard');
-        } catch (err) {
+        setError('');
+        const success = await login(username, password);
+        if (success) {
+            navigate('/home'); // Cambié a /home como en tu App.js
+        } else {
             setError('Usuario o contraseña incorrectos');
         }
     };
 
     const handleSignUp = async (e) => {
         e.preventDefault();
+        setError('');
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/register', {
-                username,
-                email,
-                password,
+            // Asumimos un endpoint ficticio /api/register que también devuelve token y userId
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, email, password }),
             });
+
+            if (!response.ok) {
+                throw new Error('Error al registrar');
+            }
+
             setIsLogin(true);
             setError('');
         } catch (err) {
@@ -69,7 +76,7 @@ const Auth = () => {
                             setPassword={setPassword}
                             error={error}
                             handleSubmit={handleLogin}
-                            variants={loginVariants} // Usamos las variantes específicas para "Iniciar Sesión"
+                            variants={loginVariants}
                             isLogin={isLogin}
                             setIsLogin={setIsLogin}
                         />
@@ -83,7 +90,7 @@ const Auth = () => {
                             setPassword={setPassword}
                             error={error}
                             handleSubmit={handleSignUp}
-                            variants={signUpVariants} // Usamos las variantes específicas para "Registrarse"
+                            variants={signUpVariants}
                             isLogin={isLogin}
                             setIsLogin={setIsLogin}
                         />
@@ -95,6 +102,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
-
-

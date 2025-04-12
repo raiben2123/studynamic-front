@@ -1,20 +1,16 @@
 // src/pages/Dashboard.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
+import { getSubjects, addSubject, updateSubject, deleteSubject } from '../api/subjects';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
+import SubjectCard from '../components/dashboard/SubjectCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
-import SubjectModal from '../components/modals/SubjectModal'; // Nuevo import
-
-const initialTasks = [
-    { id: 1, title: 'Completar proyecto de Matemáticas', dueDate: '2025-03-25', status: 'Pendiente', markObtained: '', markMax: '', importance: 'No Urgente', subject: 'Matemáticas', notificationDate: '2025-03-24T10:00' },
-    { id: 2, title: 'Preparar presentación de Física', dueDate: '2025-03-27', status: 'En Progreso', markObtained: '85', markMax: '100', importance: 'Urgente', subject: 'Física', notificationDate: '' },
-    { id: 3, title: 'Leer capítulo 5 de Programación', dueDate: '2025-03-24', status: 'Pendiente', markObtained: '', markMax: '', importance: 'No Urgente', subject: 'Programación', notificationDate: '' },
-    { id: 4, title: 'Revisar notas de Química', dueDate: '2025-03-26', status: 'Completada', markObtained: '90', markMax: '100', importance: 'No Urgente', subject: 'Química', notificationDate: '' },
-    { id: 5, title: 'Entregar tarea de Literatura', dueDate: '2025-03-28', status: 'En Progreso', markObtained: '70', markMax: '80', importance: 'Media', subject: 'Literatura', notificationDate: '' },
-];
+import SubjectModal from '../components/modals/SubjectModal';
 
 const initialEvents = [
     { id: 1, title: 'Examen de Matemáticas', date: '2025-03-26', notificationDate: '2025-03-25T09:00' },
@@ -28,35 +24,154 @@ const initialGroups = [
     { id: 3, name: 'Grupo de Programación', members: 8 },
 ];
 
-const initialSubjects = ['Matemáticas', 'Física', 'Programación', 'Química', 'Literatura'];
-
 const Dashboard = () => {
-    const [tasks, setTasks] = useState(initialTasks);
+    const [tasks, setTasks] = useState([]);
+    const [subjects, setSubjects] = useState([]);
     const [events, setEvents] = useState(initialEvents);
     const [groups] = useState(initialGroups);
-    const [subjects, setSubjects] = useState(initialSubjects); // Ahora subjects es editable
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-    const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false); // Nuevo estado
+    const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState(null);
+    const [editingSubject, setEditingSubject] = useState(null);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const { token, userId } = useAuth();
     const navigate = useNavigate();
 
-    const handleTaskUpdate = (updatedTask) => {
-        setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [tasksData, subjectsData] = await Promise.all([getTasks(), getSubjects()]);
+                setTasks(tasksData);
+                setSubjects(subjectsData);
+                setError(null);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setError('Error al cargar datos');
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (token && userId) fetchData();
+    }, [token, userId]);
+
+    const handleAddTask = async (newTask) => {
+        setLoading(true);
+        try {
+            const addedTask = await addTask(newTask);
+            setTasks([...tasks, addedTask]);
+            setIsTaskModalOpen(false);
+            setError(null);
+        } catch (error) {
+            console.error('Error adding task:', error);
+            setError(error.message || 'Error al añadir la tarea');
+            setIsTaskModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleAddTask = (newTask) => {
-        setTasks([...tasks, { ...newTask, id: tasks.length + 1 }]);
-        setIsTaskModalOpen(false);
+    const handleEditTask = (task) => {
+        setEditingTask(task);
+        setIsTaskModalOpen(true);
+    };
+
+    const handleTaskUpdate = async (updatedTask) => {
+        setLoading(true);
+        try {
+            console.log('Enviando a updateTask:', updatedTask);
+            const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
+            setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task)));
+            setIsTaskModalOpen(false);
+            setEditingTask(null);
+            setError(null);
+        } catch (error) {
+            console.error('Error updating task:', error);
+            setError(error.message || 'Error al actualizar la tarea');
+            setEditingTask(updatedTask);
+            setIsTaskModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTaskDelete = async (taskId) => {
+        setLoading(true);
+        try {
+            await deleteTask(taskId);
+            setTasks(tasks.filter((task) => task.id !== taskId));
+            setError(null);
+        } catch (error) {
+            console.error('Error deleting task:', error);
+            setError(error.message || 'Error al eliminar la tarea');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddSubject = async (subjectName) => {
+        setLoading(true);
+        try {
+            const newSubject = await addSubject({ title: subjectName });
+            setSubjects([...subjects, newSubject]);
+            setIsSubjectModalOpen(false);
+            setEditingSubject(null);
+            setError(null);
+        } catch (error) {
+            console.error('Error adding subject:', error);
+            setError(error.message || 'Error al añadir la asignatura');
+            setIsSubjectModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditSubject = (subject) => {
+        setEditingSubject(subject);
+        setIsSubjectModalOpen(true);
+    };
+
+    const handleSubjectUpdate = async (subjectName) => {
+        if (!editingSubject) return;
+        setLoading(true);
+        try {
+            const updatedSubject = await updateSubject(editingSubject.id, { title: subjectName });
+            setSubjects(
+                subjects.map((subject) =>
+                    subject.id === editingSubject.id ? updatedSubject : subject
+                )
+            );
+            setIsSubjectModalOpen(false);
+            setEditingSubject(null);
+            setError(null);
+        } catch (error) {
+            console.error('Error updating subject:', error);
+            setError(error.message || 'Error al actualizar la asignatura');
+            setIsSubjectModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubjectDelete = async (subjectId) => {
+        setLoading(true);
+        try {
+            await deleteSubject(subjectId);
+            setSubjects(subjects.filter((subject) => subject.id !== subjectId));
+            setError(null);
+        } catch (error) {
+            console.error('Error deleting subject:', error);
+            setError(error.message || 'Error al eliminar la asignatura');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddEvent = (newEvent) => {
         setEvents([...events, { ...newEvent, id: events.length + 1 }]);
         setIsEventModalOpen(false);
-    };
-
-    const handleAddSubject = (newSubject) => {
-        setSubjects([...subjects, newSubject]);
-        setIsSubjectModalOpen(false);
     };
 
     const handleAddGroup = () => {
@@ -93,6 +208,14 @@ const Dashboard = () => {
                 }}
             >
                 <div className="relative z-10">
+                    {error && (
+                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                            {error}
+                        </div>
+                    )}
+                    {loading && (
+                        <div className="text-center mb-4">Cargando...</div>
+                    )}
                     <h1 className="text-2xl md:text-3xl mb-6">Dashboard</h1>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -101,8 +224,12 @@ const Dashboard = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-semibold">Tareas Pendientes</h2>
                                 <button
-                                    onClick={() => setIsTaskModalOpen(true)}
+                                    onClick={() => {
+                                        setEditingTask(null);
+                                        setIsTaskModalOpen(true);
+                                    }}
                                     className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                    disabled={loading}
                                 >
                                     + Añadir Tarea
                                 </button>
@@ -116,8 +243,9 @@ const Dashboard = () => {
                                             <TaskCard
                                                 key={task.id}
                                                 task={{ ...task, dueDate: formatDate(task.dueDate) }}
-                                                onUpdate={handleTaskUpdate}
-                                                subjects={subjects}
+                                                onUpdate={handleEditTask}
+                                                onDelete={handleTaskDelete}
+                                                subjects={subjects.map((s) => s.title)}
                                             />
                                         ))}
                                     </div>
@@ -132,6 +260,7 @@ const Dashboard = () => {
                                 <button
                                     onClick={() => setIsEventModalOpen(true)}
                                     className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                    disabled={loading}
                                 >
                                     + Añadir Evento
                                 </button>
@@ -164,6 +293,7 @@ const Dashboard = () => {
                                 <button
                                     onClick={handleAddGroup}
                                     className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                    disabled={loading}
                                 >
                                     + Añadir Grupo
                                 </button>
@@ -195,8 +325,12 @@ const Dashboard = () => {
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-semibold">Mis Asignaturas</h2>
                             <button
-                                onClick={() => setIsSubjectModalOpen(true)} // Abrir modal
+                                onClick={() => {
+                                    setEditingSubject(null);
+                                    setIsSubjectModalOpen(true);
+                                }}
                                 className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                disabled={loading}
                             >
                                 + Añadir Asignatura
                             </button>
@@ -206,12 +340,12 @@ const Dashboard = () => {
                                 <p>No tienes asignaturas registradas.</p>
                             ) : (
                                 subjects.map((subject) => (
-                                    <div
-                                        key={subject}
-                                        className="p-3 bg-gray-100 rounded-lg flex justify-between items-center"
-                                    >
-                                        <p className="font-medium">{subject}</p>
-                                    </div>
+                                    <SubjectCard
+                                        key={subject.id}
+                                        subject={subject}
+                                        onUpdate={handleEditSubject}
+                                        onDelete={handleSubjectDelete}
+                                    />
                                 ))
                             )}
                         </div>
@@ -222,9 +356,14 @@ const Dashboard = () => {
             {/* Modales */}
             <TaskModal
                 isOpen={isTaskModalOpen}
-                onClose={() => setIsTaskModalOpen(false)}
-                onSave={handleAddTask}
+                onClose={() => {
+                    setIsTaskModalOpen(false);
+                    setEditingTask(null);
+                    setError(null);
+                }}
+                onSave={editingTask ? handleTaskUpdate : handleAddTask}
                 subjects={subjects}
+                task={editingTask}
             />
             <EventModal
                 isOpen={isEventModalOpen}
@@ -233,8 +372,13 @@ const Dashboard = () => {
             />
             <SubjectModal
                 isOpen={isSubjectModalOpen}
-                onClose={() => setIsSubjectModalOpen(false)}
-                onSave={handleAddSubject}
+                onClose={() => {
+                    setIsSubjectModalOpen(false);
+                    setEditingSubject(null);
+                    setError(null);
+                }}
+                onSave={editingSubject ? handleSubjectUpdate : handleAddSubject}
+                subject={editingSubject}
             />
         </div>
     );

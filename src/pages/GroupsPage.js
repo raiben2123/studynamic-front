@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import Logo from '../assets/Logo.png';
+import Logo from '../assets/Logo_opacidad33.png';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 
 const initialGroups = [
@@ -111,7 +111,7 @@ const GroupsPage = () => {
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
-                    backgroundPosition: 'center right',
+                    backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
