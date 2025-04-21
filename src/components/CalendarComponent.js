@@ -35,7 +35,7 @@ const CalendarComponent = ({ events, onDateClick, onEventClick, height = '70vh' 
                     meridiem: false,
                 }}
                 dateClick={onDateClick}
-                eventClick={onEventClick} // Añadimos el manejador de clics en eventos
+                eventClick={onEventClick}
             />
         </div>
     );

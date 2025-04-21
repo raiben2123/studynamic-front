@@ -1,119 +1,216 @@
 // src/pages/CalendarPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { getTasks, addTask, updateTask } from '../api/tasks';
+import { getEvents, addEvent, updateEvent } from '../api/events';
+import { getSubjects } from '../api/subjects';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import CalendarComponent from '../components/CalendarComponent';
-import TaskModal from '../components/modals/TaskModal';
+import TaskModalCalendar from '../components/modals/TaskModalCalendar';
 import EventModal from '../components/modals/EventModal';
-import SessionModal from '../components/modals/SessionModal'; // Nuevo import
-
-const initialPersonalData = {
-    tasks: [
-        {
-            id: 1,
-            title: 'Tarea de Matemáticas',
-            start: '2025-03-24',
-            status: 'Pendiente',
-            importance: 'No Urgente',
-            subject: 'Matemáticas',
-            notificationDate: '',
-            allDay: true,
-        },
-    ],
-    events: [
-        {
-            id: 2,
-            title: 'Reunión de Estudio - Matemáticas',
-            start: '2025-03-23T10:00:00',
-            end: '2025-03-23T11:30:00',
-            notificationDate: '',
-            allDay: false,
-        },
-        {
-            id: 3,
-            title: 'Examen de Física',
-            start: '2025-03-25',
-            end: '2025-03-25',
-            notificationDate: '2025-03-24T09:00',
-            allDay: true,
-        },
-    ],
-    studySessions: [
-        {
-            id: 4,
-            title: 'Sesión de Programación',
-            start: '2025-03-26',
-            zoomLink: 'https://zoom.us/j/123456789',
-            notificationDate: '',
-            allDay: true,
-        },
-    ],
-};
-
-const subjects = ['Matemáticas', 'Física', 'Programación', 'Química', 'Literatura'];
 
 const CalendarPage = () => {
-    const [personalData, setPersonalData] = useState(initialPersonalData);
+    const [tasks, setTasks] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [subjects, setSubjects] = useState([]);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-    const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [editingTask, setEditingTask] = useState(null);
+    const [editingEvent, setEditingEvent] = useState(null);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const { token, userId } = useAuth();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [tasksData, eventsData, subjectsData] = await Promise.all([
+                    getTasks(),
+                    getEvents(),
+                    getSubjects(),
+                ]);
+                console.log('CalendarPage - Tasks cargados:', tasksData);
+                console.log('CalendarPage - Subjects cargados:', subjectsData);
+                setTasks(tasksData);
+                setEvents(eventsData);
+                setSubjects(subjectsData || []);
+                setError(null);
+            } catch (error) {
+                console.error('CalendarPage - Error fetching data:', error);
+                setError('Error al cargar datos');
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (token && userId) fetchData();
+    }, [token, userId]);
 
     const handleDateClick = (info) => {
-        console.log('Fecha clicada:', info.dateStr);
+        console.log('CalendarPage - Fecha clicada:', info.dateStr);
         setSelectedDate(info.dateStr);
         setIsAddModalOpen(true);
     };
 
     const handleEventClick = (info) => {
-        setSelectedEvent({
+        console.log('CalendarPage - Evento clicado:', info.event);
+        console.log('CalendarPage - ExtendedProps:', info.event.extendedProps);
+        const eventType = info.event.extendedProps.type;
+        const eventData = {
+            id: parseInt(info.event.id),
             title: info.event.title,
             start: info.event.start,
             end: info.event.end || null,
             allDay: info.event.allDay,
-            notificationDate: info.event.extendedProps?.notificationDate || '',
-            zoomLink: info.event.extendedProps?.zoomLink || '', // Para sesiones
-        });
+            type: eventType,
+            notification: info.event.extendedProps.notification || '',
+        };
+
+        if (eventType === 'task') {
+            eventData.dueDate = info.event.startStr.split('T')[0];
+            eventData.importance = info.event.extendedProps.importance || 'Baja';
+            eventData.status = info.event.extendedProps.status || 'Pendiente';
+            // Manejar subjectId o subject
+            eventData.subjectId = info.event.extendedProps.subjectId || null;
+            eventData.subject = info.event.extendedProps.subject || ''; // Respaldo si hay subject como string
+        } else if (eventType === 'event') {
+            eventData.startDateTime = info.event.startStr;
+            eventData.endDateTime = info.event.end ? info.event.endStr : '';
+        }
+
+        console.log('CalendarPage - SelectedEvent:', eventData);
+        setSelectedEvent(eventData);
         setIsEventDetailsOpen(true);
     };
 
-    const handleAddTask = (newTask) => {
-        setPersonalData({
-            ...personalData,
-            tasks: [...personalData.tasks, { id: Date.now(), ...newTask, allDay: true }],
-        });
-        setIsTaskModalOpen(false);
+    const handleAddTask = async (newTask) => {
+        setLoading(true);
+        try {
+            console.log('CalendarPage - Añadiendo tarea:', newTask);
+            const taskToAdd = {
+                ...newTask,
+                dueDate: newTask.dueDate || selectedDate,
+                subjectId: newTask.subjectId || null,
+            };
+            const addedTask = await addTask(taskToAdd);
+            setTasks([...tasks, addedTask]);
+            setIsTaskModalOpen(false);
+            setIsAddModalOpen(false);
+            setSelectedDate(null);
+            setError(null);
+        } catch (error) {
+            console.error('CalendarPage - Error adding task:', error);
+            setError(error.message || 'Error al añadir la tarea');
+            setIsTaskModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleAddEvent = (newEvent) => {
-        setPersonalData({
-            ...personalData,
-            events: [
-                ...personalData.events,
-                { id: Date.now(), ...newEvent, allDay: !newEvent.start.includes('T') },
-            ],
-        });
-        setIsEventModalOpen(false);
+    const handleUpdateTask = async (updatedTask) => {
+        setLoading(true);
+        try {
+            console.log('CalendarPage - Actualizando tarea:', updatedTask);
+            const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
+            setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task)));
+            setIsTaskModalOpen(false);
+            setEditingTask(null);
+            setIsEventDetailsOpen(false);
+            setSelectedEvent(null);
+            setError(null);
+        } catch (error) {
+            console.error('CalendarPage - Error updating task:', error);
+            setError(error.message || 'Error al actualizar la tarea');
+            setIsTaskModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleAddSession = (newSession) => {
-        setPersonalData({
-            ...personalData,
-            studySessions: [
-                ...personalData.studySessions,
-                { id: Date.now(), ...newSession, allDay: !newSession.start.includes('T') },
-            ],
-        });
-        setIsSessionModalOpen(false);
+    const handleAddEvent = async (newEvent) => {
+        setLoading(true);
+        try {
+            console.log('CalendarPage - Añadiendo evento:', newEvent);
+            const eventToAdd = {
+                ...newEvent,
+                startDateTime: newEvent.startDateTime || `${selectedDate}T00:00:00`,
+                endDateTime: newEvent.endDateTime || null,
+                notification: newEvent.notification || null,
+            };
+            const addedEvent = await addEvent(eventToAdd);
+            setEvents([...events, addedEvent]);
+            setIsEventModalOpen(false);
+            setIsAddModalOpen(false);
+            setSelectedDate(null);
+            setError(null);
+        } catch (error) {
+            console.error('CalendarPage - Error adding event:', error);
+            setError(error.message || 'Error al añadir el evento');
+            setIsEventModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdateEvent = async (updatedEvent) => {
+        setLoading(true);
+        try {
+            console.log('CalendarPage - Actualizando evento:', updatedEvent);
+            const updatedEventFromBackend = await updateEvent(updatedEvent.id, updatedEvent);
+            setEvents(
+                events.map((event) => (event.id === updatedEvent.id ? updatedEventFromBackend : event))
+            );
+            setIsEventModalOpen(false);
+            setEditingEvent(null);
+            setIsEventDetailsOpen(false);
+            setSelectedEvent(null);
+            setError(null);
+        } catch (error) {
+            console.error('CalendarPage - Error updating event:', error);
+            setError(error.message || 'Error al actualizar el evento');
+            setIsEventModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const calendarEvents = [
-        ...personalData.tasks.map((t) => ({ ...t, color: '#ff9f43' })),
-        ...personalData.events.map((e) => ({ ...e, color: e.allDay ? '#f5a623' : '#467BAA' })),
-        ...personalData.studySessions.map((s) => ({ ...s, color: '#28a745' })),
+        ...tasks.map((task) => {
+            // Buscar subjectId si task tiene subject como string
+            const subjectId = task.subjectId || (task.subject ? subjects.find(s => s.title === task.subject)?.id : null);
+            return {
+                id: task.id.toString(),
+                title: task.title,
+                start: task.dueDate,
+                allDay: true,
+                color: '#ff9f43',
+                extendedProps: {
+                    type: 'task',
+                    importance: task.importance,
+                    status: task.status,
+                    subjectId: subjectId,
+                    subject: task.subject || subjects.find(s => s.id === subjectId)?.title || '', // Respaldo
+                    notification: task.notificationDate,
+                },
+            };
+        }),
+        ...events.map((event) => ({
+            id: event.id.toString(),
+            title: event.title,
+            start: event.startDateTime,
+            end: event.endDateTime || null,
+            allDay: false,
+            color: '#467BAA',
+            extendedProps: {
+                type: 'event',
+                notification: event.notification,
+            },
+        })),
     ];
 
     return (
@@ -131,6 +228,14 @@ const CalendarPage = () => {
                 }}
             >
                 <div className="relative z-10">
+                    {error && (
+                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                            {error}
+                        </div>
+                    )}
+                    {loading && (
+                        <div className="text-center mb-4">Cargando...</div>
+                    )}
                     <h1 className="text-2xl mb-4 md:text-3xl md:mb-6">Calendario</h1>
                     <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                         <CalendarComponent
@@ -151,6 +256,7 @@ const CalendarPage = () => {
                         <div className="space-y-2">
                             <button
                                 onClick={() => {
+                                    console.log('CalendarPage - Abriendo TaskModalCalendar');
                                     setIsAddModalOpen(false);
                                     setIsTaskModalOpen(true);
                                 }}
@@ -160,21 +266,13 @@ const CalendarPage = () => {
                             </button>
                             <button
                                 onClick={() => {
+                                    console.log('CalendarPage - Abriendo EventModal');
                                     setIsAddModalOpen(false);
                                     setIsEventModalOpen(true);
                                 }}
                                 className="w-full bg-[#467BAA] text-white px-4 py-2 rounded-full hover:bg-[#5aa0f2]"
                             >
                                 Nuevo Evento
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIsAddModalOpen(false);
-                                    setIsSessionModalOpen(true);
-                                }}
-                                className="w-full bg-[#28a745] text-white px-4 py-2 rounded-full hover:bg-[#38c75a]"
-                            >
-                                Nueva Sesión
                             </button>
                             <button
                                 onClick={() => setIsAddModalOpen(false)}
@@ -187,51 +285,98 @@ const CalendarPage = () => {
                 </div>
             )}
 
-            {/* Modal para añadir tarea */}
-            <TaskModal
+            {/* Modal para añadir/editar tarea */}
+            <TaskModalCalendar
                 isOpen={isTaskModalOpen}
-                onClose={() => setIsTaskModalOpen(false)}
-                onSave={handleAddTask}
+                onClose={() => {
+                    console.log('CalendarPage - Cerrando TaskModalCalendar');
+                    setIsTaskModalOpen(false);
+                    setEditingTask(null);
+                    setError(null);
+                }}
+                onSave={editingTask ? handleUpdateTask : handleAddTask}
                 subjects={subjects}
+                task={editingTask}
                 defaultDate={selectedDate}
             />
 
-            {/* Modal para añadir evento */}
+            {/* Modal para añadir/editar evento */}
             <EventModal
                 isOpen={isEventModalOpen}
-                onClose={() => setIsEventModalOpen(false)}
-                onSave={handleAddEvent}
+                onClose={() => {
+                    console.log('CalendarPage - Cerrando EventModal');
+                    setIsEventModalOpen(false);
+                    setEditingEvent(null);
+                    setError(null);
+                }}
+                onSave={editingEvent ? handleUpdateEvent : handleAddEvent}
+                event={editingEvent}
                 defaultDate={selectedDate}
             />
 
-            {/* Modal para añadir sesión */}
-            <SessionModal
-                isOpen={isSessionModalOpen}
-                onClose={() => setIsSessionModalOpen(false)}
-                onSave={handleAddSession}
-                defaultDate={selectedDate}
-            />
-
-            {/* Modal para detalles del evento */}
+            {/* Modal para detalles del evento/tarea */}
             {isEventDetailsOpen && selectedEvent && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">Detalles del Evento</h3>
+                        <h3 className="text-lg font-semibold mb-4">
+                            {selectedEvent.type === 'task' ? 'Detalles de la Tarea' : 'Detalles del Evento'}
+                        </h3>
                         <div className="space-y-2">
                             <p><strong>Título:</strong> {selectedEvent.title}</p>
-                            <p><strong>Fecha de inicio:</strong> {new Date(selectedEvent.start).toLocaleString()}</p>
+                            <p><strong>Fecha de inicio:</strong> {new Date(selectedEvent.start).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</p>
                             {selectedEvent.end && (
-                                <p><strong>Fecha de fin:</strong> {new Date(selectedEvent.end).toLocaleString()}</p>
+                                <p><strong>Fecha de fin:</strong> {new Date(selectedEvent.end).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</p>
                             )}
                             <p><strong>Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
-                            {selectedEvent.notificationDate && (
-                                <p><strong>Notificación:</strong> {new Date(selectedEvent.notificationDate).toLocaleString()}</p>
+                            {selectedEvent.notification && (
+                                <p><strong>Notificación:</strong> {new Date(selectedEvent.notification).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</p>
                             )}
-                            {selectedEvent.zoomLink && (
-                                <p><strong>Enlace Zoom:</strong> <a href={selectedEvent.zoomLink} target="_blank" rel="noopener noreferrer">{selectedEvent.zoomLink}</a></p>
+                            {selectedEvent.type === 'task' && (
+                                <>
+                                    <p>
+                                        <strong>Asignatura:</strong>{' '}
+                                        {selectedEvent.subjectId
+                                            ? subjects.find(s => s.id === selectedEvent.subjectId)?.title || 'Sin asignatura'
+                                            : selectedEvent.subject || 'Sin asignatura'}
+                                    </p>
+                                    <p><strong>Importancia:</strong> {selectedEvent.importance}</p>
+                                    <p><strong>Estado:</strong> {selectedEvent.status}</p>
+                                </>
                             )}
                         </div>
-                        <div className="flex justify-end mt-4">
+                        <div className="flex justify-end space-x-2 mt-4">
+                            <button
+                                onClick={() => {
+                                    console.log('CalendarPage - Editando:', selectedEvent);
+                                    if (selectedEvent.type === 'task') {
+                                        setEditingTask({
+                                            id: selectedEvent.id,
+                                            title: selectedEvent.title,
+                                            dueDate: selectedEvent.dueDate,
+                                            importance: selectedEvent.importance,
+                                            status: selectedEvent.status,
+                                            subjectId: selectedEvent.subjectId || (selectedEvent.subject ? subjects.find(s => s.title === selectedEvent.subject)?.id : null),
+                                            notificationDate: selectedEvent.notification,
+                                            subject: selectedEvent.subject || '',
+                                        });
+                                        setIsTaskModalOpen(true);
+                                    } else {
+                                        setEditingEvent({
+                                            id: selectedEvent.id,
+                                            title: selectedEvent.title,
+                                            startDateTime: selectedEvent.startDateTime,
+                                            endDateTime: selectedEvent.endDateTime,
+                                            notification: selectedEvent.notification,
+                                        });
+                                        setIsEventModalOpen(true);
+                                    }
+                                    setIsEventDetailsOpen(false);
+                                    setSelectedEvent(null);
+                                }}
+                                className="px-4 py-2 bg-[#467BAA] text-white rounded-full hover:bg-[#5aa0f2]"
+                            >
+                                Editar
+                            </button>
                             <button
                                 onClick={() => setIsEventDetailsOpen(false)}
                                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"

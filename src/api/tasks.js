@@ -71,8 +71,6 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
         notification: task.notificationDate ? `${task.notificationDate}T00:00:00` : null,
     };
 
-    console.log('taskDTO (POST)', taskDTO);
-
     const response = await fetch(`${BASE_URL}/tasks`, {
         method: 'POST',
         headers: {
@@ -111,8 +109,6 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
         sobreMark: parseInt(task.markMax) || 0,
         notification: task.notificationDate ? `${task.notificationDate}T00:00:00` : null,
     };
-
-    console.log('taskDTO (PUT)', { taskId, taskDTO, url: `${BASE_URL}/tasks/${taskId}` });
 
     const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
         method: 'PUT',

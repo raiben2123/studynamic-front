@@ -4,19 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
 import { getSubjects, addSubject, updateSubject, deleteSubject } from '../api/subjects';
+import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
 import SubjectCard from '../components/dashboard/SubjectCard';
+import EventCard from '../components/dashboard/EventCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
-
-const initialEvents = [
-    { id: 1, title: 'Examen de Matemáticas', date: '2025-03-26', notificationDate: '2025-03-25T09:00' },
-    { id: 2, title: 'Clase de Física', date: '2025-03-25', notificationDate: '' },
-    { id: 3, title: 'Taller de Programación', date: '2025-03-24', notificationDate: '' },
-];
 
 const initialGroups = [
     { id: 1, name: 'Grupo de Matemáticas', members: 15 },
@@ -27,13 +23,14 @@ const initialGroups = [
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);
     const [subjects, setSubjects] = useState([]);
-    const [events, setEvents] = useState(initialEvents);
+    const [events, setEvents] = useState([]);
     const [groups] = useState(initialGroups);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
     const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [editingSubject, setEditingSubject] = useState(null);
+    const [editingEvent, setEditingEvent] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const { token, userId } = useAuth();
@@ -43,9 +40,14 @@ const Dashboard = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [tasksData, subjectsData] = await Promise.all([getTasks(), getSubjects()]);
+                const [tasksData, subjectsData, eventsData] = await Promise.all([
+                    getTasks(),
+                    getSubjects(),
+                    getEvents(),
+                ]);
                 setTasks(tasksData);
                 setSubjects(subjectsData);
+                setEvents(eventsData);
                 setError(null);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -169,9 +171,64 @@ const Dashboard = () => {
         }
     };
 
-    const handleAddEvent = (newEvent) => {
-        setEvents([...events, { ...newEvent, id: events.length + 1 }]);
-        setIsEventModalOpen(false);
+    const handleAddEvent = async (newEvent) => {
+        setLoading(true);
+        try {
+            const addedEvent = await addEvent(newEvent);
+            setEvents([...events, addedEvent]);
+            setIsEventModalOpen(false);
+            setEditingEvent(null);
+            setError(null);
+        } catch (error) {
+            console.error('Error adding event:', error);
+            setError(error.message || 'Error al añadir el evento');
+            setIsEventModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditEvent = (event) => {
+        setEditingEvent(event);
+        setIsEventModalOpen(true);
+    };
+
+    const handleEventUpdate = async (updatedEvent) => {
+        if (!editingEvent) return;
+        setLoading(true);
+        try {
+            console.log('Enviando a updateEvent:', updatedEvent);
+            const updatedEventFromBackend = await updateEvent(editingEvent.id, updatedEvent);
+            setEvents(
+                events.map((event) =>
+                    event.id === editingEvent.id ? updatedEventFromBackend : event
+                )
+            );
+            setIsEventModalOpen(false);
+            setEditingEvent(null);
+            setError(null);
+        } catch (error) {
+            console.error('Error updating event:', error);
+            setError(error.message || 'Error al actualizar el evento');
+            setEditingEvent(updatedEvent);
+            setIsEventModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEventDelete = async (eventId) => {
+        setLoading(true);
+        try {
+            await deleteEvent(eventId);
+            setEvents(events.filter((event) => event.id !== eventId));
+            setError(null);
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            setError(error.message || 'Error al eliminar el evento');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddGroup = () => {
@@ -179,6 +236,7 @@ const Dashboard = () => {
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return 'Sin fecha';
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -190,7 +248,12 @@ const Dashboard = () => {
         .filter((task) => task.status !== 'Completada')
         .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
-    const upcomingEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const upcomingEvents = events.sort((a, b) =>
+        a.startDateTime && b.startDateTime
+            ? new Date(a.startDateTime) - new Date(b.startDateTime)
+            : 0
+    );
+
     const sortedGroups = groups.sort((a, b) => b.members - a.members);
 
     return (
@@ -258,7 +321,10 @@ const Dashboard = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-semibold">Próximos Eventos</h2>
                                 <button
-                                    onClick={() => setIsEventModalOpen(true)}
+                                    onClick={() => {
+                                        setEditingEvent(null);
+                                        setIsEventModalOpen(true);
+                                    }}
                                     className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
                                     disabled={loading}
                                 >
@@ -271,15 +337,12 @@ const Dashboard = () => {
                                 ) : (
                                     <div className="space-y-3">
                                         {upcomingEvents.map((event) => (
-                                            <div
+                                            <EventCard
                                                 key={event.id}
-                                                className="p-3 bg-gray-100 rounded-lg flex justify-between items-center"
-                                            >
-                                                <div>
-                                                    <p className="font-medium">{event.title}</p>
-                                                    <p className="text-sm text-gray-600">{formatDate(event.date)}</p>
-                                                </div>
-                                            </div>
+                                                event={event}
+                                                onUpdate={handleEditEvent}
+                                                onDelete={handleEventDelete}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -367,8 +430,13 @@ const Dashboard = () => {
             />
             <EventModal
                 isOpen={isEventModalOpen}
-                onClose={() => setIsEventModalOpen(false)}
-                onSave={handleAddEvent}
+                onClose={() => {
+                    setIsEventModalOpen(false);
+                    setEditingEvent(null);
+                    setError(null);
+                }}
+                onSave={editingEvent ? handleEventUpdate : handleAddEvent}
+                event={editingEvent}
             />
             <SubjectModal
                 isOpen={isSubjectModalOpen}

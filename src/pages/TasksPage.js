@@ -113,10 +113,10 @@ const TasksPage = () => {
         : tasks;
 
     const pendingTasks = filteredTasks
-        .filter((task) => task.status !== 'Completada')
+        .filter((task) => task.status !== 'Finalizada')
         .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
     const completedTasks = filteredTasks
-        .filter((task) => task.status === 'Completada')
+        .filter((task) => task.status === 'Finalizada')
         .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
     const handleSubjectFilter = (subject) => {
