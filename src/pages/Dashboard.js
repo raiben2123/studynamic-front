@@ -1,4 +1,4 @@
-// src/pages/Dashboard.js
+// src/pages/Dashboard.js - versión actualizada utilizando clases de tema
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -288,7 +288,7 @@ const Dashboard = () => {
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="flex-1 bg-[#e6f0fa] p-4 pb-20 md:p-8 md:pb-8"
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
@@ -307,19 +307,19 @@ const Dashboard = () => {
                     {loading && (
                         <div className="text-center mb-4">Cargando...</div>
                     )}
-                    <h1 className="text-2xl md:text-3xl mb-6">Dashboard</h1>
+                    <h1 className="text-2xl md:text-3xl mb-6 text-primary">Dashboard</h1>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         {/* Tareas Pendientes */}
                         <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Tareas Pendientes</h2>
+                                <h2 className="text-xl font-semibold text-primary">Tareas Pendientes</h2>
                                 <button
                                     onClick={() => {
                                         setEditingTask(null);
                                         setIsTaskModalOpen(true);
                                     }}
-                                    className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
                                     disabled={loading}
                                 >
                                     + Añadir Tarea
@@ -327,7 +327,7 @@ const Dashboard = () => {
                             </div>
                             <div className="max-h-[30vh] lg:max-h-[50vh] overflow-y-auto">
                                 {pendingTasks.length === 0 ? (
-                                    <p>No hay tareas pendientes.</p>
+                                    <p className="text-gray-600">No hay tareas pendientes.</p>
                                 ) : (
                                     <div className="space-y-3">
                                         {pendingTasks.map((task) => (
@@ -347,13 +347,13 @@ const Dashboard = () => {
                         {/* Próximos Eventos */}
                         <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Próximos Eventos</h2>
+                                <h2 className="text-xl font-semibold text-primary">Próximos Eventos</h2>
                                 <button
                                     onClick={() => {
                                         setEditingEvent(null);
                                         setIsEventModalOpen(true);
                                     }}
-                                    className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
                                     disabled={loading}
                                 >
                                     + Añadir Evento
@@ -361,7 +361,7 @@ const Dashboard = () => {
                             </div>
                             <div className="max-h-[30vh] lg:max-h-[50vh] overflow-y-auto">
                                 {upcomingEvents.length === 0 ? (
-                                    <p>No hay eventos próximos.</p>
+                                    <p className="text-gray-600">No hay eventos próximos.</p>
                                 ) : (
                                     <div className="space-y-3">
                                         {upcomingEvents.map((event) => (
@@ -380,10 +380,10 @@ const Dashboard = () => {
                         {/* Mis Grupos */}
                         <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Mis Grupos</h2>
+                                <h2 className="text-xl font-semibold text-primary">Mis Grupos</h2>
                                 <button
                                     onClick={handleAddGroup}
-                                    className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
                                     disabled={loading}
                                 >
                                     + Añadir Grupo
@@ -391,18 +391,24 @@ const Dashboard = () => {
                             </div>
                             <div className="max-h-[30vh] lg:max-h-[50vh] overflow-y-auto">
                                 {sortedGroups.length === 0 ? (
-                                    <p>No estás en ningún grupo.</p>
+                                    <p className="text-gray-600">No estás en ningún grupo.</p>
                                 ) : (
                                     <div className="space-y-3">
                                         {sortedGroups.map((group) => (
                                             <div
                                                 key={group.id}
-                                                className="p-3 bg-gray-100 rounded-lg flex justify-between items-center"
+                                                className="p-3 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200 transition"
                                             >
                                                 <div>
-                                                    <p className="font-medium">{group.name}</p>
+                                                    <p className="font-medium text-primary">{group.name}</p>
                                                     <p className="text-sm text-gray-600">{group.members} miembros</p>
                                                 </div>
+                                                <button 
+                                                    className="text-sm px-3 py-1 bg-primary text-white rounded-full hover:bg-accent"
+                                                    onClick={() => navigate(`/groups/${group.id}`)}
+                                                >
+                                                    Ver Grupo
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
@@ -414,13 +420,13 @@ const Dashboard = () => {
                     {/* Sección de Asignaturas */}
                     <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Mis Asignaturas</h2>
+                            <h2 className="text-xl font-semibold text-primary">Mis Asignaturas</h2>
                             <button
                                 onClick={() => {
                                     setEditingSubject(null);
                                     setIsSubjectModalOpen(true);
                                 }}
-                                className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
                                 disabled={loading}
                             >
                                 + Añadir Asignatura
@@ -428,7 +434,7 @@ const Dashboard = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {subjects.length === 0 ? (
-                                <p>No tienes asignaturas registradas.</p>
+                                <p className="text-gray-600">No tienes asignaturas registradas.</p>
                             ) : (
                                 subjects.map((subject) => (
                                     <SubjectCard

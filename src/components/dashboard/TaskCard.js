@@ -11,11 +11,11 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     };
 
     return (
-        <div className="bg-gray-100 p-3 rounded-lg mb-2 shadow-sm">
+        <div className="bg-gray-100 p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-200 transition">
             <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="font-medium text-base">{task.title}</p>
+                        <p className="font-medium text-base text-primary">{task.title}</p>
                         <p className="text-sm text-gray-600">Fecha límite: {formatDateForDisplay(task.dueDate)}</p>
                         <p className="text-sm text-gray-600">Asignatura: {task.subject}</p>
                         {(task.markObtained || task.markMax) && (
@@ -27,13 +27,13 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
                     <div className="flex space-x-2">
                         <button
                             onClick={() => onUpdate(task)}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="text-gray-500 hover:text-primary"
                         >
                             ✏️
                         </button>
                         <button
                             onClick={handleDelete}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-gray-500 hover:text-red-500"
                         >
                             🗑️
                         </button>

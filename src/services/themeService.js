@@ -31,6 +31,7 @@ export const colorThemes = [
  * @param {string} themeId - Identificador del tema a aplicar
  */
 export const applyTheme = (themeId) => {
+    console.log('Applying theme:', themeId);
     const theme = colorThemes.find(t => t.id === themeId);
     if (!theme) return;
     
@@ -49,6 +50,9 @@ export const applyTheme = (themeId) => {
     
     // Guardar en localStorage
     localStorage.setItem('theme', themeId);
+    
+    console.log('Theme applied:', theme.id);
+    console.log('Current classes:', document.documentElement.classList.toString());
 };
 
 /**
@@ -56,6 +60,7 @@ export const applyTheme = (themeId) => {
  */
 export const loadSavedTheme = () => {
     const savedTheme = localStorage.getItem('theme') || 'default';
+    console.log('Loading saved theme:', savedTheme);
     applyTheme(savedTheme);
     return savedTheme;
 };

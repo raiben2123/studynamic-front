@@ -8,8 +8,22 @@ import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 
 const CalendarComponent = ({ events, onDateClick, onEventClick, height = '70vh' }) => {
+    const calendarWrapperStyles = {
+        '--fc-button-bg-color': 'var(--primary-color)',
+        '--fc-button-border-color': 'var(--primary-color)',
+        '--fc-button-hover-bg-color': 'var(--accent-color)',
+        '--fc-button-hover-border-color': 'var(--accent-color)',
+        '--fc-button-active-bg-color': 'var(--accent-color)',
+        '--fc-button-active-border-color': 'var(--accent-color)',
+        '--fc-today-bg-color': 'rgba(var(--primary-color-rgb), 0.1)',
+        '--fc-event-bg-color': 'var(--primary-color)',
+        '--fc-event-border-color': 'var(--primary-color)',
+        '--fc-event-text-color': '#fff',
+        '--fc-list-event-hover-bg-color': 'rgba(var(--primary-color-rgb), 0.1)',
+    };
+
     return (
-        <div className="w-full overflow-hidden" style={{ height }}>
+        <div className="w-full overflow-hidden" style={{ height, ...calendarWrapperStyles }}>
             <FullCalendar
                 plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
                 initialView="dayGridMonth"

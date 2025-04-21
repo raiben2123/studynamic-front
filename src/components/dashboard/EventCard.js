@@ -17,7 +17,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     return (
         <div className="p-3 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200 transition">
             <div>
-                <p className="font-medium text-gray-800">{event.title}</p>
+                <p className="font-medium text-primary">{event.title}</p>
                 <p className="text-sm text-gray-600">
                     {formatDateTime(event.startDateTime)}{' '}
                     {event.endDateTime ? `- ${formatDateTime(event.endDateTime)}` : ''}
@@ -29,7 +29,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
             <div className="flex space-x-2">
                 <button
                     onClick={() => onUpdate(event)}
-                    className="text-gray-600 hover:text-[#467BAA] transition"
+                    className="text-gray-600 hover:text-primary transition"
                     title="Editar"
                 >
                     ✏️

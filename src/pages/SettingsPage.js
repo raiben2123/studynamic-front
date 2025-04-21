@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import defaultProfile1 from '../assets/default_profile_picture1.png';
-import { colorThemes } from '../services/themeService';
+import { applyTheme, colorThemes } from '../services/themeService';
 
 const SettingsPage = () => {
     const { user, userTheme, updateProfile, loading: authLoading } = useAuth();
@@ -87,6 +87,7 @@ const SettingsPage = () => {
             
             if (selectedTheme !== userTheme) {
                 updateData.theme = selectedTheme;
+                applyTheme(selectedTheme);
             }
             
             // Incluir foto de perfil solo si se cambió

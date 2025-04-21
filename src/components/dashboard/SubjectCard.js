@@ -6,12 +6,12 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     return (
         <div className="p-3 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200 transition">
             <div>
-                <p className="font-medium text-gray-800">{subject.title}</p>
+                <p className="font-medium text-primary">{subject.title}</p>
             </div>
             <div className="flex space-x-2">
                 <button
                     onClick={() => onUpdate(subject)}
-                    className="text-gray-600 hover:text-[#467BAA] transition"
+                    className="text-gray-600 hover:text-primary transition"
                     title="Editar"
                 >
                     ✏️
