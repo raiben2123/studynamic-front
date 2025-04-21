@@ -110,7 +110,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">{task ? 'Editar Tarea' : 'Añadir Tarea'}</h2>
+                <h2 className="text-xl font-semibold mb-4 text-primary">{task ? 'Editar Tarea' : 'Añadir Tarea'}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-1 text-gray-700">Asignatura</label>
@@ -118,7 +118,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             name="subjectId"
                             value={formData.subjectId}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.subjectId ? 'border-red-500' : 'border-gray-300'
                             }`}
                         >
@@ -140,7 +140,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.title ? 'border-red-500' : 'border-gray-300'
                             }`}
                             required
@@ -154,7 +154,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             name="dueDate"
                             value={formData.dueDate}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.dueDate ? 'border-red-500' : 'border-gray-300'
                             }`}
                             required
@@ -167,7 +167,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             name="importance"
                             value={formData.importance}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <option value="Baja">Baja</option>
                             <option value="Media">Media</option>
@@ -180,7 +180,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             name="status"
                             value={formData.status}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <option value="Pendiente">Pendiente</option>
                             <option value="En curso">En curso</option>
@@ -194,7 +194,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             name="notificationDate"
                             value={formData.notificationDate}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.notificationDate ? 'border-red-500' : 'border-gray-300'
                             }`}
                         />
@@ -212,7 +212,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-[#467BAA] text-white rounded hover:bg-[#5aa0f2] transition"
+                            className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
                         >
                             {task ? 'Actualizar' : 'Guardar'}
                         </button>

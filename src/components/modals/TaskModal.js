@@ -130,7 +130,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
             style={{ zIndex: 9999 }}
         >
             <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                <h2 className="text-xl font-semibold mb-4 text-primary">
                     {task ? 'Editar Tarea' : 'Nueva Tarea'}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -140,7 +140,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="subjectId"
                             value={formData.subjectId}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${errors.subjectId ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.subjectId ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             required
                         >
@@ -162,7 +162,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${errors.title ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.title ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             required
                         />
@@ -177,7 +177,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="dueDate"
                             value={formData.dueDate}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${errors.dueDate ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.dueDate ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             required
                         />
@@ -191,7 +191,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="importance"
                             value={formData.importance}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <option value="Alta">Alta</option>
                             <option value="Media">Media</option>
@@ -204,7 +204,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="status"
                             value={formData.status}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             <option value="Pendiente">Pendiente</option>
                             <option value="En curso">En curso</option>
@@ -218,81 +218,81 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="markObtained"
                             value={formData.markObtained}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${errors.marks ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Nota Máxima</label>
-                        <input
-                            type="number"
-                            name="markMax"
-                            value={formData.markMax}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${errors.marks ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                        />
-                        {errors.marks && (
-                            <p className="text-red-500 text-xs mt-1">{errors.marks}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
-                        <input
-                            type="date"
-                            name="notificationDate"
-                            value={formData.notificationDate}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
-                                errors.notificationDate ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.marks ? 'border-red-500' : 'border-gray-300'
                             }`}
-                        />
-                        {errors.notificationDate && (
-                            <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
-                        )}
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-[#467BAA] text-white rounded hover:bg-[#5aa0f2] transition"
-                        >
-                            {task ? 'Actualizar' : 'Guardar'}
-                        </button>
-                    </div>
-                </form>
-            </div>
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Nota Máxima</label>
+                    <input
+                        type="number"
+                        name="markMax"
+                        value={formData.markMax}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.marks ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                    />
+                    {errors.marks && (
+                        <p className="text-red-500 text-xs mt-1">{errors.marks}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
+                    <input
+                        type="date"
+                        name="notificationDate"
+                        value={formData.notificationDate}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.notificationDate ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                    />
+                    {errors.notificationDate && (
+                        <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
+                    )}
+                </div>
+                <div className="flex justify-end space-x-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
+                    >
+                        {task ? 'Actualizar' : 'Guardar'}
+                    </button>
+                </div>
+            </form>
         </div>
-    );
+    </div>
+);
 };
 
 TaskModal.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    onClose: PropTypes.func.isRequired,
-    onSave: PropTypes.func.isRequired,
-    subjects: PropTypes.arrayOf(
-        PropTypes.shape({
-            id: PropTypes.number.isRequired,
-            title: PropTypes.string.isRequired,
-        })
-    ).isRequired,
-    task: PropTypes.shape({
-        id: PropTypes.number,
-        title: PropTypes.string,
-        dueDate: PropTypes.string,
-        importance: PropTypes.string,
-        status: PropTypes.string,
-        markObtained: PropTypes.string,
-        markMax: PropTypes.string,
-        notificationDate: PropTypes.string,
-        subject: PropTypes.string,
-    }),
+isOpen: PropTypes.bool.isRequired,
+onClose: PropTypes.func.isRequired,
+onSave: PropTypes.func.isRequired,
+subjects: PropTypes.arrayOf(
+    PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        title: PropTypes.string.isRequired,
+    })
+).isRequired,
+task: PropTypes.shape({
+    id: PropTypes.number,
+    title: PropTypes.string,
+    dueDate: PropTypes.string,
+    importance: PropTypes.string,
+    status: PropTypes.string,
+    markObtained: PropTypes.string,
+    markMax: PropTypes.string,
+    notificationDate: PropTypes.string,
+    subject: PropTypes.string,
+}),
 };
 
 export default TaskModal;

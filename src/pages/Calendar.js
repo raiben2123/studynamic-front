@@ -1,4 +1,4 @@
-// src/pages/CalendarPage.js
+// src/pages/Calendar.js
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask } from '../api/tasks';
@@ -219,22 +219,22 @@ const CalendarPage = () => {
     };
 
     const calendarEvents = [
-        ...tasks.map((task) => {
+        ...tasks.map((t) => {
             // Buscar subjectId si task tiene subject como string
-            const subjectId = task.subjectId || (task.subject ? subjects.find(s => s.title === task.subject)?.id : null);
+            const subjectId = t.subjectId || (t.subject ? subjects.find(s => s.title === t.subject)?.id : null);
             return {
-                id: task.id.toString(),
-                title: task.title,
-                start: task.dueDate,
+                id: t.id.toString(),
+                title: t.title,
+                start: t.dueDate,
                 allDay: true,
                 color: '#ff9f43',
                 extendedProps: {
                     type: 'task',
-                    importance: task.importance,
-                    status: task.status,
+                    importance: t.importance,
+                    status: t.status,
                     subjectId: subjectId,
-                    subject: task.subject || subjects.find(s => s.id === subjectId)?.title || '', // Respaldo
-                    notification: task.notificationDate,
+                    subject: t.subject || subjects.find(s => s.id === subjectId)?.title || '', // Respaldo
+                    notification: t.notificationDate,
                 },
             };
         }),
@@ -256,7 +256,7 @@ const CalendarPage = () => {
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="flex-1 bg-[#e6f0fa] p-4 pb-20 md:p-8 md:pb-8"
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
@@ -275,7 +275,7 @@ const CalendarPage = () => {
                     {loading && (
                         <div className="text-center mb-4">Cargando...</div>
                     )}
-                    <h1 className="text-2xl mb-4 md:text-3xl md:mb-6">Calendario</h1>
+                    <h1 className="text-2xl mb-4 md:text-3xl md:mb-6 text-primary">Calendario</h1>
                     <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                         <CalendarComponent
                             events={calendarEvents}
@@ -309,7 +309,7 @@ const CalendarPage = () => {
                                     setIsAddModalOpen(false);
                                     setIsEventModalOpen(true);
                                 }}
-                                className="w-full bg-[#467BAA] text-white px-4 py-2 rounded-full hover:bg-[#5aa0f2]"
+                                className="w-full bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
                             >
                                 Nuevo Evento
                             </button>
@@ -357,29 +357,29 @@ const CalendarPage = () => {
             {isEventDetailsOpen && selectedEvent && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">
+                        <h3 className="text-lg font-semibold mb-4 text-primary">
                             {selectedEvent.type === 'task' ? 'Detalles de la Tarea' : 'Detalles del Evento'}
                         </h3>
                         <div className="space-y-2">
-                            <p><strong>Título:</strong> {selectedEvent.title}</p>
-                            <p><strong>Fecha de inicio:</strong> {formatDateTimeForDisplay(selectedEvent.start)}</p>
+                            <p><strong className="text-primary">Título:</strong> {selectedEvent.title}</p>
+                            <p><strong className="text-primary">Fecha de inicio:</strong> {formatDateTimeForDisplay(selectedEvent.start)}</p>
                             {selectedEvent.end && (
-                                <p><strong>Fecha de fin:</strong> {formatDateTimeForDisplay(selectedEvent.end)}</p>
+                                <p><strong className="text-primary">Fecha de fin:</strong> {formatDateTimeForDisplay(selectedEvent.end)}</p>
                             )}
-                            <p><strong>Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
+                            <p><strong className="text-primary">Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
                             {selectedEvent.notification && (
-                                <p><strong>Notificación:</strong> {formatDateTimeForDisplay(selectedEvent.notification)}</p>
+                                <p><strong className="text-primary">Notificación:</strong> {formatDateTimeForDisplay(selectedEvent.notification)}</p>
                             )}
                             {selectedEvent.type === 'task' && (
                                 <>
                                     <p>
-                                        <strong>Asignatura:</strong>{' '}
+                                        <strong className="text-primary">Asignatura:</strong>{' '}
                                         {selectedEvent.subjectId
                                             ? subjects.find(s => s.id === selectedEvent.subjectId)?.title || 'Sin asignatura'
                                             : selectedEvent.subject || 'Sin asignatura'}
                                     </p>
-                                    <p><strong>Importancia:</strong> {selectedEvent.importance}</p>
-                                    <p><strong>Estado:</strong> {selectedEvent.status}</p>
+                                    <p><strong className="text-primary">Importancia:</strong> {selectedEvent.importance}</p>
+                                    <p><strong className="text-primary">Estado:</strong> {selectedEvent.status}</p>
                                 </>
                             )}
                         </div>
@@ -412,7 +412,7 @@ const CalendarPage = () => {
                                     setIsEventDetailsOpen(false);
                                     setSelectedEvent(null);
                                 }}
-                                className="px-4 py-2 bg-[#467BAA] text-white rounded-full hover:bg-[#5aa0f2]"
+                                className="px-4 py-2 bg-primary text-white rounded-full hover:bg-accent"
                             >
                                 Editar
                             </button>

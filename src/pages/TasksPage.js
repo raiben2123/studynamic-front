@@ -143,7 +143,7 @@ const TasksPage = () => {
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="flex-1 bg-[#e6f0fa] p-4 pb-20 md:p-8 md:pb-8"
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
@@ -163,13 +163,13 @@ const TasksPage = () => {
                         <div className="text-center mb-4">Cargando...</div>
                     )}
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl md:text-3xl">Tareas</h1>
+                        <h1 className="text-2xl md:text-3xl text-primary">Tareas</h1>
                         <div className="flex space-x-3">
                             <button
                                 onClick={() => {
                                     setIsSubjectModalOpen(true);
                                 }}
-                                className="bg-[#467BAA] text-white px-4 py-2 rounded-full hover:bg-[#5aa0f2]"
+                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
                                 disabled={loading}
                             >
                                 + Añadir Asignatura
@@ -179,7 +179,7 @@ const TasksPage = () => {
                                     setEditingTask(null);
                                     setIsTaskModalOpen(true);
                                 }}
-                                className="bg-[#467BAA] text-white px-4 py-2 rounded-full hover:bg-[#5aa0f2]"
+                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
                                 disabled={loading}
                             >
                                 + Añadir Tarea
@@ -188,7 +188,7 @@ const TasksPage = () => {
                     </div>
 
                     <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-2">Filtrar por asignatura:</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-primary">Filtrar por asignatura:</h3>
                         <div className="flex flex-wrap gap-2">
                             {subjects.map((subject) => (
                                 <button
@@ -196,7 +196,7 @@ const TasksPage = () => {
                                     onClick={() => handleSubjectFilter(subject.title)}
                                     className={`px-3 py-1 rounded-full text-sm ${
                                         selectedSubject === subject.title
-                                            ? 'bg-[#467BAA] text-white'
+                                            ? 'bg-primary text-white'
                                             : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                                     }`}
                                     disabled={loading}
@@ -208,7 +208,7 @@ const TasksPage = () => {
                                 onClick={() => setSelectedSubject('')}
                                 className={`px-3 py-1 rounded-full text-sm ${
                                     selectedSubject === ''
-                                        ? 'bg-[#467BAA] text-white'
+                                        ? 'bg-primary text-white'
                                         : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                                     }`}
                                     disabled={loading}
@@ -220,7 +220,7 @@ const TasksPage = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
-                                <h2 className="text-xl font-semibold mb-4">Tareas Activas</h2>
+                                <h2 className="text-xl font-semibold mb-4 text-primary">Tareas Activas</h2>
                                 <div className="max-h-[60vh] overflow-y-auto">
                                     {pendingTasks.length === 0 ? (
                                         <p>No hay tareas activas{selectedSubject ? ` para ${selectedSubject}` : ''}.</p>
@@ -240,7 +240,7 @@ const TasksPage = () => {
                                 </div>
                             </div>
                             <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
-                                <h2 className="text-xl font-semibold mb-4">Tareas Completadas</h2>
+                                <h2 className="text-xl font-semibold mb-4 text-primary">Tareas Completadas</h2>
                                 <div className="max-h-[60vh] overflow-y-auto">
                                     {completedTasks.length === 0 ? (
                                         <p>No hay tareas completadas{selectedSubject ? ` para ${selectedSubject}` : ''}.</p>

@@ -30,7 +30,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">
+                <h2 className="text-xl font-semibold mb-4 text-primary">
                     {subject ? 'Editar Asignatura' : 'Añadir Asignatura'}
                 </h2>
                 <div className="space-y-4">
@@ -44,7 +44,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                         placeholder="Nombre de la asignatura"
                         className={`w-full p-2 border rounded ${
                             error ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-[#467BAA]`}
+                        } focus:outline-none focus:ring-2 focus:ring-primary`}
                     />
                     {error && (
                         <p className="text-red-500 text-xs mt-1">{error}</p>
@@ -59,7 +59,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-[#467BAA] text-white rounded hover:bg-[#5aa0f2] transition"
+                        className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
                     >
                         {subject ? 'Actualizar' : 'Guardar'}
                     </button>

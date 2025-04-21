@@ -107,7 +107,7 @@ const GroupsPage = () => {
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="flex-1 bg-[#e6f0fa] p-4 pb-20 md:p-8 md:pb-8"
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
@@ -119,14 +119,14 @@ const GroupsPage = () => {
             >
                 <div className="relative z-10">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl md:text-3xl">Mis Grupos</h1>
+                        <h1 className="text-2xl md:text-3xl text-primary">Mis Grupos</h1>
                         <div className="flex space-x-2">
-                            <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="text-[#467BAA] hover:text-[#5aa0f2]">
+                            <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="text-primary hover:text-accent">
                                 <FaSearch size={24} />
                             </button>
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
-                                className="bg-[#467BAA] text-white px-4 py-2 rounded-full hover:bg-[#5aa0f2]"
+                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
                             >
                                 + Añadir Grupo
                             </button>
@@ -135,13 +135,13 @@ const GroupsPage = () => {
 
                     {isSearchOpen && (
                         <div className="bg-white p-4 rounded-xl shadow-md md:p-6 mb-6">
-                            <h2 className="text-xl font-semibold mb-4">Buscar Grupos</h2>
+                            <h2 className="text-xl font-semibold mb-4 text-primary">Buscar Grupos</h2>
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Buscar por nombre..."
-                                className="w-full p-2 border border-gray-300 rounded mb-4"
+                                className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                             <div className="max-h-[20vh] overflow-y-auto">
                                 {filteredGroups.length === 0 ? (
@@ -156,11 +156,11 @@ const GroupsPage = () => {
                                                     value={joinPassword}
                                                     onChange={(e) => setJoinPassword(e.target.value)}
                                                     placeholder="Contraseña"
-                                                    className="p-1 border border-gray-300 rounded text-sm"
+                                                    className="p-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                                 />
                                                 <button
                                                     onClick={() => handleJoinGroup(group)}
-                                                    className="bg-[#467BAA] text-white px-3 py-1 rounded-full hover:bg-[#5aa0f2]"
+                                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
                                                 >
                                                     Unirse
                                                 </button>
@@ -173,7 +173,7 @@ const GroupsPage = () => {
                     )}
 
                     <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
-                        <h2 className="text-xl font-semibold mb-4">Mis Grupos</h2>
+                        <h2 className="text-xl font-semibold mb-4 text-primary">Mis Grupos</h2>
                         <div className="max-h-[60vh] overflow-y-auto">
                             {sortedGroups.length === 0 ? (
                                 <p>No estás en ningún grupo.</p>
@@ -181,8 +181,8 @@ const GroupsPage = () => {
                                 <div className="space-y-3">
                                     {sortedGroups.map((group) => (
                                         <div key={group.id} className="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
-                                            <Link to={`/groups/${group.id}`} className="flex-1 hover:bg-gray-200">
-                                                <p className="font-medium text-lg">{group.name}</p>
+                                            <Link to={`/groups/${group.id}`} className="flex-1 hover:bg-gray-200 p-2 rounded">
+                                                <p className="font-medium text-lg text-primary">{group.name}</p>
                                                 <p className="text-sm text-gray-600">{group.members.length} miembros</p>
                                             </Link>
                                             <button
@@ -203,20 +203,20 @@ const GroupsPage = () => {
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">Crear Nuevo Grupo</h3>
+                        <h3 className="text-lg font-semibold mb-4 text-primary">Crear Nuevo Grupo</h3>
                         <input
                             type="text"
                             value={newGroupName}
                             onChange={(e) => setNewGroupName(e.target.value)}
                             placeholder="Nombre del grupo"
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
+                            className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                         <input
                             type="password"
                             value={newGroupPassword}
                             onChange={(e) => setNewGroupPassword(e.target.value)}
                             placeholder="Contraseña"
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
+                            className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                         <div className="flex justify-end space-x-2">
                             <button
@@ -227,7 +227,7 @@ const GroupsPage = () => {
                             </button>
                             <button
                                 onClick={handleAddGroup}
-                                className="px-4 py-2 bg-[#467BAA] text-white rounded-full hover:bg-[#5aa0f2]"
+                                className="px-4 py-2 bg-primary text-white rounded-full hover:bg-accent"
                             >
                                 Crear
                             </button>

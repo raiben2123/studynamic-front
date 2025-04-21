@@ -80,7 +80,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">
+                <h2 className="text-xl font-semibold mb-4 text-primary">
                     {event ? 'Editar Evento' : 'Añadir Evento'}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -91,7 +91,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.title ? 'border-red-500' : 'border-gray-300'
                             }`}
                             required
@@ -107,7 +107,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                             name="startDateTime"
                             value={formData.startDateTime}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.startDateTime ? 'border-red-500' : 'border-gray-300'
                             }`}
                             required
@@ -123,7 +123,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                             name="endDateTime"
                             value={formData.endDateTime}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.endDateTime ? 'border-red-500' : 'border-gray-300'
                             }`}
                         />
@@ -137,7 +137,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                             rows="3"
                         />
                     </div>
@@ -148,7 +148,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                             name="notification"
                             value={formData.notification}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                     </div>
                     <div className="flex justify-end space-x-2">
@@ -161,7 +161,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-[#467BAA] text-white rounded hover:bg-[#5aa0f2] transition"
+                            className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
                         >
                             {event ? 'Actualizar' : 'Guardar'}
                         </button>
