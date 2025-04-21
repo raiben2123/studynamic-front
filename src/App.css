@@ -1,4 +1,3 @@
-
 .App {
   text-align: center;
 }
@@ -36,4 +35,45 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Estilos dinámicos de tema */
+:root {
+  --primary-color: #467BAA;
+  --secondary-color: #f5a623;
+  --accent-color: #5aa0f2;
+  --background-color: #e6f0fa;
+}
+
+.bg-theme-primary {
+  background-color: var(--primary-color);
+}
+
+.text-theme-primary {
+  color: var(--primary-color);
+}
+
+.border-theme-primary {
+  border-color: var(--primary-color);
+}
+
+.bg-theme-secondary {
+  background-color: var(--secondary-color);
+}
+
+.text-theme-secondary {
+  color: var(--secondary-color);
+}
+
+.bg-theme-accent {
+  background-color: var(--accent-color);
+}
+
+.bg-theme-background {
+  background-color: var(--background-color);
+}
+
+/* Transiciones suaves para los cambios de tema */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

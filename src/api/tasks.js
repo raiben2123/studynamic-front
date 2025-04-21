@@ -1,5 +1,6 @@
 // src/api/tasks.js
 import { getToken, getUserId } from './auth';
+import { prepareDateForApi, extractDateFromIso } from '../utils/dateUtils';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -14,17 +15,24 @@ const STATUS_MAP = {
     'Finalizada': 3,
 };
 
-const mapTaskFromDTO = (dto) => ({
-    id: dto.id,
-    title: dto.title,
-    dueDate: dto.dueDate.split('T')[0],
-    status: dto.statusName,
-    markObtained: dto.mark.toString(),
-    markMax: dto.sobreMark.toString(),
-    importance: dto.priorityName,
-    subject: dto.subjectTitle,
-    notificationDate: dto.notification ? dto.notification.split('T')[0] : '',
-});
+const mapTaskFromDTO = (dto) => {
+    // Aseguramos que las fechas estén en formato YYYY-MM-DD
+    const dueDate = dto.dueDate ? extractDateFromIso(dto.dueDate) : '';
+    const notificationDate = dto.notification ? extractDateFromIso(dto.notification) : '';
+    
+    return {
+        id: dto.id,
+        title: dto.title,
+        dueDate: dueDate,
+        status: dto.statusName,
+        markObtained: dto.mark ? dto.mark.toString() : '',
+        markMax: dto.sobreMark ? dto.sobreMark.toString() : '',
+        importance: dto.priorityName,
+        subject: dto.subjectTitle,
+        subjectId: dto.subjectId,
+        notificationDate: notificationDate,
+    };
+};
 
 export const getTasks = async () => {
     const token = await getToken();
@@ -58,18 +66,24 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
         throw new Error('No autenticado');
     }
 
+    // Preparar las fechas para enviar a la API
+    const dueDateForApi = prepareDateForApi(task.dueDate);
+    const notificationDateForApi = task.notificationDate ? prepareDateForApi(task.notificationDate) : null;
+
     const taskDTO = {
         id: task.id || null,
         [isGroup ? 'groupId' : 'userId']: isGroup ? parseInt(groupId) : parseInt(userId),
         subjectId: parseInt(task.subjectId),
         title: task.title,
-        dueDate: `${task.dueDate}T00:00:00`,
+        dueDate: dueDateForApi,
         priorityId: PRIORITY_MAP[task.importance] || 3,
         statusId: STATUS_MAP[task.status] || 1,
         mark: parseInt(task.markObtained) || 0,
         sobreMark: parseInt(task.markMax) || 0,
-        notification: task.notificationDate ? `${task.notificationDate}T00:00:00` : null,
+        notification: notificationDateForApi,
     };
+
+    console.log('Enviando tarea a la API:', taskDTO);
 
     const response = await fetch(`${BASE_URL}/tasks`, {
         method: 'POST',
@@ -97,18 +111,24 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
         throw new Error('No autenticado');
     }
 
+    // Preparar las fechas para enviar a la API
+    const dueDateForApi = prepareDateForApi(task.dueDate);
+    const notificationDateForApi = task.notificationDate ? prepareDateForApi(task.notificationDate) : null;
+
     const taskDTO = {
         id: parseInt(taskId),
         [isGroup ? 'groupId' : 'userId']: isGroup ? parseInt(groupId) : parseInt(userId),
         subjectId: parseInt(task.subjectId),
         title: task.title,
-        dueDate: `${task.dueDate}T00:00:00`,
+        dueDate: dueDateForApi,
         priorityId: PRIORITY_MAP[task.importance] || 3,
         statusId: STATUS_MAP[task.status] || 1,
         mark: parseInt(task.markObtained) || 0,
         sobreMark: parseInt(task.markMax) || 0,
-        notification: task.notificationDate ? `${task.notificationDate}T00:00:00` : null,
+        notification: notificationDateForApi,
     };
+
+    console.log('Actualizando tarea en la API:', taskDTO);
 
     const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
         method: 'PUT',
@@ -132,6 +152,7 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
     }
 
     if (response.status === 204) {
+        // Cuando el servidor no devuelve contenido (204), construimos la respuesta
         return mapTaskFromDTO({
             id: taskDTO.id,
             title: taskDTO.title,
@@ -141,6 +162,7 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
             sobreMark: taskDTO.sobreMark,
             priorityName: Object.keys(PRIORITY_MAP).find((key) => PRIORITY_MAP[key] === taskDTO.priorityId),
             subjectTitle: task.subject,
+            subjectId: taskDTO.subjectId,
             notification: taskDTO.notification,
         });
     }

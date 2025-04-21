@@ -13,6 +13,7 @@ import EventCard from '../components/dashboard/EventCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
+import { formatDateForDisplay } from '../utils/dateUtils';
 
 const initialGroups = [
     { id: 1, name: 'Grupo de Matemáticas', members: 15 },
@@ -45,9 +46,20 @@ const Dashboard = () => {
                     getSubjects(),
                     getEvents(),
                 ]);
-                setTasks(tasksData);
+                
+                // Ordenamos las tareas por fecha
+                const sortedTasks = [...tasksData].sort((a, b) => {
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                });
+                
+                // Ordenamos los eventos por fecha
+                const sortedEvents = [...eventsData].sort((a, b) => {
+                    return new Date(a.startDateTime) - new Date(b.startDateTime);
+                });
+                
+                setTasks(sortedTasks);
                 setSubjects(subjectsData);
-                setEvents(eventsData);
+                setEvents(sortedEvents);
                 setError(null);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -62,8 +74,15 @@ const Dashboard = () => {
     const handleAddTask = async (newTask) => {
         setLoading(true);
         try {
+            console.log('Dashboard - Añadiendo tarea:', newTask);
             const addedTask = await addTask(newTask);
-            setTasks([...tasks, addedTask]);
+            
+            // Añadimos la nueva tarea y reordenamos
+            const updatedTasks = [...tasks, addedTask].sort((a, b) => {
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            });
+            
+            setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setError(null);
         } catch (error) {
@@ -76,6 +95,7 @@ const Dashboard = () => {
     };
 
     const handleEditTask = (task) => {
+        console.log('Dashboard - Editando tarea:', task);
         setEditingTask(task);
         setIsTaskModalOpen(true);
     };
@@ -83,9 +103,15 @@ const Dashboard = () => {
     const handleTaskUpdate = async (updatedTask) => {
         setLoading(true);
         try {
-            console.log('Enviando a updateTask:', updatedTask);
+            console.log('Dashboard - Actualizando tarea:', updatedTask);
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
-            setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task)));
+            
+            // Actualizamos la tarea y reordenamos
+            const updatedTasks = tasks
+                .map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task))
+                .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            
+            setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setEditingTask(null);
             setError(null);
@@ -174,8 +200,15 @@ const Dashboard = () => {
     const handleAddEvent = async (newEvent) => {
         setLoading(true);
         try {
+            console.log('Dashboard - Añadiendo evento:', newEvent);
             const addedEvent = await addEvent(newEvent);
-            setEvents([...events, addedEvent]);
+            
+            // Añadimos el nuevo evento y reordenamos
+            const updatedEvents = [...events, addedEvent].sort((a, b) => {
+                return new Date(a.startDateTime) - new Date(b.startDateTime);
+            });
+            
+            setEvents(updatedEvents);
             setIsEventModalOpen(false);
             setEditingEvent(null);
             setError(null);
@@ -189,6 +222,7 @@ const Dashboard = () => {
     };
 
     const handleEditEvent = (event) => {
+        console.log('Dashboard - Editando evento:', event);
         setEditingEvent(event);
         setIsEventModalOpen(true);
     };
@@ -197,13 +231,15 @@ const Dashboard = () => {
         if (!editingEvent) return;
         setLoading(true);
         try {
-            console.log('Enviando a updateEvent:', updatedEvent);
+            console.log('Dashboard - Actualizando evento:', updatedEvent);
             const updatedEventFromBackend = await updateEvent(editingEvent.id, updatedEvent);
-            setEvents(
-                events.map((event) =>
-                    event.id === editingEvent.id ? updatedEventFromBackend : event
-                )
-            );
+            
+            // Actualizamos el evento y reordenamos
+            const updatedEvents = events
+                .map((event) => event.id === editingEvent.id ? updatedEventFromBackend : event)
+                .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+                
+            setEvents(updatedEvents);
             setIsEventModalOpen(false);
             setEditingEvent(null);
             setError(null);
@@ -235,24 +271,16 @@ const Dashboard = () => {
         navigate('/groups');
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Sin fecha';
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
+    // Filtramos las tareas pendientes y las ordenamos por fecha
     const pendingTasks = tasks
-        .filter((task) => task.status !== 'Completada')
+        .filter((task) => task.status !== 'Finalizada')
         .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
-    const upcomingEvents = events.sort((a, b) =>
-        a.startDateTime && b.startDateTime
-            ? new Date(a.startDateTime) - new Date(b.startDateTime)
-            : 0
-    );
+    // Ordenamos los eventos próximos por fecha
+    const upcomingEvents = events
+        .sort((a, b) => a.startDateTime && b.startDateTime 
+            ? new Date(a.startDateTime) - new Date(b.startDateTime) 
+            : 0);
 
     const sortedGroups = groups.sort((a, b) => b.members - a.members);
 
@@ -305,7 +333,7 @@ const Dashboard = () => {
                                         {pendingTasks.map((task) => (
                                             <TaskCard
                                                 key={task.id}
-                                                task={{ ...task, dueDate: formatDate(task.dueDate) }}
+                                                task={task}
                                                 onUpdate={handleEditTask}
                                                 onDelete={handleTaskDelete}
                                                 subjects={subjects.map((s) => s.title)}

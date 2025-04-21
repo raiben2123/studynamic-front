@@ -9,6 +9,7 @@ import Logo from '../assets/Logo_opacidad33.png';
 import CalendarComponent from '../components/CalendarComponent';
 import TaskModalCalendar from '../components/modals/TaskModalCalendar';
 import EventModal from '../components/modals/EventModal';
+import { formatDateForDisplay, formatDateTimeForDisplay, extractDateFromIso } from '../utils/dateUtils';
 
 const CalendarPage = () => {
     const [tasks, setTasks] = useState([]);
@@ -37,8 +38,19 @@ const CalendarPage = () => {
                 ]);
                 console.log('CalendarPage - Tasks cargados:', tasksData);
                 console.log('CalendarPage - Subjects cargados:', subjectsData);
-                setTasks(tasksData);
-                setEvents(eventsData);
+                
+                // Ordenar las tareas por fecha
+                const sortedTasks = [...tasksData].sort((a, b) => {
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                });
+                
+                // Ordenar los eventos por fecha
+                const sortedEvents = [...eventsData].sort((a, b) => {
+                    return new Date(a.startDateTime) - new Date(b.startDateTime);
+                });
+                
+                setTasks(sortedTasks);
+                setEvents(sortedEvents);
                 setSubjects(subjectsData || []);
                 setError(null);
             } catch (error) {
@@ -61,6 +73,11 @@ const CalendarPage = () => {
         console.log('CalendarPage - Evento clicado:', info.event);
         console.log('CalendarPage - ExtendedProps:', info.event.extendedProps);
         const eventType = info.event.extendedProps.type;
+        
+        // Normalizar las fechas
+        const startDate = info.event.start ? extractDateFromIso(info.event.startStr) : '';
+        const endDate = info.event.end ? extractDateFromIso(info.event.endStr) : '';
+        
         const eventData = {
             id: parseInt(info.event.id),
             title: info.event.title,
@@ -72,7 +89,7 @@ const CalendarPage = () => {
         };
 
         if (eventType === 'task') {
-            eventData.dueDate = info.event.startStr.split('T')[0];
+            eventData.dueDate = startDate;
             eventData.importance = info.event.extendedProps.importance || 'Baja';
             eventData.status = info.event.extendedProps.status || 'Pendiente';
             // Manejar subjectId o subject
@@ -98,7 +115,13 @@ const CalendarPage = () => {
                 subjectId: newTask.subjectId || null,
             };
             const addedTask = await addTask(taskToAdd);
-            setTasks([...tasks, addedTask]);
+            
+            // Añadir la nueva tarea y reordenar
+            const updatedTasks = [...tasks, addedTask].sort((a, b) => {
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            });
+            
+            setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setIsAddModalOpen(false);
             setSelectedDate(null);
@@ -117,7 +140,13 @@ const CalendarPage = () => {
         try {
             console.log('CalendarPage - Actualizando tarea:', updatedTask);
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
-            setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task)));
+            
+            // Actualizar la tarea y reordenar
+            const updatedTasks = tasks
+                .map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task))
+                .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+                
+            setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setEditingTask(null);
             setIsEventDetailsOpen(false);
@@ -143,7 +172,13 @@ const CalendarPage = () => {
                 notification: newEvent.notification || null,
             };
             const addedEvent = await addEvent(eventToAdd);
-            setEvents([...events, addedEvent]);
+            
+            // Añadir el nuevo evento y reordenar
+            const updatedEvents = [...events, addedEvent].sort((a, b) => {
+                return new Date(a.startDateTime) - new Date(b.startDateTime);
+            });
+            
+            setEvents(updatedEvents);
             setIsEventModalOpen(false);
             setIsAddModalOpen(false);
             setSelectedDate(null);
@@ -162,9 +197,13 @@ const CalendarPage = () => {
         try {
             console.log('CalendarPage - Actualizando evento:', updatedEvent);
             const updatedEventFromBackend = await updateEvent(updatedEvent.id, updatedEvent);
-            setEvents(
-                events.map((event) => (event.id === updatedEvent.id ? updatedEventFromBackend : event))
-            );
+            
+            // Actualizar el evento y reordenar
+            const updatedEvents = events
+                .map((event) => (event.id === updatedEvent.id ? updatedEventFromBackend : event))
+                .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+                
+            setEvents(updatedEvents);
             setIsEventModalOpen(false);
             setEditingEvent(null);
             setIsEventDetailsOpen(false);
@@ -252,7 +291,7 @@ const CalendarPage = () => {
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">Añadir en {selectedDate}</h3>
+                        <h3 className="text-lg font-semibold mb-4">Añadir en {formatDateForDisplay(selectedDate)}</h3>
                         <div className="space-y-2">
                             <button
                                 onClick={() => {
@@ -323,13 +362,13 @@ const CalendarPage = () => {
                         </h3>
                         <div className="space-y-2">
                             <p><strong>Título:</strong> {selectedEvent.title}</p>
-                            <p><strong>Fecha de inicio:</strong> {new Date(selectedEvent.start).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</p>
+                            <p><strong>Fecha de inicio:</strong> {formatDateTimeForDisplay(selectedEvent.start)}</p>
                             {selectedEvent.end && (
-                                <p><strong>Fecha de fin:</strong> {new Date(selectedEvent.end).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</p>
+                                <p><strong>Fecha de fin:</strong> {formatDateTimeForDisplay(selectedEvent.end)}</p>
                             )}
                             <p><strong>Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
                             {selectedEvent.notification && (
-                                <p><strong>Notificación:</strong> {new Date(selectedEvent.notification).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}</p>
+                                <p><strong>Notificación:</strong> {formatDateTimeForDisplay(selectedEvent.notification)}</p>
                             )}
                             {selectedEvent.type === 'task' && (
                                 <>

@@ -1,6 +1,7 @@
 // src/components/modals/TaskModal.js
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { extractDateFromIso } from '../../utils/dateUtils';
 
 const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
     const [formData, setFormData] = useState({
@@ -18,16 +19,20 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
 
     useEffect(() => {
         if (task) {
+            // Normalizamos las fechas para asegurarnos de que estén en formato YYYY-MM-DD
+            const normalizedDueDate = extractDateFromIso(task.dueDate);
+            const normalizedNotificationDate = extractDateFromIso(task.notificationDate);
+            
             setFormData({
                 id: task.id || '',
                 subjectId: subjects.find((s) => s.title === task.subject)?.id || '',
                 title: task.title || '',
-                dueDate: task.dueDate || '',
+                dueDate: normalizedDueDate,
                 importance: task.importance || 'Baja',
                 status: task.status || 'Pendiente',
                 markObtained: task.markObtained || '',
                 markMax: task.markMax || '',
-                notificationDate: task.notificationDate || '',
+                notificationDate: normalizedNotificationDate,
             });
         } else {
             setFormData({
@@ -65,6 +70,13 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         ) {
             newErrors.marks = 'La nota obtenida no puede ser mayor que la nota máxima';
         }
+        
+        // Validamos que la fecha de notificación no sea posterior a la fecha de entrega
+        if (formData.notificationDate && formData.dueDate && 
+            new Date(formData.notificationDate) > new Date(formData.dueDate)) {
+            newErrors.notificationDate = 'La notificación no puede ser posterior a la fecha de entrega';
+        }
+        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -74,9 +86,18 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         if (!validateForm()) {
             return;
         }
+        
         // Añadir subject al formData para que updateTask lo use
         const subjectTitle = subjects.find((s) => s.id === parseInt(formData.subjectId))?.title || '';
-        onSave({ ...formData, subject: subjectTitle });
+        
+        // Preparar los datos antes de enviarlos
+        const taskData = {
+            ...formData,
+            subject: subjectTitle
+        };
+        
+        onSave(taskData);
+        
         if (!task) {
             setFormData({
                 id: '',
@@ -222,8 +243,13 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="notificationDate"
                             value={formData.notificationDate}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA]"
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#467BAA] ${
+                                errors.notificationDate ? 'border-red-500' : 'border-gray-300'
+                            }`}
                         />
+                        {errors.notificationDate && (
+                            <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
+                        )}
                     </div>
                     <div className="flex justify-end space-x-2">
                         <button

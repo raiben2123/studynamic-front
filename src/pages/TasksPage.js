@@ -25,7 +25,13 @@ const TasksPage = () => {
             setLoading(true);
             try {
                 const [tasksData, subjectsData] = await Promise.all([getTasks(), getSubjects()]);
-                setTasks(tasksData);
+                
+                // Ordenamos las tareas por fecha
+                const sortedTasks = [...tasksData].sort((a, b) => {
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                });
+                
+                setTasks(sortedTasks);
                 setSubjects(subjectsData);
                 setError(null);
             } catch (error) {
@@ -41,8 +47,15 @@ const TasksPage = () => {
     const handleAddTask = async (newTask) => {
         setLoading(true);
         try {
+            console.log('Enviando tarea para añadir:', newTask);
             const addedTask = await addTask(newTask);
-            setTasks([...tasks, addedTask]);
+            
+            // Añadimos la nueva tarea al estado y reordenamos
+            const updatedTasks = [...tasks, addedTask].sort((a, b) => {
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            });
+            
+            setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setError(null);
         } catch (error) {
@@ -55,6 +68,7 @@ const TasksPage = () => {
     };
 
     const handleEditTask = (task) => {
+        console.log('Editando tarea:', task);
         setEditingTask(task);
         setIsTaskModalOpen(true);
     };
@@ -62,9 +76,15 @@ const TasksPage = () => {
     const handleTaskUpdate = async (updatedTask) => {
         setLoading(true);
         try {
-            console.log('Enviando a updateTask:', updatedTask);
+            console.log('Enviando tarea para actualizar:', updatedTask);
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
-            setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task)));
+            
+            // Actualizamos la tarea en el estado y reordenamos
+            const updatedTasks = tasks
+                .map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task))
+                .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            
+            setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setEditingTask(null);
             setError(null);
@@ -112,12 +132,8 @@ const TasksPage = () => {
         ? tasks.filter((task) => task.subject === selectedSubject)
         : tasks;
 
-    const pendingTasks = filteredTasks
-        .filter((task) => task.status !== 'Finalizada')
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-    const completedTasks = filteredTasks
-        .filter((task) => task.status === 'Finalizada')
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    const pendingTasks = filteredTasks.filter((task) => task.status !== 'Finalizada');
+    const completedTasks = filteredTasks.filter((task) => task.status === 'Finalizada');
 
     const handleSubjectFilter = (subject) => {
         setSelectedSubject(selectedSubject === subject ? '' : subject);

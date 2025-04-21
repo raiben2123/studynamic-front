@@ -1,5 +1,7 @@
 // src/components/dashboard/TaskCard.js
 import React from 'react';
+import PropTypes from 'prop-types';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     const handleDelete = () => {
@@ -8,21 +10,13 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
         }
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
     return (
         <div className="bg-gray-100 p-3 rounded-lg mb-2 shadow-sm">
             <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-start">
                     <div>
                         <p className="font-medium text-base">{task.title}</p>
-                        <p className="text-sm text-gray-600">Fecha límite: {formatDate(task.dueDate)}</p>
+                        <p className="text-sm text-gray-600">Fecha límite: {formatDateForDisplay(task.dueDate)}</p>
                         <p className="text-sm text-gray-600">Asignatura: {task.subject}</p>
                         {(task.markObtained || task.markMax) && (
                             <p className="text-sm text-gray-600">
@@ -72,6 +66,22 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
             </div>
         </div>
     );
+};
+
+TaskCard.propTypes = {
+    task: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+        title: PropTypes.string.isRequired,
+        dueDate: PropTypes.string,
+        status: PropTypes.string.isRequired,
+        importance: PropTypes.string.isRequired,
+        markObtained: PropTypes.string,
+        markMax: PropTypes.string,
+        subject: PropTypes.string.isRequired,
+        notificationDate: PropTypes.string
+    }).isRequired,
+    onUpdate: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired
 };
 
 export default TaskCard;

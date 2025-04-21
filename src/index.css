@@ -9,6 +9,13 @@
   font-style: normal;
 }
 
+:root {
+  --primary-color: #467BAA;
+  --secondary-color: #f5a623;
+  --accent-color: #5aa0f2;
+  --background-color: #e6f0fa;
+}
+
 body {
   margin: 0;
   font-family: ocr-a-extended, 'Courier New', Courier, monospace;
@@ -19,6 +26,27 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Estilos dinámicos para los temas */
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.border-primary {
+  border-color: var(--primary-color);
+}
+
+.hover\:bg-accent:hover {
+  background-color: var(--accent-color);
+}
+
+.bg-background {
+  background-color: var(--background-color);
 }
 
 /* Aislar los estilos de FullCalendar */
