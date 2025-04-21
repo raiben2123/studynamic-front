@@ -4,7 +4,11 @@ import {
     login, 
     saveAuthData, 
     getToken, 
-    getUserId, 
+    getUserId,
+    getUserEmail,
+    getName,
+    getUserUsername,
+    getUserTheme,
     removeAuthData, 
     updateUserProfile,
     updateProfilePicture
@@ -32,18 +36,23 @@ export const AuthProvider = ({ children }) => {
                     setToken(storedToken);
                     setUserId(storedUserId);
                     
-                    // Cargar tema del usuario desde localStorage
-                    const savedTheme = localStorage.getItem('theme') || 'default';
+                    // Obtener datos del usuario
+                    const email = await getUserEmail();
+                    const name = await getName();
+                    const theme = await getUserTheme();
+                    const username = await getUserUsername();
+                    
+                    // Cargar tema del usuario
+                    const savedTheme = theme || localStorage.getItem('theme') || 'default';
                     setUserTheme(savedTheme);
                     applyTheme(savedTheme);
                     
-                    // Establecer datos básicos del usuario
-                    // En una implementación real, cargaríamos más datos del backend
+                    // Establecer datos del usuario
                     setUser({ 
                         id: storedUserId,
-                        name: localStorage.getItem('userName') || '',
-                        username: localStorage.getItem('username') || '',
-                        email: localStorage.getItem('userEmail') || '',
+                        name: name || '',
+                        username: username || '',
+                        email: email || '',
                         profilePicture: localStorage.getItem('profilePicture') || null,
                         theme: savedTheme
                     });
@@ -60,27 +69,23 @@ export const AuthProvider = ({ children }) => {
 
     const handleLogin = async (username, password) => {
         try {
-            const { token, userId } = await login(username, password);
-            await saveAuthData(token, userId);
+            const { token, userId, email, theme, name } = await login(username, password);
+            await saveAuthData(token, userId, email, name, theme, username);
             setToken(token);
             setUserId(userId);
             
-            // Cargar el tema predeterminado o el guardado
-            const savedTheme = localStorage.getItem('theme') || 'default';
-            setUserTheme(savedTheme);
-            applyTheme(savedTheme);
-            
-            // En una implementación real, podríamos obtener los datos del usuario aquí
-            // pero por ahora simplemente guardamos el username
-            localStorage.setItem('username', username);
+            // Cargar el tema del usuario o el predeterminado
+            const userTheme = theme || localStorage.getItem('theme') || 'default';
+            setUserTheme(userTheme);
+            applyTheme(userTheme);
             
             setUser({ 
                 id: userId, 
-                username,
-                name: '',
-                email: '',
+                username: username || '',
+                name: name || '',
+                email: email || '',
                 profilePicture: null,
-                theme: savedTheme
+                theme: userTheme
             });
             
             return true;
@@ -95,9 +100,6 @@ export const AuthProvider = ({ children }) => {
         setUserId(null);
         setUser(null);
         await removeAuthData();
-        
-        // Restaurar tema por defecto al cerrar sesión
-        applyTheme('default');
     };
     
     const updateUserTheme = async (themeId) => {
@@ -114,16 +116,11 @@ export const AuthProvider = ({ children }) => {
                 theme: themeId
             }));
             
-            // Intentar guardar en el backend (si está implementado)
+            // Actualizar en el backend y localStorage
             if (token && userId) {
-                try {
-                    await updateUserProfile({
-                        ...user,
-                        theme: themeId
-                    });
-                } catch (err) {
-                    console.warn('No se pudo guardar el tema en el backend, usando localStorage como fallback');
-                }
+                await updateUserProfile({
+                    theme: themeId
+                });
             }
             
             return true;
@@ -147,23 +144,21 @@ export const AuthProvider = ({ children }) => {
                 updatedProfilePicture = await updateProfilePicture(updateData.profilePicture);
             }
             
+            // Preparar los datos para actualizar
+            const dataToUpdate = {};
+            if (updateData.name !== undefined) dataToUpdate.name = updateData.name;
+            if (updateData.email !== undefined) dataToUpdate.email = updateData.email;
+            if (updateData.theme !== undefined) dataToUpdate.theme = updateData.theme;
+            if (updateData.username !== undefined) dataToUpdate.username = updateData.username;
+            
             // Actualizar información del usuario en el backend
-            if (updateData.name !== undefined || updateData.email !== undefined) {
-                await updateUserProfile({
-                    ...user,
-                    name: updateData.name !== undefined ? updateData.name : user?.name,
-                    email: updateData.email !== undefined ? updateData.email : user?.email,
-                });
+            if (Object.keys(dataToUpdate).length > 0) {
+                await updateUserProfile(dataToUpdate);
             }
             
-            // Actualizar tema si ha cambiado
-            if (updateData.theme !== undefined && updateData.theme !== userTheme) {
-                await updateUserTheme(updateData.theme);
-            }
-            
-            // Guardar en localStorage para persistencia simulada
+            // Guardar en localStorage para respaldo
             if (updateData.name !== undefined) {
-                localStorage.setItem('userName', updateData.name);
+                localStorage.setItem('name', updateData.name);
             }
             
             if (updateData.email !== undefined) {
@@ -173,6 +168,10 @@ export const AuthProvider = ({ children }) => {
             if (updatedProfilePicture !== undefined) {
                 localStorage.setItem('profilePicture', updatedProfilePicture);
             }
+
+            if (updateData.username !== undefined) {
+                localStorage.setItem('username', updateData.username);
+            }
             
             // Actualizar el estado del usuario
             setUser(prevUser => ({
@@ -180,6 +179,8 @@ export const AuthProvider = ({ children }) => {
                 name: updateData.name !== undefined ? updateData.name : prevUser?.name,
                 email: updateData.email !== undefined ? updateData.email : prevUser?.email,
                 profilePicture: updatedProfilePicture !== undefined ? updatedProfilePicture : prevUser?.profilePicture,
+                theme: updateData.theme !== undefined ? updateData.theme : prevUser?.theme,
+                username: updateData.username !== undefined ? updateData.username : prevUser?.username
             }));
             
             return true;

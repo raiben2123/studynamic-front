@@ -18,7 +18,8 @@ export const login = async (username, password) => {
         }
 
         const data = await response.json();
-        return { token: data.token, userId: data.userId }; // Asumimos que el backend devuelve token y userId
+        return { token: data.token, userId: data.userId, email: data.email, theme: data.theme, name: data.name, username: data.username }; 
+
     } catch (error) {
         console.error('Error en login:', error);
         throw error;
@@ -53,12 +54,16 @@ export const register = async (username, email, password, name = '') => {
     }
 };
 
-export const saveAuthData = async (token, userId) => {
+export const saveAuthData = async (token, userId, email, name, theme, username) => {
     await Preferences.set({ key: 'token', value: token });
     await Preferences.set({ key: 'userId', value: userId.toString() });
     
-    // También guardamos la fecha de inicio de sesión para posibles validaciones
-    await Preferences.set({ key: 'loginDate', value: new Date().toISOString() });
+    // Guardar datos adicionales del usuario
+    if (email) await Preferences.set({ key: 'userEmail', value: email });
+    if (name) await Preferences.set({ key: 'name', value: name });
+    if (theme) await Preferences.set({ key: 'userTheme', value: theme });
+    if (username) await Preferences.set({ key: 'username', value: username });
+    console.log('Datos de autenticación guardados:', { token, userId, email, name, theme, username });
 };
 
 export const getToken = async () => {
@@ -71,14 +76,37 @@ export const getUserId = async () => {
     return value;
 };
 
+export const getUserEmail = async () => {
+    const { value } = await Preferences.get({ key: 'userEmail' });
+    return value;
+};
+
+export const getName = async () => {
+    const { value } = await Preferences.get({ key: 'name' });
+    return value;
+};
+
+export const getUserUsername = async () => {
+    const { value } = await Preferences.get({ key: 'username' });
+    return value;
+}
+
+export const getUserTheme = async () => {
+    const { value } = await Preferences.get({ key: 'userTheme' });
+    return value;
+};
+
 export const removeAuthData = async () => {
     await Preferences.remove({ key: 'token' });
     await Preferences.remove({ key: 'userId' });
     await Preferences.remove({ key: 'loginDate' });
+    await Preferences.remove({ key: 'userEmail' });
+    await Preferences.remove({ key: 'name' });
+    await Preferences.remove({ key: 'userTheme' });
+    await Preferences.remove({ key: 'username' });
     
-    // Eliminar datos de perfil en localStorage
+    // Eliminar tema del localStorage
     localStorage.removeItem('theme');
-    // Mantener otros datos para comodidad del usuario si vuelve a iniciar sesión
 };
 
 export const updateUserProfile = async (userData) => {
@@ -90,25 +118,32 @@ export const updateUserProfile = async (userData) => {
     }
 
     try {
+        const dataToSend = {
+            id: parseInt(userId), // Incluimos el ID explícitamente
+            username: userData.username || await getUserUsername(),
+            email: userData.email || await getUserEmail(),
+            name: userData.name || await getName(),
+            theme: userData.theme || await getUserTheme()
+        };
+        console.log('Datos a enviar:', dataToSend); // Para depuración
         const response = await fetch(`${API_URL}/users/${userId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                id: parseInt(userId),
-                username: userData.username,
-                email: userData.email,
-                name: userData.name || '',
-                theme: userData.theme
-                // No incluir password para no modificarlo inadvertidamente
-            }),
+            body: JSON.stringify(dataToSend),
         });
 
         if (!response.ok) {
             throw new Error('Error al actualizar perfil');
         }
+
+        // Actualizar los datos almacenados localmente
+        if (userData.email) await Preferences.set({ key: 'userEmail', value: userData.email });
+        if (userData.name) await Preferences.set({ key: 'name', value: userData.name });
+        if (userData.theme) await Preferences.set({ key: 'userTheme', value: userData.theme });
+        if (userData.username) await Preferences.set({ key: 'username', value: userData.username });
 
         return true;
     } catch (error) {

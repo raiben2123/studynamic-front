@@ -1,10 +1,10 @@
-// src/pages/SettingsPage.js
+// src/pages/SettingsPage.js - actualizado para manejar correctamente el tema
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import defaultProfile1 from '../assets/default_profile_picture1.png';
-import { applyTheme, colorThemes } from '../services/themeService';
+import { colorThemes } from '../services/themeService';
 
 const SettingsPage = () => {
     const { user, userTheme, updateProfile, loading: authLoading } = useAuth();
@@ -61,7 +61,6 @@ const SettingsPage = () => {
     
     const handleThemeChange = (themeId) => {
         setSelectedTheme(themeId);
-        applyTheme(themeId);
     };
     
     const handleRemovePhoto = () => {
@@ -75,15 +74,31 @@ const SettingsPage = () => {
             setError(null);
             
             // Preparar datos para actualización
-            const updateData = {
-                name,
-                email,
-                theme: selectedTheme
-            };
+            const updateData = {};
+            
+            // Solo incluir campos que han cambiado
+            if (name !== (user?.name || '')) {
+                updateData.name = name;
+            }
+            
+            if (email !== (user?.email || '')) {
+                updateData.email = email;
+            }
+            
+            if (selectedTheme !== userTheme) {
+                updateData.theme = selectedTheme;
+            }
             
             // Incluir foto de perfil solo si se cambió
             if (profilePicture) {
                 updateData.profilePicture = profilePicture;
+            }
+            
+            if (Object.keys(updateData).length === 0 && !profilePicture) {
+                setSavedMessage('No hay cambios que guardar');
+                setTimeout(() => setSavedMessage(''), 3000);
+                setLoading(false);
+                return;
             }
             
             // Actualizar perfil a través del contexto
@@ -106,7 +121,6 @@ const SettingsPage = () => {
     const handleResetToDefault = () => {
         if (window.confirm('¿Estás seguro de que quieres restaurar la configuración predeterminada?')) {
             setSelectedTheme('default');
-            applyTheme('default');
             
             updateProfile({ 
                 theme: 'default'
