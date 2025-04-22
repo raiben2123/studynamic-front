@@ -21,7 +21,7 @@ export const colorThemes = [
     },
     {
         id: 'purple',
-        name: 'Púrpura',
+        name: 'Morado',
         class: 'theme-purple'
     }
 ];
