@@ -119,7 +119,7 @@ const GroupsPage = () => {
             >
                 <div className="relative z-10">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl md:text-3xl text-primary">Mis Grupos</h1>
+                        <h1 className="text-2xl md:text-3xl text-primary">Grupos</h1>
                         <div className="flex space-x-2">
                             <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="text-primary hover:text-accent">
                                 <FaSearch size={24} />

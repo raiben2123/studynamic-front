@@ -83,8 +83,6 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
         notification: notificationDateForApi,
     };
 
-    console.log('Enviando tarea a la API:', taskDTO);
-
     const response = await fetch(`${BASE_URL}/tasks`, {
         method: 'POST',
         headers: {

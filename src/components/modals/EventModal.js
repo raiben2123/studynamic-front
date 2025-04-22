@@ -117,7 +117,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Fin</label>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Fin *</label>
                         <input
                             type="datetime-local"
                             name="endDateTime"
@@ -126,6 +126,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                             className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
                                 errors.endDateTime ? 'border-red-500' : 'border-gray-300'
                             }`}
+                            required
                         />
                         {errors.endDateTime && (
                             <p className="text-red-500 text-xs mt-1">{errors.endDateTime}</p>

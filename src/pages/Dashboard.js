@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
 import { getSubjects, addSubject, updateSubject, deleteSubject } from '../api/subjects';
 import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
+import { getGroupsByUserId } from '../api/groups';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
@@ -13,19 +14,12 @@ import EventCard from '../components/dashboard/EventCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
-import { formatDateForDisplay } from '../utils/dateUtils';
-
-const initialGroups = [
-    { id: 1, name: 'Grupo de Matemáticas', members: 15 },
-    { id: 2, name: 'Grupo de Física', members: 10 },
-    { id: 3, name: 'Grupo de Programación', members: 8 },
-];
 
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);
     const [subjects, setSubjects] = useState([]);
     const [events, setEvents] = useState([]);
-    const [groups] = useState(initialGroups);
+    const [groups, setGroups] = useState([]);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
     const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
@@ -41,10 +35,11 @@ const Dashboard = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [tasksData, subjectsData, eventsData] = await Promise.all([
+                const [tasksData, subjectsData, eventsData, groupsData] = await Promise.all([
                     getTasks(),
                     getSubjects(),
                     getEvents(),
+                    getGroupsByUserId(),
                 ]);
                 
                 // Ordenamos las tareas por fecha
@@ -60,6 +55,8 @@ const Dashboard = () => {
                 setTasks(sortedTasks);
                 setSubjects(subjectsData);
                 setEvents(sortedEvents);
+                setGroups(groupsData);
+                console.log('Grupos:', groupsData);
                 setError(null);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -282,7 +279,7 @@ const Dashboard = () => {
             ? new Date(a.startDateTime) - new Date(b.startDateTime) 
             : 0);
 
-    const sortedGroups = groups.sort((a, b) => b.members - a.members);
+    const sortedGroups = groups.sort((a, b) => b.memberCount - a.memberCount);
 
     return (
         <div className="flex flex-col min-h-screen md:flex-row">
@@ -401,7 +398,7 @@ const Dashboard = () => {
                                             >
                                                 <div>
                                                     <p className="font-medium text-primary">{group.name}</p>
-                                                    <p className="text-sm text-gray-600">{group.members} miembros</p>
+                                                    <p className="text-sm text-gray-600">{group.memberCount} miembros</p>
                                                 </div>
                                                 <button 
                                                     className="text-sm px-3 py-1 bg-primary text-white rounded-full hover:bg-accent"

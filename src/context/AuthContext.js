@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }) => {
                     
                     // Cargar tema del usuario
                     const savedTheme = theme || localStorage.getItem('theme') || 'default';
+                    console.log('Tema Auth:', savedTheme);
                     setUserTheme(savedTheme);
                     applyTheme(savedTheme);
                     

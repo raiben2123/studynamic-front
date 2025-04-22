@@ -11,14 +11,14 @@ const SettingsPage = () => {
     const [savedMessage, setSavedMessage] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    
+
     // Estados para formulario
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
     const [selectedTheme, setSelectedTheme] = useState('default');
-    
+
     useEffect(() => {
         // Cargar datos del usuario
         if (user) {
@@ -26,13 +26,13 @@ const SettingsPage = () => {
             setEmail(user.email || '');
             setPreviewImage(user.profilePicture || null);
         }
-        
+
         // Cargar tema guardado
         if (userTheme) {
             setSelectedTheme(userTheme);
         }
     }, [user, userTheme]);
-    
+
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -41,15 +41,15 @@ const SettingsPage = () => {
                 setError('Por favor, selecciona un archivo de imagen válido.');
                 return;
             }
-            
+
             // Limitar tamaño a 2MB
             if (file.size > 2 * 1024 * 1024) {
                 setError('La imagen es demasiado grande. El tamaño máximo es 2MB.');
                 return;
             }
-            
+
             setProfilePicture(file);
-            
+
             // Mostrar vista previa
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -58,53 +58,54 @@ const SettingsPage = () => {
             reader.readAsDataURL(file);
         }
     };
-    
+
     const handleThemeChange = (themeId) => {
         setSelectedTheme(themeId);
     };
-    
+
     const handleRemovePhoto = () => {
         setProfilePicture(null);
         setPreviewImage(null);
     };
-    
+
     const handleSaveChanges = async () => {
         try {
             setLoading(true);
             setError(null);
-            
+
             // Preparar datos para actualización
             const updateData = {};
-            
+
             // Solo incluir campos que han cambiado
             if (name !== (user?.name || '')) {
                 updateData.name = name;
             }
-            
+
             if (email !== (user?.email || '')) {
                 updateData.email = email;
             }
-            
+
             if (selectedTheme !== userTheme) {
                 updateData.theme = selectedTheme;
+                setSelectedTheme(selectedTheme);
                 applyTheme(selectedTheme);
             }
-            
+
             // Incluir foto de perfil solo si se cambió
             if (profilePicture) {
                 updateData.profilePicture = profilePicture;
             }
-            
+
             if (Object.keys(updateData).length === 0 && !profilePicture) {
                 setSavedMessage('No hay cambios que guardar');
                 setTimeout(() => setSavedMessage(''), 3000);
                 setLoading(false);
                 return;
             }
-            
+
             // Actualizar perfil a través del contexto
             const success = await updateProfile(updateData);
-            
+
             if (success) {
                 setSavedMessage('Cambios guardados correctamente');
                 setTimeout(() => setSavedMessage(''), 3000);
@@ -118,28 +119,28 @@ const SettingsPage = () => {
             setLoading(false);
         }
     };
-    
+
     const handleResetToDefault = () => {
         if (window.confirm('¿Estás seguro de que quieres restaurar la configuración predeterminada?')) {
             setSelectedTheme('default');
-            
-            updateProfile({ 
+
+            updateProfile({
                 theme: 'default'
             });
-            
+
             setSavedMessage('Configuración restaurada a valores predeterminados');
             setTimeout(() => setSavedMessage(''), 3000);
         }
     };
-    
+
     // Determinar si hay cambios sin guardar
     const hasUnsavedChanges = () => {
         if (!user) return false;
-        
-        return name !== (user.name || '') || 
-               email !== (user.email || '') || 
-               profilePicture !== null ||
-               selectedTheme !== userTheme;
+
+        return name !== (user.name || '') ||
+            email !== (user.email || '') ||
+            profilePicture !== null ||
+            selectedTheme !== userTheme;
     };
 
     // Obtener el color primario según el tema seleccionado
@@ -175,7 +176,7 @@ const SettingsPage = () => {
                 };
         }
     };
-    
+
     return (
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
@@ -196,15 +197,15 @@ const SettingsPage = () => {
                             {error}
                         </div>
                     )}
-                    
+
                     {savedMessage && (
                         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
                             {savedMessage}
                         </div>
                     )}
-                    
+
                     <h1 className="text-2xl md:text-3xl mb-6">Configuración</h1>
-                    
+
                     {authLoading || loading ? (
                         <div className="bg-white p-6 rounded-xl shadow-md flex justify-center items-center">
                             <p className="text-gray-500">Cargando...</p>
@@ -214,11 +215,11 @@ const SettingsPage = () => {
                             {/* Perfil de Usuario */}
                             <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                                 <h2 className="text-xl font-semibold mb-4">Perfil de Usuario</h2>
-                                
+
                                 <div className="mb-6 flex flex-col items-center">
                                     <div className="w-32 h-32 rounded-full overflow-hidden mb-4 border-2 border-primary">
-                                        <img 
-                                            src={previewImage || defaultProfile1} 
+                                        <img
+                                            src={previewImage || defaultProfile1}
                                             alt="Perfil"
                                             className="w-full h-full object-cover"
                                         />
@@ -243,7 +244,7 @@ const SettingsPage = () => {
                                         )}
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium mb-1 text-gray-700">
@@ -256,7 +257,7 @@ const SettingsPage = () => {
                                             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium mb-1 text-gray-700">
                                             Correo Electrónico
@@ -270,11 +271,11 @@ const SettingsPage = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Temas y Apariencia */}
                             <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                                 <h2 className="text-xl font-semibold mb-4">Temas y Apariencia</h2>
-                                
+
                                 <div className="grid grid-cols-2 gap-4">
                                     {colorThemes.map((theme) => {
                                         const colors = getThemeColors(theme.id);
@@ -305,14 +306,14 @@ const SettingsPage = () => {
                                         );
                                     })}
                                 </div>
-                                
+
                                 <div className="mt-4 text-sm text-gray-500 text-center">
                                     <p>Personaliza los colores de la aplicación según tus preferencias</p>
                                 </div>
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Botones de acción */}
                     <div className="mt-6 flex justify-end space-x-4">
                         <button
@@ -322,7 +323,7 @@ const SettingsPage = () => {
                         >
                             Restaurar Predeterminados
                         </button>
-                        
+
                         <button
                             onClick={handleSaveChanges}
                             className="px-6 py-2 bg-primary text-white rounded-full hover:bg-accent transition"

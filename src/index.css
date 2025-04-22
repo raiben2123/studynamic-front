@@ -31,7 +31,7 @@
 .theme-green {
   --primary-color: #27ae60;
   --primary-color-rgb: 39, 174, 96;
-  --secondary-color: #f1c40f;
+  --secondary-color: #ffcc00;
   --accent-color: #2ecc71;
   --background-color: #e8f5e9;
 }
@@ -40,7 +40,7 @@
 .theme-purple {
   --primary-color: #8e44ad;
   --primary-color-rgb: 142, 68, 173;
-  --secondary-color: #e74c3c;
+  --secondary-color: #ffffff;
   --accent-color: #9b59b6;
   --background-color: #f3e5f5;
 }
