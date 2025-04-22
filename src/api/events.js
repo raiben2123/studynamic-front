@@ -10,9 +10,18 @@ const mapEventFromDTO = (dto) => ({
     endDateTime: dto.endDateTime || '',
     description: dto.description || '',
     notification: dto.notification || '',
+    // Añadimos groupId para identificar eventos de grupo
+    groupId: dto.groupId,
+    userId: dto.userId
 });
 
-export const getEvents = async () => {
+/**
+ * Obtiene los eventos del usuario o de un grupo específico
+ * @param {boolean} isGroup - Indica si se deben obtener los eventos de un grupo
+ * @param {number} groupId - ID del grupo (solo si isGroup es true)
+ * @returns {Promise<Array>} Lista de eventos
+ */
+export const getEvents = async (isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
 
@@ -20,7 +29,14 @@ export const getEvents = async () => {
         throw new Error('No autenticado');
     }
 
-    const response = await fetch(`${BASE_URL}/events/user/${userId}`, {
+    let url;
+    if (isGroup && groupId) {
+        url = `${BASE_URL}/events/group/${groupId}`;
+    } else {
+        url = `${BASE_URL}/events/user/${userId}`;
+    }
+
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -29,14 +45,20 @@ export const getEvents = async () => {
     });
 
     if (!response.ok) {
-        throw new Error('Error al obtener los eventos');
+        throw new Error(`Error al obtener los eventos ${isGroup ? 'del grupo' : 'del usuario'}`);
     }
 
     const eventsData = await response.json();
     return Array.isArray(eventsData) ? eventsData.map(mapEventFromDTO) : [mapEventFromDTO(eventsData)];
 };
 
-export const addEvent = async (event) => {
+/**
+ * Añade un nuevo evento
+ * @param {Object} event - Datos del evento
+ * @param {boolean} isGroup - Indica si es un evento de grupo
+ * @returns {Promise<Object>} Evento añadido
+ */
+export const addEvent = async (event, isGroup = false) => {
     const token = await getToken();
     const userId = await getUserId();
 
@@ -45,7 +67,8 @@ export const addEvent = async (event) => {
     }
 
     const eventDTO = {
-        userId: parseInt(userId),
+        userId: isGroup ? null : parseInt(userId),
+        groupId: isGroup ? event.groupId : null,
         title: event.title,
         startDateTime: event.startDateTime || null,
         endDateTime: event.endDateTime || null,
@@ -73,7 +96,14 @@ export const addEvent = async (event) => {
     return mapEventFromDTO(addedEvent);
 };
 
-export const updateEvent = async (eventId, event) => {
+/**
+ * Actualiza un evento existente
+ * @param {number} eventId - ID del evento a actualizar
+ * @param {Object} event - Nuevos datos del evento
+ * @param {boolean} isGroup - Indica si es un evento de grupo
+ * @returns {Promise<Object>} Evento actualizado
+ */
+export const updateEvent = async (eventId, event, isGroup = false) => {
     const token = await getToken();
     const userId = await getUserId();
 
@@ -83,7 +113,8 @@ export const updateEvent = async (eventId, event) => {
 
     const eventDTO = {
         id: parseInt(eventId),
-        userId: parseInt(userId),
+        userId: isGroup ? null : parseInt(userId),
+        groupId: isGroup ? event.groupId : null,
         title: event.title,
         startDateTime: event.startDateTime || null,
         endDateTime: event.endDateTime || null,
@@ -115,6 +146,11 @@ export const updateEvent = async (eventId, event) => {
     return mapEventFromDTO(updatedEvent);
 };
 
+/**
+ * Elimina un evento
+ * @param {number} eventId - ID del evento a eliminar
+ * @returns {Promise<boolean>} Resultado de la operación
+ */
 export const deleteEvent = async (eventId) => {
     const token = await getToken();
     const userId = await getUserId();

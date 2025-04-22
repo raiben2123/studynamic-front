@@ -213,7 +213,7 @@ const SettingsPage = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Perfil de Usuario */}
-                            <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
+                            <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                                 <h2 className="text-xl font-semibold mb-4">Perfil de Usuario</h2>
 
                                 <div className="mb-6 flex flex-col items-center">
@@ -273,7 +273,7 @@ const SettingsPage = () => {
                             </div>
 
                             {/* Temas y Apariencia */}
-                            <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
+                            <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                                 <h2 className="text-xl font-semibold mb-4">Temas y Apariencia</h2>
 
                                 <div className="grid grid-cols-2 gap-4">

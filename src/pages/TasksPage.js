@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
-import { getSubjects, addSubject } from '../api/subjects';
+import { getSubjectsByUser, addSubject } from '../api/subjects';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
@@ -24,7 +24,7 @@ const TasksPage = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [tasksData, subjectsData] = await Promise.all([getTasks(), getSubjects()]);
+                const [tasksData, subjectsData] = await Promise.all([getTasks(), getSubjectsByUser()]);
                 
                 // Ordenamos las tareas por fecha
                 const sortedTasks = [...tasksData].sort((a, b) => {
@@ -218,7 +218,7 @@ const TasksPage = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-95">
                             <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                                 <h2 className="text-xl font-semibold mb-4 text-primary">Tareas Activas</h2>
                                 <div className="max-h-[60vh] overflow-y-auto">

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
-import { getSubjects, addSubject, updateSubject, deleteSubject } from '../api/subjects';
+import { getSubjectsByUser, addSubject, updateSubject, deleteSubject } from '../api/subjects';
 import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
 import { getGroupsByUserId } from '../api/groups';
 import Sidebar from '../components/Sidebar';
@@ -37,7 +37,7 @@ const Dashboard = () => {
             try {
                 const [tasksData, subjectsData, eventsData, groupsData] = await Promise.all([
                     getTasks(),
-                    getSubjects(),
+                    getSubjectsByUser(),
                     getEvents(),
                     getGroupsByUserId(),
                 ]);
@@ -306,7 +306,7 @@ const Dashboard = () => {
                     )}
                     <h1 className="text-2xl md:text-3xl mb-6 text-primary">Dashboard</h1>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 opacity-95">
                         {/* Tareas Pendientes */}
                         <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
                             <div className="flex justify-between items-center mb-4">
@@ -415,7 +415,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Sección de Asignaturas */}
-                    <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
+                    <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-semibold text-primary">Mis Asignaturas</h2>
                             <button

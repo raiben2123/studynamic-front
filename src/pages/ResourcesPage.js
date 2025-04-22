@@ -92,7 +92,7 @@ const ResourcesPage = () => {
                     </div>
 
                     {/* Contenedor con scroll para las asignaturas y carpetas */}
-                    <div className="max-h-[70vh] overflow-y-auto space-y-6">
+                    <div className="max-h-[70vh] overflow-y-auto space-y-6 opacity-95">
                         {subjects.map((subject) => (
                             <div key={subject} className="bg-white p-4 rounded-xl shadow-md md:p-6">
                                 <div className="flex justify-between items-center mb-4">
