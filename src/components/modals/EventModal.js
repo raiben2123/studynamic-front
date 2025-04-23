@@ -1,6 +1,7 @@
-// src/components/modals/EventModal.js
+// src/components/modals/EventModal.js - Implementación usando el Modal base
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import Modal from './Modal';
 
 const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
     const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
         notification: '',
     });
     const [errors, setErrors] = useState({});
+    const isMobile = window.innerWidth < 768;
 
     useEffect(() => {
         if (event) {
@@ -55,16 +57,6 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
             return;
         }
         onSave(formData);
-        if (!event) {
-            setFormData({
-                title: '',
-                startDateTime: defaultDate ? `${defaultDate}T00:00` : '',
-                endDateTime: '',
-                description: '',
-                notification: '',
-            });
-        }
-        setErrors({});
     };
 
     const handleChange = (e) => {
@@ -75,101 +67,99 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4 text-primary">
-                    {event ? 'Editar Evento' : 'Añadir Evento'}
-                </h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Título *</label>
-                        <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                                errors.title ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            required
-                        />
-                        {errors.title && (
-                            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Inicio *</label>
-                        <input
-                            type="datetime-local"
-                            name="startDateTime"
-                            value={formData.startDateTime}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                                errors.startDateTime ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            required
-                        />
-                        {errors.startDateTime && (
-                            <p className="text-red-500 text-xs mt-1">{errors.startDateTime}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Fin *</label>
-                        <input
-                            type="datetime-local"
-                            name="endDateTime"
-                            value={formData.endDateTime}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                                errors.endDateTime ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            required
-                        />
-                        {errors.endDateTime && (
-                            <p className="text-red-500 text-xs mt-1">{errors.endDateTime}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Descripción</label>
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                            rows="3"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
-                        <input
-                            type="datetime-local"
-                            name="notification"
-                            value={formData.notification}
-                            onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
-                        >
-                            {event ? 'Actualizar' : 'Guardar'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <Modal 
+            isOpen={isOpen} 
+            onClose={onClose} 
+            title={event ? 'Editar Evento' : 'Nuevo Evento'}
+            size={isMobile ? 'md' : 'lg'}
+        >
+            <form onSubmit={handleSubmit} className="space-y-3">
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Título *</label>
+                    <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.title ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        required
+                    />
+                    {errors.title && (
+                        <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Inicio *</label>
+                    <input
+                        type="datetime-local"
+                        name="startDateTime"
+                        value={formData.startDateTime}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.startDateTime ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        required
+                    />
+                    {errors.startDateTime && (
+                        <p className="text-red-500 text-xs mt-1">{errors.startDateTime}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Fin *</label>
+                    <input
+                        type="datetime-local"
+                        name="endDateTime"
+                        value={formData.endDateTime}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.endDateTime ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        required
+                    />
+                    {errors.endDateTime && (
+                        <p className="text-red-500 text-xs mt-1">{errors.endDateTime}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Descripción</label>
+                    <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        rows="3"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
+                    <input
+                        type="datetime-local"
+                        name="notification"
+                        value={formData.notification}
+                        onChange={handleChange}
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                </div>
+                <div className="flex justify-end space-x-2 pt-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-accent transition"
+                    >
+                        {event ? 'Actualizar' : 'Guardar'}
+                    </button>
+                </div>
+            </form>
+        </Modal>
     );
 };
 

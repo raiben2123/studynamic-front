@@ -1,16 +1,18 @@
-// src/pages/CalendarPage.js
+// src/pages/Calendar.js - Versión responsiva corregida
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getTasks, addTask, updateTask } from '../api/tasks';
-import { getEvents, addEvent, updateEvent } from '../api/events';
+import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
+import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
 import { getSubjectsByUser } from '../api/subjects';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import CalendarComponent from '../components/CalendarComponent';
-import TaskModalCalendar from '../components/modals/TaskModalCalendar';
+import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
+import Modal from '../components/modals/Modal';
 import { formatDateForDisplay, formatDateTimeForDisplay, extractDateFromIso } from '../utils/dateUtils';
+import { FaFilter, FaPlus, FaCog } from 'react-icons/fa';
 
 const CalendarPage = () => {
     const [tasks, setTasks] = useState([]);
@@ -29,7 +31,21 @@ const CalendarPage = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showSubjectSchedules, setShowSubjectSchedules] = useState(true);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const { token, userId } = useAuth();
+    
+    // Detección de dispositivo móvil
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    // Manejar cambios de tamaño de pantalla
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -98,7 +114,6 @@ const CalendarPage = () => {
             }
         }
         
-        // Para eventos normales y tareas
         console.log('Evento clicado:', info.event);
         const eventData = {
             id: parseInt(info.event.id),
@@ -323,6 +338,10 @@ const CalendarPage = () => {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         
+        if (isMobile) {
+            return hours > 0 ? `${hours}h${mins > 0 ? mins + 'm' : ''}` : `${mins}m`;
+        }
+        
         if (hours === 0) {
             return `${mins} minutos`;
         } else if (mins === 0) {
@@ -333,17 +352,12 @@ const CalendarPage = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen md:flex-row">
+        <div className="main-container">
             <Sidebar />
             <div
-                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
+                className="content-container background-logo-container calendar-page-container ml-0"
                 style={{
                     backgroundImage: `url(${Logo})`,
-                    backgroundSize: '50%',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    opacity: 1,
-                    position: 'relative',
                 }}
             >
                 <div className="relative z-10">
@@ -355,64 +369,126 @@ const CalendarPage = () => {
                     {loading && (
                         <div className="text-center mb-4">Cargando...</div>
                     )}
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl md:text-3xl text-primary">Calendario</h1>
+                    
+                    <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
+                        <h1 className="text-xl md:text-3xl text-primary">Calendario</h1>
                         
-                        <div className="flex space-x-2">
-                            <div className="flex items-center mr-4">
-                                <input 
-                                    type="checkbox" 
-                                    id="showSchedules" 
-                                    checked={showSubjectSchedules} 
-                                    onChange={() => setShowSubjectSchedules(!showSubjectSchedules)}
-                                    className="mr-2"
-                                />
-                                <label htmlFor="showSchedules" className="text-sm text-gray-700">
-                                    Mostrar horarios
-                                </label>
-                            </div>
+                        <div className="flex flex-wrap gap-2">
+                            {!isMobile && (
+                                <div className="flex items-center mr-2">
+                                    <input 
+                                        type="checkbox" 
+                                        id="showSchedules" 
+                                        checked={showSubjectSchedules} 
+                                        onChange={() => setShowSubjectSchedules(!showSubjectSchedules)}
+                                        className="mr-2"
+                                    />
+                                    <label htmlFor="showSchedules" className="text-sm text-gray-700">
+                                        Mostrar horarios
+                                    </label>
+                                </div>
+                            )}
                             
-                            <button
-                                onClick={() => setIsSubjectModalOpen(true)}
-                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
-                            >
-                                + Añadir Asignatura
-                            </button>
-                            
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
-                            >
-                                + Añadir Evento
-                            </button>
+                            {isMobile ? (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setIsSettingsOpen(true)}
+                                        className="w-10 h-10 flex items-center justify-center bg-primary text-white rounded-full hover:bg-accent"
+                                        aria-label="Ajustes"
+                                    >
+                                        <FaCog />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsAddModalOpen(true)}
+                                        className="w-10 h-10 flex items-center justify-center bg-primary text-white rounded-full hover:bg-accent"
+                                        aria-label="Añadir"
+                                    >
+                                        <FaPlus />
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setIsSubjectModalOpen(true)}
+                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                    >
+                                        + Añadir Asignatura
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => setIsAddModalOpen(true)}
+                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                    >
+                                        + Añadir Evento
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 
-                    <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                    <div className="bg-white p-3 sm:p-4 rounded-xl shadow-md md:p-6 opacity-95">
                         <CalendarComponent
                             events={calendarEvents}
                             subjects={subjects}
                             onDateClick={handleDateClick}
                             onEventClick={handleEventClick}
-                            height="70vh"
+                            height={isMobile ? "auto" : "70vh"}
                             showSubjectSchedules={showSubjectSchedules}
                         />
                     </div>
                 </div>
+                
+                {/* Espaciador para dispositivos móviles */}
+                <div className="footer-spacer"></div>
             </div>
+
+            {/* Dialogo de ajustes para móvil */}
+            {isSettingsOpen && (
+                <Modal
+                    isOpen={isSettingsOpen}
+                    onClose={() => setIsSettingsOpen(false)}
+                    title="Ajustes de Calendario"
+                    size="sm"
+                >
+                    <div className="space-y-4">
+                        <div className="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="mobileShowSchedules" 
+                                checked={showSubjectSchedules} 
+                                onChange={() => setShowSubjectSchedules(!showSubjectSchedules)}
+                                className="mr-2"
+                            />
+                            <label htmlFor="mobileShowSchedules" className="text-sm text-gray-700">
+                                Mostrar horarios de clases
+                            </label>
+                        </div>
+                        
+                        <button
+                            onClick={() => {
+                                setIsSubjectModalOpen(true);
+                                setIsSettingsOpen(false);
+                            }}
+                            className="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent"
+                        >
+                            Gestionar Asignaturas
+                        </button>
+                    </div>
+                </Modal>
+            )}
 
             {/* Modal de selección */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+                    <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md mx-4">
                         <h3 className="text-lg font-semibold mb-4">Añadir en {formatDateForDisplay(selectedDate)}</h3>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             <button
                                 onClick={() => {
                                     setIsAddModalOpen(false);
                                     setIsTaskModalOpen(true);
                                 }}
-                                className="w-full bg-[#ff9f43] text-white px-4 py-2 rounded-full hover:bg-[#ffbf63]"
+                                className="w-full bg-orange-400 text-white px-4 py-2 rounded-lg hover:bg-orange-500"
                             >
                                 Nueva Tarea
                             </button>
@@ -421,22 +497,13 @@ const CalendarPage = () => {
                                     setIsAddModalOpen(false);
                                     setIsEventModalOpen(true);
                                 }}
-                                className="w-full bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                className="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent"
                             >
                                 Nuevo Evento
                             </button>
                             <button
-                                onClick={() => {
-                                    setIsAddModalOpen(false);
-                                    setIsSubjectModalOpen(true);
-                                }}
-                                className="w-full bg-[#28a745] text-white px-4 py-2 rounded-full hover:bg-[#38c75a]"
-                            >
-                                Nueva Asignatura
-                            </button>
-                            <button
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300"
+                                className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
                             >
                                 Cancelar
                             </button>
@@ -446,7 +513,7 @@ const CalendarPage = () => {
             )}
 
             {/* Modal para añadir/editar tarea */}
-            <TaskModalCalendar
+            <TaskModal
                 isOpen={isTaskModalOpen}
                 onClose={() => {
                     setIsTaskModalOpen(false);
@@ -486,111 +553,116 @@ const CalendarPage = () => {
 
             {/* Modal para detalles del evento/tarea */}
             {isEventDetailsOpen && selectedEvent && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4 text-primary">
-                            {selectedEvent.type === 'task' 
-                                ? 'Detalles de la Tarea' 
-                                : selectedEvent.type === 'subject-schedule'
-                                ? 'Detalles del Horario'
-                                : 'Detalles del Evento'}
-                        </h3>
-                        <div className="space-y-2">
-                            <p><strong className="text-primary">Título:</strong> {selectedEvent.title}</p>
-                            
-                            {selectedEvent.type === 'subject-schedule' ? (
-                                // Detalles específicos para horarios de asignaturas
-                                <>
-                                    <p><strong className="text-primary">Día:</strong> {getDayName(selectedEvent.schedule?.dayOfWeek)}</p>
-                                    <p><strong className="text-primary">Hora:</strong> {formatTimeSpan(selectedEvent.schedule?.startTime)}</p>
-                                    <p><strong className="text-primary">Duración:</strong> {formatDuration(selectedEvent.schedule?.durationMinutes)}</p>
-                                    <p><strong className="text-primary">Recurrencia:</strong> {getWeekTypeName(selectedEvent.weekType)}</p>
-                                </>
-                            ) : (
-                                // Detalles para eventos normales y tareas
-                                <>
-                                    <p><strong className="text-primary">Fecha de inicio:</strong> {formatDateTimeForDisplay(selectedEvent.start)}</p>
-                                    {selectedEvent.end && (
-                                        <p><strong className="text-primary">Fecha de fin:</strong> {formatDateTimeForDisplay(selectedEvent.end)}</p>
-                                    )}
+                <Modal
+                    isOpen={isEventDetailsOpen}
+                    onClose={() => setIsEventDetailsOpen(false)}
+                    title={
+                        selectedEvent.type === 'task' 
+                            ? 'Detalles de la Tarea' 
+                            : selectedEvent.type === 'subject-schedule'
+                            ? 'Detalles del Horario'
+                            : 'Detalles del Evento'
+                    }
+                    size="md"
+                >
+                    <div className="space-y-2">
+                        <p><strong className="text-primary">Título:</strong> {selectedEvent.title}</p>
+                        
+                        {selectedEvent.type === 'subject-schedule' ? (
+                            // Detalles específicos para horarios de asignaturas
+                            <>
+                                <p><strong className="text-primary">Día:</strong> {getDayName(selectedEvent.schedule?.dayOfWeek)}</p>
+                                <p><strong className="text-primary">Hora:</strong> {formatTimeSpan(selectedEvent.schedule?.startTime)}</p>
+                                <p><strong className="text-primary">Duración:</strong> {formatDuration(selectedEvent.schedule?.durationMinutes)}</p>
+                                <p><strong className="text-primary">Recurrencia:</strong> {getWeekTypeName(selectedEvent.weekType)}</p>
+                            </>
+                        ) : (
+                            // Detalles para eventos normales y tareas
+                            <>
+                                <p><strong className="text-primary">Fecha de inicio:</strong> {formatDateTimeForDisplay(selectedEvent.start)}</p>
+                                {selectedEvent.end && (
+                                    <p><strong className="text-primary">Fecha de fin:</strong> {formatDateTimeForDisplay(selectedEvent.end)}</p>
+                                )}
+                                {selectedEvent.allDay !== undefined && (
                                     <p><strong className="text-primary">Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
-                                    {selectedEvent.notification && (
-                                        <p><strong className="text-primary">Notificación:</strong> {formatDateTimeForDisplay(selectedEvent.notification)}</p>
-                                    )}
-                                    {selectedEvent.type === 'task' && (
-                                        <>
-                                            <p>
-                                                <strong className="text-primary">Asignatura:</strong>{' '}
-                                                {selectedEvent.subjectId
-                                                    ? subjects.find(s => s.id === selectedEvent.subjectId)?.title || 'Sin asignatura'
-                                                    : selectedEvent.subject || 'Sin asignatura'}
-                                            </p>
-                                            <p><strong className="text-primary">Importancia:</strong> {selectedEvent.importance}</p>
-                                            <p><strong className="text-primary">Estado:</strong> {selectedEvent.status}</p>
-                                        </>
-                                    )}
-                                    {selectedEvent.type === 'event' && selectedEvent.description && (
-                                        <p><strong className="text-primary">Descripción:</strong> {selectedEvent.description}</p>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                        <div className="flex justify-end space-x-2 mt-4">
-                            {selectedEvent.type !== 'subject-schedule' && (
-                                <button
-                                    onClick={() => {
-                                        if (selectedEvent.type === 'task') {
-                                            setEditingTask({
-                                                id: selectedEvent.id,
-                                                title: selectedEvent.title,
-                                                dueDate: selectedEvent.dueDate,
-                                                importance: selectedEvent.importance,
-                                                status: selectedEvent.status,
-                                                subjectId: selectedEvent.subjectId || (selectedEvent.subject ? subjects.find(s => s.title === selectedEvent.subject)?.id : null),
-                                                notificationDate: selectedEvent.notification,
-                                                subject: selectedEvent.subject || '',
-                                            });
-                                            setIsTaskModalOpen(true);
-                                        } else {
-                                            setEditingEvent({
-                                                id: selectedEvent.id,
-                                                title: selectedEvent.title,
-                                                startDateTime: selectedEvent.startDateTime,
-                                                endDateTime: selectedEvent.endDateTime,
-                                                description: selectedEvent.description,
-                                                notification: selectedEvent.notification,
-                                            });
-                                            setIsEventModalOpen(true);
-                                        }
-                                        setIsEventDetailsOpen(false);
-                                        setSelectedEvent(null);
-                                    }}
-                                    className="px-4 py-2 bg-primary text-white rounded-full hover:bg-accent"
-                                >
-                                    Editar
-                                </button>
-                            )}
-                            {selectedEvent.type === 'subject-schedule' && (
-                                <button
-                                    onClick={() => {
-                                        handleEditSubject(selectedEvent.subject);
-                                        setIsEventDetailsOpen(false);
-                                        setSelectedEvent(null);
-                                    }}
-                                    className="px-4 py-2 bg-primary text-white rounded-full hover:bg-accent"
-                                >
-                                    Editar Asignatura
-                                </button>
-                            )}
-                            <button
-                                onClick={() => setIsEventDetailsOpen(false)}
-                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
-                            >
-                                Cerrar
-                            </button>
-                        </div>
+                                )}
+                                {selectedEvent.notification && (
+                                    <p><strong className="text-primary">Notificación:</strong> {formatDateTimeForDisplay(selectedEvent.notification)}</p>
+                                )}
+                                {selectedEvent.type === 'task' && (
+                                    <>
+                                        <p>
+                                            <strong className="text-primary">Asignatura:</strong>{' '}
+                                            {selectedEvent.subjectId
+                                                ? subjects.find(s => s.id === selectedEvent.subjectId)?.title || 'Sin asignatura'
+                                                : selectedEvent.subject || 'Sin asignatura'}
+                                        </p>
+                                        <p><strong className="text-primary">Importancia:</strong> {selectedEvent.importance}</p>
+                                        <p><strong className="text-primary">Estado:</strong> {selectedEvent.status}</p>
+                                    </>
+                                )}
+                                {selectedEvent.type === 'event' && selectedEvent.description && (
+                                    <p><strong className="text-primary">Descripción:</strong> {selectedEvent.description}</p>
+                                )}
+                            </>
+                        )}
                     </div>
-                </div>
+                    
+                    <div className="flex justify-end space-x-2 mt-4">
+                        {selectedEvent.type !== 'subject-schedule' && (
+                            <button
+                                onClick={() => {
+                                    if (selectedEvent.type === 'task') {
+                                        setEditingTask({
+                                            id: selectedEvent.id,
+                                            title: selectedEvent.title,
+                                            dueDate: selectedEvent.dueDate,
+                                            importance: selectedEvent.importance,
+                                            status: selectedEvent.status,
+                                            subjectId: selectedEvent.subjectId || (selectedEvent.subject ? subjects.find(s => s.title === selectedEvent.subject)?.id : null),
+                                            notificationDate: selectedEvent.notification,
+                                            subject: selectedEvent.subject || '',
+                                        });
+                                        setIsTaskModalOpen(true);
+                                    } else {
+                                        setEditingEvent({
+                                            id: selectedEvent.id,
+                                            title: selectedEvent.title,
+                                            startDateTime: selectedEvent.startDateTime,
+                                            endDateTime: selectedEvent.endDateTime,
+                                            description: selectedEvent.description,
+                                            notification: selectedEvent.notification,
+                                        });
+                                        setIsEventModalOpen(true);
+                                    }
+                                    setIsEventDetailsOpen(false);
+                                }}
+                                className="px-3 py-1 bg-primary text-white rounded-lg hover:bg-accent text-sm"
+                            >
+                                Editar
+                            </button>
+                        )}
+                        
+                        {selectedEvent.type === 'subject-schedule' && (
+                            <button
+                                onClick={() => {
+                                    handleEditSubject(selectedEvent.subject);
+                                    setIsEventDetailsOpen(false);
+                                }}
+                                className="px-3 py-1 bg-primary text-white rounded-lg hover:bg-accent text-sm"
+                            >
+                                Editar Asignatura
+                            </button>
+                        )}
+                        
+                        <button
+                            onClick={() => setIsEventDetailsOpen(false)}
+                            className="px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </Modal>
             )}
         </div>
     );

@@ -1,7 +1,8 @@
-// src/components/modals/TaskModal.js
+// src/components/modals/TaskModal.js - Implementación usando el Modal base
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { extractDateFromIso } from '../../utils/dateUtils';
+import Modal from './Modal';
 
 const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
     const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         notificationDate: '',
     });
     const [errors, setErrors] = useState({});
+    const isMobile = window.innerWidth < 768;
 
     useEffect(() => {
         if (task) {
@@ -97,21 +99,6 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         };
         
         onSave(taskData);
-        
-        if (!task) {
-            setFormData({
-                id: '',
-                subjectId: '',
-                title: '',
-                dueDate: '',
-                importance: 'Baja',
-                status: 'Pendiente',
-                markObtained: '',
-                markMax: '',
-                notificationDate: '',
-            });
-        }
-        setErrors({});
     };
 
     const handleChange = (e) => {
@@ -122,69 +109,63 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            style={{ zIndex: 9999 }}
+        <Modal 
+            isOpen={isOpen} 
+            onClose={onClose} 
+            title={task ? 'Editar Tarea' : 'Nueva Tarea'}
+            size={isMobile ? 'md' : 'lg'}
         >
-            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
-                <h2 className="text-xl font-semibold mb-4 text-primary">
-                    {task ? 'Editar Tarea' : 'Nueva Tarea'}
-                </h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Asignatura *</label>
-                        <select
-                            name="subjectId"
-                            value={formData.subjectId}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.subjectId ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                            required
-                        >
-                            <option value="">Selecciona una asignatura</option>
-                            {subjects.map((subject) => (
-                                <option key={subject.id} value={subject.id}>
-                                    {subject.title}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.subjectId && (
-                            <p className="text-red-500 text-xs mt-1">{errors.subjectId}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Título *</label>
-                        <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.title ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                            required
-                        />
-                        {errors.title && (
-                            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Fecha de Entrega *</label>
-                        <input
-                            type="date"
-                            name="dueDate"
-                            value={formData.dueDate}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.dueDate ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                            required
-                        />
-                        {errors.dueDate && (
-                            <p className="text-red-500 text-xs mt-1">{errors.dueDate}</p>
-                        )}
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-3">
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Asignatura *</label>
+                    <select
+                        name="subjectId"
+                        value={formData.subjectId}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.subjectId ? 'border-red-500' : 'border-gray-300'}`}
+                        required
+                    >
+                        <option value="">Selecciona una asignatura</option>
+                        {subjects.map((subject) => (
+                            <option key={subject.id} value={subject.id}>
+                                {subject.title}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.subjectId && (
+                        <p className="text-red-500 text-xs mt-1">{errors.subjectId}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Título *</label>
+                    <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
+                        required
+                    />
+                    {errors.title && (
+                        <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Fecha de Entrega *</label>
+                    <input
+                        type="date"
+                        name="dueDate"
+                        value={formData.dueDate}
+                        onChange={handleChange}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.dueDate ? 'border-red-500' : 'border-gray-300'}`}
+                        required
+                    />
+                    {errors.dueDate && (
+                        <p className="text-red-500 text-xs mt-1">{errors.dueDate}</p>
+                    )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-sm font-medium mb-1 text-gray-700">Importancia</label>
                         <select
@@ -211,6 +192,8 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             <option value="Finalizada">Finalizada</option>
                         </select>
                     </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-sm font-medium mb-1 text-gray-700">Nota Obtenida</label>
                         <input
@@ -218,24 +201,23 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                             name="markObtained"
                             value={formData.markObtained}
                             onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.marks ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                    />
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.marks ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">Nota Máxima</label>
+                        <input
+                            type="number"
+                            name="markMax"
+                            value={formData.markMax}
+                            onChange={handleChange}
+                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.marks ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                    </div>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Nota Máxima</label>
-                    <input
-                        type="number"
-                        name="markMax"
-                        value={formData.markMax}
-                        onChange={handleChange}
-                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.marks ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                    />
-                    {errors.marks && (
-                        <p className="text-red-500 text-xs mt-1">{errors.marks}</p>
-                    )}
-                </div>
+                {errors.marks && (
+                    <p className="text-red-500 text-xs mt-1">{errors.marks}</p>
+                )}
                 <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
                     <input
@@ -243,56 +225,53 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                         name="notificationDate"
                         value={formData.notificationDate}
                         onChange={handleChange}
-                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                            errors.notificationDate ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.notificationDate ? 'border-red-500' : 'border-gray-300'}`}
                     />
                     {errors.notificationDate && (
                         <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
                     )}
                 </div>
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+                        className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
+                        className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-accent transition"
                     >
                         {task ? 'Actualizar' : 'Guardar'}
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-);
+        </Modal>
+    );
 };
 
 TaskModal.propTypes = {
-isOpen: PropTypes.bool.isRequired,
-onClose: PropTypes.func.isRequired,
-onSave: PropTypes.func.isRequired,
-subjects: PropTypes.arrayOf(
-    PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        title: PropTypes.string.isRequired,
-    })
-).isRequired,
-task: PropTypes.shape({
-    id: PropTypes.number,
-    title: PropTypes.string,
-    dueDate: PropTypes.string,
-    importance: PropTypes.string,
-    status: PropTypes.string,
-    markObtained: PropTypes.string,
-    markMax: PropTypes.string,
-    notificationDate: PropTypes.string,
-    subject: PropTypes.string,
-}),
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onSave: PropTypes.func.isRequired,
+    subjects: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            title: PropTypes.string.isRequired,
+        })
+    ).isRequired,
+    task: PropTypes.shape({
+        id: PropTypes.number,
+        title: PropTypes.string,
+        dueDate: PropTypes.string,
+        importance: PropTypes.string,
+        status: PropTypes.string,
+        markObtained: PropTypes.string,
+        markMax: PropTypes.string,
+        notificationDate: PropTypes.string,
+        subject: PropTypes.string,
+    }),
 };
 
 export default TaskModal;

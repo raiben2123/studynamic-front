@@ -1,4 +1,4 @@
-// src/pages/GroupDetailsPage.js
+// src/pages/GroupDetailsPage.js - Versión responsive
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,8 @@ import CalendarComponent from '../components/CalendarComponent';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SessionModal from '../components/modals/SessionModal';
-import { FaComments, FaTimes, FaShareAlt } from 'react-icons/fa';
+import Modal from '../components/modals/Modal';
+import { FaComments, FaTimes, FaShareAlt, FaUsers, FaTasks, FaCalendar, FaBook, FaCog, FaPlus } from 'react-icons/fa';
 import { formatDateForDisplay } from '../utils/dateUtils';
 
 // API imports
@@ -23,7 +24,7 @@ const GroupDetailsPage = () => {
     const navigate = useNavigate();
     const { token, userId, user } = useAuth();
     
-    // State
+    // Estado
     const [group, setGroup] = useState(null);
     const [members, setMembers] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -46,10 +47,23 @@ const GroupDetailsPage = () => {
     const [error, setError] = useState(null);
     const [editingTask, setEditingTask] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
+    const [shareLink, setShareLink] = useState('');
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    // Responsive handler
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Fetch data
     useEffect(() => {
-                        const fetchGroupData = async () => {
+        const fetchGroupData = async () => {
             setLoading(true);
             try {
                 // Fetch group details
@@ -142,9 +156,9 @@ const GroupDetailsPage = () => {
     };
 
     const handleShareLink = () => {
-        const shareLink = `${window.location.origin}/groups/join/${groupId}?groupId=${groupId}`;
-        navigator.clipboard.writeText(shareLink);
-        alert('Enlace copiado al portapapeles: ' + shareLink);
+        const link = `${window.location.origin}/groups/join/${groupId}?groupId=${groupId}`;
+        setShareLink(link);
+        setIsShareModalOpen(true);
     };
 
     const handleAddTask = async (newTask) => {
@@ -291,9 +305,9 @@ const GroupDetailsPage = () => {
 
     if (loading) {
         return (
-            <div className="flex flex-col min-h-screen md:flex-row">
+            <div className="main-container">
                 <Sidebar />
-                <div className="flex-1 bg-background p-8 flex justify-center items-center">
+                <div className="content-container flex justify-center items-center">
                     <p className="text-lg">Cargando datos del grupo...</p>
                 </div>
             </div>
@@ -302,9 +316,9 @@ const GroupDetailsPage = () => {
 
     if (error && !group) {
         return (
-            <div className="flex flex-col min-h-screen md:flex-row">
+            <div className="main-container">
                 <Sidebar />
-                <div className="flex-1 bg-background p-8 flex flex-col justify-center items-center">
+                <div className="content-container flex flex-col justify-center items-center">
                     <p className="text-lg text-red-500 mb-4">{error}</p>
                     <button 
                         onClick={() => navigate('/groups')}
@@ -318,67 +332,102 @@ const GroupDetailsPage = () => {
     }
 
     return (
-        <div className="flex flex-col min-h-screen md:flex-row ">
+        <div className="main-container">
             <Sidebar />
             <div
-                className="flex-1 bg-background p-4 md:p-8 flex flex-col md:flex-row relative"
-                style={{
-                    backgroundImage: `url(${Logo})`,
-                    backgroundSize: '50%',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    opacity: 1,
-                }}
+                className="content-container background-logo-container"
+                style={{ backgroundImage: `url(${Logo})` }}
             >
-                <div className="flex-1 relative z-10 md:pr-4 opacity-95">
+                <div className="relative z-10">
                     {error && (
                         <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
                             {error}
                         </div>
                     )}
                     
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl md:text-3xl text-primary">{group?.name || 'Grupo'}</h1>
-                        <div className="flex space-x-2">
+                    <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
+                        <h1 className="text-xl md:text-3xl text-primary">{group?.name || 'Grupo'}</h1>
+                        <div className="group-action-buttons">
                             <button
                                 onClick={handleShareLink}
-                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent flex items-center"
+                                className="bg-primary text-white px-3 md:px-4 py-1 md:py-2 rounded-full hover:bg-accent flex items-center text-sm md:text-base"
                             >
-                                <FaShareAlt className="mr-2" /> Compartir
+                                <FaShareAlt className="mr-1 md:mr-2" /> {isMobile ? '' : 'Compartir'}
                             </button>
-                            <Link to="/groups" className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent">
-                                Volver a Grupos
+                            <Link 
+                                to="/groups" 
+                                className="bg-primary text-white px-3 md:px-4 py-1 md:py-2 rounded-full hover:bg-accent text-sm md:text-base"
+                            >
+                                Volver
                             </Link>
                         </div>
                     </div>
 
-                    <div className="flex space-x-4 mb-6 overflow-x-auto">
+                    <div className="tabs-container mb-4">
                         {['members', 'tasks', 'calendar', 'notes', 'sessions', ...(isAdmin ? ['settings'] : [])].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-2 rounded-full ${activeTab === tab ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                                className={`tab-button ${
+                                    activeTab === tab 
+                                        ? 'bg-primary text-white' 
+                                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                }`}
                             >
-                                {tab === 'members' ? 'Miembros' : tab === 'tasks' ? 'Tareas' : tab === 'calendar' ? 'Calendario' : tab === 'notes' ? 'Apuntes' : tab === 'sessions' ? 'Sesiones' : 'Ajustes'}
+                                {tab === 'members' ? (
+                                    <span className="flex items-center">
+                                        <FaUsers className={`${isMobile ? '' : 'mr-1'}`} />
+                                        {isMobile ? '' : 'Miembros'}
+                                    </span>
+                                ) : tab === 'tasks' ? (
+                                    <span className="flex items-center">
+                                        <FaTasks className={`${isMobile ? '' : 'mr-1'}`} />
+                                        {isMobile ? '' : 'Tareas'}
+                                    </span>
+                                ) : tab === 'calendar' ? (
+                                    <span className="flex items-center">
+                                        <FaCalendar className={`${isMobile ? '' : 'mr-1'}`} />
+                                        {isMobile ? '' : 'Calendario'}
+                                    </span>
+                                ) : tab === 'notes' ? (
+                                    <span className="flex items-center">
+                                        <FaBook className={`${isMobile ? '' : 'mr-1'}`} />
+                                        {isMobile ? '' : 'Apuntes'}
+                                    </span>
+                                ) : tab === 'sessions' ? (
+                                    <span className="flex items-center">
+                                        <FaComments className={`${isMobile ? '' : 'mr-1'}`} />
+                                        {isMobile ? '' : 'Sesiones'}
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center">
+                                        <FaCog className={`${isMobile ? '' : 'mr-1'}`} />
+                                        {isMobile ? '' : 'Ajustes'}
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
 
-                    <div className="bg-white p-4 rounded-xl shadow-md md:p-6 h-[calc(100vh-200px)] overflow-y-auto">
+                    <div className="card h-[calc(100vh-180px)] md:h-[calc(100vh-200px)] overflow-y-auto">
                         {activeTab === 'members' && (
                             <div>
-                                <h2 className="text-xl font-semibold mb-4 text-primary">Miembros ({members.length})</h2>
-                                <div className="max-h-[50vh] overflow-y-auto">
+                                <h2 className="text-lg md:text-xl font-semibold mb-3 text-primary">Miembros ({members.length})</h2>
+                                <div className="max-h-[65vh] overflow-y-auto">
                                     {members.length === 0 ? (
                                         <p className="text-gray-600">No hay miembros en este grupo.</p>
                                     ) : (
                                         members.map((member) => (
-                                            <div key={member.userId} className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                                            <div 
+                                                key={member.userId} 
+                                                className="flex justify-between items-center text-sm text-gray-600 mb-2 p-2 hover:bg-gray-100 rounded"
+                                            >
                                                 <span>{member.username} {member.roleId === 1 ? '(Admin)' : ''}</span>
                                                 {isAdmin && member.userId !== parseInt(userId) && (
                                                     <button
                                                         onClick={() => handleKickMember(member.userId)}
-                                                        className="text-red-500 hover:text-red-700"
+                                                        className="text-red-500 hover:text-red-700 p-1"
+                                                        aria-label="Expulsar miembro"
                                                     >
                                                         <FaTimes />
                                                     </button>
@@ -392,19 +441,19 @@ const GroupDetailsPage = () => {
 
                         {activeTab === 'tasks' && (
                             <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-semibold text-primary">Tareas</h2>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Tareas</h2>
                                     <button
                                         onClick={() => {
                                             setEditingTask(null);
                                             setIsTaskModalOpen(true);
                                         }}
-                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
                                     >
-                                        + Añadir Tarea
+                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Añadir Tarea'}
                                     </button>
                                 </div>
-                                <div className="max-h-[50vh] overflow-y-auto mb-4">
+                                <div className="max-h-[65vh] overflow-y-auto mb-4">
                                     {tasks.length === 0 ? (
                                         <p className="text-gray-600">No hay tareas.</p>
                                     ) : (
@@ -436,57 +485,68 @@ const GroupDetailsPage = () => {
 
                         {activeTab === 'calendar' && (
                             <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-semibold text-primary">Calendario</h2>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Calendario</h2>
                                     <button
                                         onClick={() => setIsAddModalOpen(true)}
-                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
                                     >
-                                        + Añadir
+                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Añadir'}
                                     </button>
                                 </div>
                                 <CalendarComponent
                                     events={calendarEvents}
                                     onDateClick={handleDateClick}
                                     onEventClick={handleEventClick}
-                                    height="70vh"
+                                    height={isMobile ? "50vh" : "60vh"}
+                                    showSubjectSchedules={false}
                                 />
                             </div>
                         )}
 
                         {activeTab === 'notes' && (
                             <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-semibold text-primary">Apuntes</h2>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Apuntes</h2>
                                     <button
                                         onClick={handleAddFolder}
-                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
                                     >
-                                        + Nueva Carpeta
+                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Nueva Carpeta'}
                                     </button>
                                 </div>
-                                <div className="max-h-[50vh] overflow-y-auto">
+                                <div className="resources-container">
                                     {Object.keys(notes).length === 0 ? (
                                         <p className="text-gray-600">No hay carpetas de apuntes.</p>
                                     ) : (
                                         Object.keys(notes).map((folder) => (
-                                            <div key={folder} className="mb-4">
-                                                <h3 className="text-lg font-medium mb-2 text-primary">{folder}</h3>
-                                                <label className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent cursor-pointer">
-                                                    + Subir Apunte
-                                                    <input
-                                                        type="file"
-                                                        accept=".pdf,.doc,.docx"
-                                                        onChange={(e) => handleFileUpload(folder, e)}
-                                                        className="hidden"
-                                                    />
-                                                </label>
-                                                <div className="mt-2">
+                                            <div key={folder} className="resource-folder">
+                                                <div className="resource-folder-header">
+                                                    <h3 className="text-base md:text-lg font-medium text-primary">{folder}</h3>
+                                                    <label className="bg-primary text-white px-2 py-1 rounded-full hover:bg-accent cursor-pointer text-xs flex items-center">
+                                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Subir'}
+                                                        <input
+                                                            type="file"
+                                                            accept=".pdf,.doc,.docx"
+                                                            onChange={(e) => handleFileUpload(folder, e)}
+                                                            className="hidden"
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="resource-files-container">
                                                     {notes[folder].length === 0 ? (
                                                         <p className="text-sm text-gray-600">No hay apuntes en esta carpeta.</p>
                                                     ) : (
                                                         notes[folder].map((note) => (
-                                                            <p key={note.id} className="text-sm text-gray-600">{note.name}</p>
+                                                            <div key={note.id} className="flex justify-between items-center p-2 bg-gray-100 rounded-lg mb-1">
+                                                                <span className="text-sm truncate max-w-[200px] md:max-w-full">{note.name}</span>
+                                                                <button
+                                                                    onClick={() => alert(`Simulando apertura de ${note.name}`)}
+                                                                    className="text-primary hover:underline text-xs"
+                                                                >
+                                                                    Ver
+                                                                </button>
+                                                            </div>
                                                         ))
                                                     )}
                                                 </div>
@@ -504,9 +564,9 @@ const GroupDetailsPage = () => {
                                     />
                                     <button
                                         onClick={handleAddFolder}
-                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm"
                                     >
-                                        + Crear
+                                        Crear
                                     </button>
                                 </div>
                             </div>
@@ -514,24 +574,29 @@ const GroupDetailsPage = () => {
 
                         {activeTab === 'sessions' && (
                             <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-semibold text-primary">Sesiones de Estudio</h2>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Sesiones de Estudio</h2>
                                     <button
                                         onClick={() => setIsSessionModalOpen(true)}
-                                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
+                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
                                     >
-                                        + Añadir Sesión
+                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Añadir Sesión'}
                                     </button>
                                 </div>
-                                <div className="max-h-[50vh] overflow-y-auto mb-4">
+                                <div className="max-h-[65vh] overflow-y-auto mb-4">
                                     {studySessions.length === 0 ? (
                                         <p className="text-gray-600">No hay sesiones.</p>
                                     ) : (
                                         studySessions.map((session) => (
                                             <div key={session.id} className="text-sm text-gray-600 mb-2 p-3 bg-gray-100 rounded-lg">
                                                 <p className="font-medium text-primary">{session.title}</p>
-                                                <p>Fecha: {formatDateForDisplay(session.start)}</p>
-                                                <a href={session.zoomLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                                <p className="text-xs md:text-sm">Fecha: {formatDateForDisplay(session.start)}</p>
+                                                <a 
+                                                    href={session.zoomLink} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    className="text-primary hover:underline text-xs md:text-sm inline-block mt-1"
+                                                >
                                                     Unirse a Zoom
                                                 </a>
                                             </div>
@@ -543,7 +608,7 @@ const GroupDetailsPage = () => {
 
                         {activeTab === 'settings' && isAdmin && (
                             <div>
-                                <h2 className="text-xl font-semibold mb-4 text-primary">Ajustes</h2>
+                                <h2 className="text-lg md:text-xl font-semibold mb-3 text-primary">Ajustes</h2>
                                 <p className="text-gray-600 mb-4">Configuración del grupo como administrador.</p>
                                 <div className="space-y-4">
                                     {/* Aquí irían más ajustes del grupo */}
@@ -556,7 +621,7 @@ const GroupDetailsPage = () => {
                                                     alert('Esta función no está implementada aún.');
                                                 }
                                             }}
-                                            className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600"
+                                            className="bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 text-sm"
                                         >
                                             Eliminar Grupo
                                         </button>
@@ -566,8 +631,86 @@ const GroupDetailsPage = () => {
                         )}
                     </div>
                 </div>
+                
+                {/* Espaciador para dispositivos móviles */}
+                <div className="footer-spacer"></div>
+                
+                {/* Modal para compartir enlace */}
+                <Modal
+                    isOpen={isShareModalOpen}
+                    onClose={() => setIsShareModalOpen(false)}
+                    title="Compartir Grupo"
+                    size="sm"
+                >
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                            Comparte este enlace para que otros usuarios puedan unirse al grupo:
+                        </p>
+                        <div className="flex">
+                            <input
+                                type="text"
+                                value={shareLink}
+                                readOnly
+                                className="flex-1 p-2 border border-gray-300 rounded-l focus:outline-none"
+                            />
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(shareLink);
+                                    alert('Enlace copiado al portapapeles');
+                                }}
+                                className="bg-primary text-white px-3 py-2 rounded-r"
+                            >
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
 
-                {/* Modal para añadir tarea */}
+                {/* Modal de selección para calendario */}
+                {isAddModalOpen && (
+                    <div className="selection-modal">
+                        <div className="selection-modal-content">
+                            <h3 className="text-lg font-semibold mb-3">Añadir en {formatDateForDisplay(selectedDate)}</h3>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={() => {
+                                        setIsAddModalOpen(false);
+                                        setIsTaskModalOpen(true);
+                                    }}
+                                    className="w-full bg-orange-400 text-white px-3 py-2 rounded-lg hover:bg-orange-500"
+                                >
+                                    Nueva Tarea
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsAddModalOpen(false);
+                                        setIsEventModalOpen(true);
+                                    }}
+                                    className="w-full bg-primary text-white px-3 py-2 rounded-lg hover:bg-accent"
+                                >
+                                    Nuevo Evento
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsAddModalOpen(false);
+                                        setIsSessionModalOpen(true);
+                                    }}
+                                    className="w-full bg-accent text-white px-3 py-2 rounded-lg hover:bg-opacity-80"
+                                >
+                                    Nueva Sesión
+                                </button>
+                                <button
+                                    onClick={() => setIsAddModalOpen(false)}
+                                    className="w-full bg-gray-200 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-300"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal para añadir/editar tarea */}
                 <TaskModal
                     isOpen={isTaskModalOpen}
                     onClose={() => {
@@ -579,7 +722,7 @@ const GroupDetailsPage = () => {
                     task={editingTask}
                 />
 
-                {/* Modal para añadir evento */}
+                {/* Modal para añadir/editar evento */}
                 <EventModal
                     isOpen={isEventModalOpen}
                     onClose={() => {
@@ -599,79 +742,39 @@ const GroupDetailsPage = () => {
                     defaultDate={selectedDate}
                 />
 
-                {/* Modal de selección para calendario */}
-                {isAddModalOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                            <h3 className="text-lg font-semibold mb-4 text-primary">Añadir en {formatDateForDisplay(selectedDate)}</h3>
-                            <div className="space-y-2">
-                                <button
-                                    onClick={() => {
-                                        setIsAddModalOpen(false);
-                                        setIsTaskModalOpen(true);
-                                    }}
-                                    className="w-full bg-secondary text-white px-4 py-2 rounded-full hover:bg-opacity-80"
-                                >
-                                    Nueva Tarea
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setIsAddModalOpen(false);
-                                        setIsEventModalOpen(true);
-                                    }}
-                                    className="w-full bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
-                                >
-                                    Nuevo Evento
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setIsAddModalOpen(false);
-                                        setIsSessionModalOpen(true);
-                                    }}
-                                    className="w-full bg-accent text-white px-4 py-2 rounded-full hover:bg-opacity-80"
-                                >
-                                    Nueva Sesión
-                                </button>
-                                <button
-                                    onClick={() => setIsAddModalOpen(false)}
-                                    className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {/* Modal para detalles del evento */}
-                {isEventDetailsOpen && selectedEvent && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-                            <h3 className="text-lg font-semibold mb-4 text-primary">Detalles</h3>
-                            <div className="space-y-2">
-                                <p><strong>Título:</strong> {selectedEvent.title}</p>
-                                <p><strong>Fecha de inicio:</strong> {formatDateForDisplay(selectedEvent.start)}</p>
-                                {selectedEvent.end && (
-                                    <p><strong>Fecha de fin:</strong> {formatDateForDisplay(selectedEvent.end)}</p>
-                                )}
-                                <p><strong>Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
-                                {selectedEvent.type === 'task' && (
-                                    <>
-                                        <p><strong>Estado:</strong> {selectedEvent.status}</p>
-                                        <p><strong>Importancia:</strong> {selectedEvent.importance}</p>
-                                        <p><strong>Asignatura:</strong> {selectedEvent.subject}</p>
-                                    </>
-                                )}
-                                {selectedEvent.type === 'session' && selectedEvent.zoomLink && (
-                                    <p>
-                                        <strong>Enlace Zoom:</strong> 
-                                        <a href={selectedEvent.zoomLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                                            {selectedEvent.zoomLink}
-                                        </a>
-                                    </p>
-                                )}
-                            </div>
-                            <div className="flex justify-end space-x-2 mt-4">
+                <Modal
+                    isOpen={isEventDetailsOpen}
+                    onClose={() => setIsEventDetailsOpen(false)}
+                    title={selectedEvent?.type === 'task' ? 'Detalles de Tarea' : 
+                           selectedEvent?.type === 'session' ? 'Detalles de Sesión' : 'Detalles de Evento'}
+                    size="md"
+                >
+                    {selectedEvent && (
+                        <div className="space-y-2">
+                            <p><strong className="text-primary">Título:</strong> {selectedEvent.title}</p>
+                            <p><strong className="text-primary">Fecha de inicio:</strong> {formatDateForDisplay(selectedEvent.start)}</p>
+                            {selectedEvent.end && (
+                                <p><strong className="text-primary">Fecha de fin:</strong> {formatDateForDisplay(selectedEvent.end)}</p>
+                            )}
+                            <p><strong className="text-primary">Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
+                            {selectedEvent.type === 'task' && (
+                                <>
+                                    <p><strong className="text-primary">Estado:</strong> {selectedEvent.status}</p>
+                                    <p><strong className="text-primary">Importancia:</strong> {selectedEvent.importance}</p>
+                                    <p><strong className="text-primary">Asignatura:</strong> {selectedEvent.subject}</p>
+                                </>
+                            )}
+                            {selectedEvent.type === 'session' && selectedEvent.zoomLink && (
+                                <p>
+                                    <strong className="text-primary">Enlace Zoom:</strong> 
+                                    <a href={selectedEvent.zoomLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                                        {selectedEvent.zoomLink}
+                                    </a>
+                                </p>
+                            )}
+                            
+                            <div className="flex justify-end space-x-2 mt-3">
                                 {selectedEvent.type === 'task' && (
                                     <button
                                         onClick={() => {
@@ -687,7 +790,7 @@ const GroupDetailsPage = () => {
                                             setIsTaskModalOpen(true);
                                             setIsEventDetailsOpen(false);
                                         }}
-                                        className="px-4 py-2 bg-primary text-white rounded-full hover:bg-accent"
+                                        className="px-3 py-1 bg-primary text-white rounded-lg hover:bg-accent text-sm"
                                     >
                                         Editar
                                     </button>
@@ -705,21 +808,21 @@ const GroupDetailsPage = () => {
                                             setIsEventModalOpen(true);
                                             setIsEventDetailsOpen(false);
                                         }}
-                                        className="px-4 py-2 bg-primary text-white rounded-full hover:bg-accent"
+                                        className="px-3 py-1 bg-primary text-white rounded-lg hover:bg-accent text-sm"
                                     >
                                         Editar
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setIsEventDetailsOpen(false)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
+                                    className="px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm"
                                 >
                                     Cerrar
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </Modal>
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 // src/components/CalendarComponent.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -17,6 +17,28 @@ const CalendarComponent = ({
     showSubjectSchedules = true 
 }) => {
     const [allEvents, setAllEvents] = useState([]);
+    const [initialView, setInitialView] = useState('timeGridWeek');
+    const calendarRef = useRef(null);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    // Responsive view handling
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        // Set appropriate view based on screen size
+        if (windowWidth < 768) {
+            setInitialView('listWeek');
+        } else {
+            setInitialView('timeGridWeek');
+        }
+    }, [windowWidth]);
 
     // Generar eventos recurrentes basados en los horarios de las asignaturas
     useEffect(() => {
@@ -137,27 +159,54 @@ const CalendarComponent = ({
         '--fc-event-border-color': 'var(--primary-color)',
         '--fc-event-text-color': '#fff',
         '--fc-list-event-hover-bg-color': 'rgba(var(--primary-color-rgb), 0.1)',
+        '--fc-button-text-color': '#fff',
+        '--fc-toolbar-title-font-size': windowWidth < 768 ? '1.25em' : '1.75em', // Smaller title on mobile
+    };
+
+    // Responsive header configuration
+    const headerToolbar = windowWidth < 768 
+        ? {
+            left: 'prev,next',
+            center: 'title',
+            right: 'listWeek,timeGridDay',
+        }
+        : {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+        };
+
+    const handleViewDidMount = () => {
+        // Apply specific styles for mobile view
+        if (windowWidth < 768) {
+            // Make sure table cells are not too small on mobile
+            const eventElements = document.querySelectorAll('.fc-event');
+            eventElements.forEach(el => {
+                el.style.fontSize = '0.85em';
+                el.style.padding = '2px 4px';
+            });
+        }
     };
 
     return (
-        <div className="w-full overflow-hidden" style={{ height, ...calendarWrapperStyles }}>
+        <div 
+            className="w-full overflow-hidden rounded-lg calendar-container" 
+            style={{ height, ...calendarWrapperStyles }}
+        >
             <FullCalendar
+                ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-                initialView="timeGridWeek" // Cambiar vista predeterminada a semana
+                initialView={initialView}
                 events={allEvents}
-                headerToolbar={{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
-                }}
+                headerToolbar={headerToolbar}
                 locale={esLocale}
                 firstDay={1} // Semana comienza en lunes
                 buttonText={{
-                    today: 'Hoy',
-                    month: 'Mes',
-                    week: 'Semana',
-                    day: 'Día',
-                    list: 'Lista',
+                    today: windowWidth < 768 ? 'Hoy' : 'Hoy',
+                    month: windowWidth < 768 ? 'Mes' : 'Mes',
+                    week: windowWidth < 768 ? 'Sem' : 'Semana',
+                    day: windowWidth < 768 ? 'Día' : 'Día',
+                    list: windowWidth < 768 ? 'Lista' : 'Lista',
                 }}
                 slotMinTime="07:00:00" // Hora mínima mostrada
                 slotMaxTime="22:00:00" // Hora máxima mostrada
@@ -170,6 +219,7 @@ const CalendarComponent = ({
                 }}
                 dateClick={onDateClick}
                 eventClick={onEventClick}
+                viewDidMount={handleViewDidMount}
                 eventClassNames={(arg) => {
                     // Aplicar clases especiales según el tipo de evento
                     const eventType = arg.event.extendedProps?.type;
@@ -178,6 +228,11 @@ const CalendarComponent = ({
                     }
                     return [];
                 }}
+                // Responsive settings
+                height="auto"
+                contentHeight={windowWidth < 768 ? "auto" : height}
+                stickyHeaderDates={true}
+                stickyFooterScrollbar={true}
             />
         </div>
     );

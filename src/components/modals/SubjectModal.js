@@ -1,6 +1,7 @@
-// src/components/modals/SubjectModal.js
+// src/components/modals/SubjectModal.js - Implementación usando el Modal base
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import Modal from './Modal';
 import SubjectScheduleModal from './SubjectScheduleModal';
 import { getSchedulesBySubject, addSchedule, updateSchedule, deleteSchedule } from '../../api/subjectSchedules';
 
@@ -11,6 +12,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState(null);
     const [loading, setLoading] = useState(false);
+    const isMobile = window.innerWidth < 768;
 
     // Obtener los horarios cuando se edita una asignatura existente
     useEffect(() => {
@@ -117,12 +119,16 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
     };
 
     const getDayName = (dayOfWeek) => {
-        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const days = isMobile 
+            ? ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'] 
+            : ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         return days[dayOfWeek] || 'Desconocido';
     };
 
     const getWeekTypeName = (weekType) => {
-        const types = ['Todas las semanas', 'Semanas pares', 'Semanas impares'];
+        const types = isMobile 
+            ? ['Todas', 'Pares', 'Impares']
+            : ['Todas las semanas', 'Semanas pares', 'Semanas impares'];
         return types[weekType] || 'Desconocido';
     };
 
@@ -155,143 +161,146 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         
+        if (isMobile) {
+            return hours > 0 ? `${hours}h${mins > 0 ? mins + 'm' : ''}` : `${mins}m`;
+        }
+        
         if (hours === 0) {
             return `${mins} minutos`;
         } else if (mins === 0) {
             return hours === 1 ? `${hours} hora` : `${hours} horas`;
         } else {
-            return `${hours}h ${mins}min`;
+            return `${hours}h ${mins}m`;
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                <h2 className="text-xl font-semibold mb-4 text-primary">
-                    {subject ? 'Editar Asignatura' : 'Añadir Asignatura'}
-                </h2>
-                
-                {/* Nombre de la asignatura */}
-                <div className="mb-6">
-                    <label className="block text-sm font-medium mb-1 text-gray-700">
-                        Nombre de la asignatura
-                    </label>
-                    <input
-                        type="text"
-                        value={subjectName}
-                        onChange={(e) => {
-                            setSubjectName(e.target.value);
-                            setError('');
-                        }}
-                        placeholder="Nombre de la asignatura"
-                        className={`w-full p-2 border rounded ${
-                            error ? 'border-red-500' : 'border-gray-300'
-                        } focus:outline-none focus:ring-2 focus:ring-primary`}
-                    />
-                    {error && (
-                        <p className="text-red-500 text-xs mt-1">{error}</p>
-                    )}
-                </div>
-                
-                {/* Sección de horarios */}
-                <div className="mb-6">
-                    <div className="flex justify-between items-center mb-3">
-                        <h3 className="text-lg font-medium text-primary">Horarios</h3>
-                        <button
-                            onClick={() => {
-                                setEditingSchedule(null);
-                                setIsScheduleModalOpen(true);
-                            }}
-                            className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm"
-                            disabled={loading}
-                        >
-                            + Añadir Horario
-                        </button>
-                    </div>
-                    
-                    {loading ? (
-                        <p className="text-gray-500 text-center py-4">Cargando...</p>
-                    ) : schedules.length > 0 ? (
-                        <div className="max-h-[40vh] overflow-y-auto space-y-2">
-                            {schedules.map((schedule) => (
-                                <div 
-                                    key={schedule.id} 
-                                    className={`p-3 rounded-lg flex justify-between items-center ${
-                                        schedule.isTemporary ? 'bg-blue-50 border border-blue-200' : 'bg-gray-100'
-                                    }`}
-                                >
-                                    <div>
-                                        <p className="font-medium">{getDayName(schedule.dayOfWeek)}</p>
-                                        <p className="text-sm text-gray-600">
-                                            {formatTime(schedule.startTime)} ({formatDuration(schedule.durationMinutes)})
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            {getWeekTypeName(schedule.weekType)}
-                                        </p>
-                                    </div>
-                                    <div className="flex space-x-2">
-                                        <button
-                                            onClick={() => handleEditSchedule(schedule)}
-                                            className="text-primary hover:text-accent"
-                                            disabled={loading}
-                                        >
-                                            ✏️
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                if (window.confirm('¿Estás seguro de eliminar este horario?')) {
-                                                    handleDeleteSchedule(schedule.id);
-                                                }
-                                            }}
-                                            className="text-red-500 hover:text-red-700"
-                                            disabled={loading}
-                                        >
-                                            🗑️
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-4">
-                            No hay horarios configurados
-                        </p>
-                    )}
-                </div>
-                
-                {/* Botones de acción */}
-                <div className="flex justify-end space-x-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
-                        disabled={loading}
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleSaveSubject}
-                        className="px-4 py-2 bg-primary text-white rounded hover:bg-accent transition"
-                        disabled={loading}
-                    >
-                        {subject ? 'Actualizar' : 'Guardar'}
-                    </button>
-                </div>
-                
-                {/* Modal para añadir/editar horarios */}
-                <SubjectScheduleModal
-                    isOpen={isScheduleModalOpen}
-                    onClose={() => {
-                        setIsScheduleModalOpen(false);
-                        setEditingSchedule(null);
+        <Modal 
+            isOpen={isOpen} 
+            onClose={onClose} 
+            title={subject ? 'Editar Asignatura' : 'Añadir Asignatura'}
+            size="lg"
+        >
+            {/* Nombre de la asignatura */}
+            <div className="mb-4">
+                <label className="block text-sm font-medium mb-1 text-gray-700">
+                    Nombre de la asignatura
+                </label>
+                <input
+                    type="text"
+                    value={subjectName}
+                    onChange={(e) => {
+                        setSubjectName(e.target.value);
+                        setError('');
                     }}
-                    onSave={handleSaveSchedule}
-                    subject={subject || { id: 'temp-subject', title: subjectName }}
-                    editingSchedule={editingSchedule}
+                    placeholder="Nombre de la asignatura"
+                    className={`w-full p-2 border rounded ${
+                        error ? 'border-red-500' : 'border-gray-300'
+                    } focus:outline-none focus:ring-2 focus:ring-primary`}
                 />
+                {error && (
+                    <p className="text-red-500 text-xs mt-1">{error}</p>
+                )}
             </div>
-        </div>
+            
+            {/* Sección de horarios */}
+            <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-medium text-primary">Horarios</h3>
+                    <button
+                        onClick={() => {
+                            setEditingSchedule(null);
+                            setIsScheduleModalOpen(true);
+                        }}
+                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm"
+                        disabled={loading}
+                    >
+                        + Añadir Horario
+                    </button>
+                </div>
+                
+                {loading ? (
+                    <p className="text-gray-500 text-center py-2">Cargando...</p>
+                ) : schedules.length > 0 ? (
+                    <div className="max-h-40 overflow-y-auto space-y-1">
+                        {schedules.map((schedule) => (
+                            <div 
+                                key={schedule.id} 
+                                className={`p-2 rounded-lg flex justify-between items-center ${
+                                    schedule.isTemporary ? 'bg-blue-50 border border-blue-200' : 'bg-gray-100'
+                                }`}
+                            >
+                                <div>
+                                    <p className="font-medium text-sm">{getDayName(schedule.dayOfWeek)}</p>
+                                    <p className="text-xs text-gray-600">
+                                        {formatTime(schedule.startTime)} ({formatDuration(schedule.durationMinutes)})
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        {getWeekTypeName(schedule.weekType)}
+                                    </p>
+                                </div>
+                                <div className="flex space-x-1">
+                                    <button
+                                        onClick={() => handleEditSchedule(schedule)}
+                                        className="text-primary hover:text-accent p-1"
+                                        disabled={loading}
+                                        aria-label="Editar horario"
+                                    >
+                                        ✏️
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('¿Estás seguro de eliminar este horario?')) {
+                                                handleDeleteSchedule(schedule.id);
+                                            }
+                                        }}
+                                        className="text-red-500 hover:text-red-700 p-1"
+                                        disabled={loading}
+                                        aria-label="Eliminar horario"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-gray-500 text-center py-2">
+                        No hay horarios configurados
+                    </p>
+                )}
+            </div>
+            
+            {/* Botones de acción */}
+            <div className="flex justify-end space-x-2 pt-2">
+                <button
+                    onClick={onClose}
+                    className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                    disabled={loading}
+                >
+                    Cancelar
+                </button>
+                <button
+                    onClick={handleSaveSubject}
+                    className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-accent transition"
+                    disabled={loading}
+                >
+                    {subject ? 'Actualizar' : 'Guardar'}
+                </button>
+            </div>
+            
+            {/* Modal para añadir/editar horarios */}
+            <SubjectScheduleModal
+                isOpen={isScheduleModalOpen}
+                onClose={() => {
+                    setIsScheduleModalOpen(false);
+                    setEditingSchedule(null);
+                }}
+                onSave={handleSaveSchedule}
+                subject={subject || { id: 'temp-subject', title: subjectName }}
+                editingSchedule={editingSchedule}
+            />
+        </Modal>
     );
 };
 
