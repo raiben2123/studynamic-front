@@ -1,4 +1,4 @@
-// src/components/dashboard/EventCard.js - Enhanced for modern design
+// src/components/dashboard/EventCard.js - Enhanced for modern design with Theme Support
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
@@ -14,7 +14,6 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const isMobile = window.innerWidth < 768;
         
-        // En móvil, formato más compacto
         return isMobile 
             ? `${day}/${month} ${hours}:${minutes}`
             : `${day}/${month}/${year} ${hours}:${minutes}`;
@@ -27,7 +26,6 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
         const eventDate = new Date(event.startDateTime);
         const now = new Date();
         
-        // If the event is in the past
         if (eventDate < now) {
             return 'Evento pasado';
         }
@@ -50,24 +48,24 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     
     // Determine badge color based on time until event
     const getBadgeColor = () => {
-        if (timeUntil === 'Evento pasado') return 'bg-gray-100 text-gray-800';
-        if (timeUntil.includes('minutos') || timeUntil.includes('hora') && !timeUntil.includes('horas')) {
-            return 'bg-red-100 text-red-800';
+        if (timeUntil === 'Evento pasado') return 'bg-event-pasado text-event-pasado';
+        if (timeUntil.includes('minutos') || (timeUntil.includes('hora') && !timeUntil.includes('horas'))) {
+            return 'bg-event-proximo text-event-proximo';
         }
         if (timeUntil.includes('horas') || timeUntil.includes('1 día')) {
-            return 'bg-orange-100 text-orange-800';
+            return 'bg-event-cercano text-event-cercano';
         }
-        return 'bg-green-100 text-green-800';
+        return 'bg-event-futuro text-event-futuro';
     };
 
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
             <div className="flex items-start mb-3">
-                <div className="mr-3 p-2 rounded-full bg-violet-100">
-                    <FaCalendarAlt className="text-violet-500" />
+                <div className="mr-3 p-2 rounded-full bg-primary-light">
+                    <FaCalendarAlt className="text-primary" />
                 </div>
                 <div className="flex-1">
-                    <h3 className="font-semibold text-violet-700 truncate">{event.title}</h3>
+                    <h3 className="font-semibold text-primary truncate">{event.title}</h3>
                     {event.description && (
                         <p className="text-sm text-gray-600 line-clamp-1">{event.description}</p>
                     )}
@@ -75,7 +73,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                 <div className="flex space-x-1 ml-2">
                     <button
                         onClick={() => onUpdate(event)}
-                        className="p-1.5 text-gray-400 hover:text-violet-500 rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-gray-400 hover:text-primary rounded-full hover:bg-gray-100 transition"
                         title="Editar"
                         aria-label="Editar evento"
                     >
@@ -87,7 +85,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                                 onDelete(event.id);
                             }
                         }}
-                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
                         title="Eliminar"
                         aria-label="Eliminar evento"
                     >

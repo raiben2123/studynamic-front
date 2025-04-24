@@ -1,4 +1,4 @@
-// src/pages/Dashboard.js - Updated with modern UI and carousel
+// src/pages/Dashboard.js - Adaptado para usar el sistema de temas
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +15,7 @@ import GroupCard from '../components/dashboard/GroupCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
-import Carousel from '../components/Carousel'; // Import the new Carousel component
+import Carousel from '../components/Carousel'; 
 import { FaChartPie, FaCalendarAlt, FaBook, FaUsers, FaTasks, FaPlus } from 'react-icons/fa';
 
 const Dashboard = () => {
@@ -32,7 +32,7 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const { token, userId } = useAuth();
+    const { token, userId, userTheme } = useAuth(); // Ahora obtenemos userTheme del contexto
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -85,7 +85,6 @@ const Dashboard = () => {
         try {
             const addedTask = await addTask(newTask);
             
-            // Añadimos la nueva tarea y reordenamos
             const updatedTasks = [...tasks, addedTask].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
@@ -112,7 +111,6 @@ const Dashboard = () => {
         try {
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
             
-            // Actualizamos la tarea y reordenamos
             const updatedTasks = tasks
                 .map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task))
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
@@ -208,7 +206,6 @@ const Dashboard = () => {
         try {
             const addedEvent = await addEvent(newEvent);
             
-            // Añadimos el nuevo evento y reordenamos
             const updatedEvents = [...events, addedEvent].sort((a, b) => {
                 return new Date(a.startDateTime) - new Date(b.startDateTime);
             });
@@ -237,7 +234,6 @@ const Dashboard = () => {
         try {
             const updatedEventFromBackend = await updateEvent(editingEvent.id, updatedEvent);
             
-            // Actualizamos el evento y reordenamos
             const updatedEvents = events
                 .map((event) => event.id === editingEvent.id ? updatedEventFromBackend : event)
                 .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
@@ -354,30 +350,30 @@ const Dashboard = () => {
                     
                     {/* Welcome Section - Simplified */}
                     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-6 opacity-95">
-                        <h1 className="text-2xl md:text-3xl mb-2 text-violet-700 font-bold">
+                        <h1 className="text-2xl md:text-3xl mb-2 text-primary font-bold">
                             ¡Bienvenido a StudyNamic!
                         </h1>
 
                         {/* Stats in a simplified row */}
                         <div className="mt-4 grid grid-cols-4 gap-2 text-center">
                             <div className="bg-white rounded">
-                                <p className="text-sm text-violet-700 font-medium">Tareas</p>
-                                <p className="text-lg font-bold text-violet-900">{tasks.length}</p>
+                                <p className="text-sm text-primary font-medium">Tareas</p>
+                                <p className="text-lg font-bold text-primary">{tasks.length}</p>
                             </div>
                             
                             <div className="bg-white rounded">
-                                <p className="text-sm text-violet-700 font-medium">Eventos</p>
-                                <p className="text-lg font-bold text-violet-900">{events.length}</p>
+                                <p className="text-sm text-primary font-medium">Eventos</p>
+                                <p className="text-lg font-bold text-primary">{events.length}</p>
                             </div>
                             
                             <div className="bg-white rounded">
-                                <p className="text-sm text-violet-700 font-medium">Asignaturas</p>
-                                <p className="text-lg font-bold text-violet-900">{subjects.length}</p>
+                                <p className="text-sm text-primary font-medium">Asignaturas</p>
+                                <p className="text-lg font-bold text-primary">{subjects.length}</p>
                             </div>
                             
                             <div className="bg-white rounded">
-                                <p className="text-sm text-violet-700 font-medium">Grupos</p>
-                                <p className="text-lg font-bold text-violet-900">{groups.length}</p>
+                                <p className="text-sm text-primary font-medium">Grupos</p>
+                                <p className="text-lg font-bold text-primary">{groups.length}</p>
                             </div>
                         </div>
                     </div>
@@ -395,7 +391,7 @@ const Dashboard = () => {
                                         setEditingTask(null);
                                         setIsTaskModalOpen(true);
                                     }}
-                                    className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
+                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                                 >
                                     <FaPlus className="mr-1" /> 
                                     {!isMobile && "Añadir"}
@@ -416,7 +412,7 @@ const Dashboard = () => {
                                 <div className="text-center mt-4">
                                     <button
                                         onClick={() => navigate('/tasks')}
-                                        className="text-violet-500 hover:text-violet-700 text-sm"
+                                        className="text-primary hover:text-accent text-sm"
                                     >
                                         Ver todas las tareas
                                     </button>
@@ -436,7 +432,7 @@ const Dashboard = () => {
                                         setEditingEvent(null);
                                         setIsEventModalOpen(true);
                                     }}
-                                    className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
+                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                                 >
                                     <FaPlus className="mr-1" /> 
                                     {!isMobile && "Añadir"}
@@ -457,7 +453,7 @@ const Dashboard = () => {
                                 <div className="text-center mt-4">
                                     <button
                                         onClick={() => navigate('/calendar')}
-                                        className="text-violet-500 hover:text-violet-700 text-sm"
+                                        className="text-primary hover:text-accent text-sm"
                                     >
                                         Ver calendario completo
                                     </button>
@@ -474,7 +470,7 @@ const Dashboard = () => {
                                 </div>
                                 <button
                                     onClick={handleAddGroup}
-                                    className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
+                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                                 >
                                     <FaPlus className="mr-1" /> 
                                     {!isMobile && "Añadir"}
@@ -495,7 +491,7 @@ const Dashboard = () => {
                                 <div className="text-center mt-4">
                                     <button
                                         onClick={() => navigate('/groups')}
-                                        className="text-violet-500 hover:text-violet-700 text-sm"
+                                        className="text-primary hover:text-accent text-sm"
                                     >
                                         Ver todos los grupos
                                     </button>
@@ -516,7 +512,7 @@ const Dashboard = () => {
                                     setEditingSubject(null);
                                     setIsSubjectModalOpen(true);
                                 }}
-                                className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
+                                className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                             >
                                 <FaPlus className="mr-1" /> 
                                 {!isMobile && "Añadir Asignatura"}

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'; // Importamos useAuth
 import AuthHeader from '../components/auth/AuthHeader';
 import LoginForm from '../components/auth/LoginForm';
 import SignUpForm from '../components/auth/SignUpForm';
+import { register } from '../api/auth';
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -13,7 +14,7 @@ const Auth = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useAuth(); // Usamos el login del contexto
+    const { login, register } = useAuth(); // Usamos el login del contexto
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -30,24 +31,11 @@ const Auth = () => {
     const handleSignUp = async (e) => {
         e.preventDefault();
         setError('');
-        try {
-            // Asumimos un endpoint ficticio /api/register que también devuelve token y userId
-            const response = await fetch('/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, email, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al registrar');
-            }
-
-            setIsLogin(true);
-            setError('');
-        } catch (err) {
-            setError('Error al registrar. Verifica los datos.');
+        const success = await register(username, email, password);
+        if (success) {
+            navigate('/home'); // Cambié a /home como en tu App.js
+        } else {
+            setError('Error al registrarse. Intenta de nuevo.');
         }
     };
 

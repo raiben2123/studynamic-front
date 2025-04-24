@@ -9,6 +9,53 @@ const mapGroupFromDTO = (dto) => ({
     memberCount: dto.memberIds.length
 });
 
+
+/**
+ * Obtiene todos los grupos disponibles en el sistema.
+ * @returns {Promise<Array>} Lista de todos los grupos
+ */
+export const getAllGroups = async () => {
+    const token = await getToken();
+
+    if (!token) {
+        throw new Error('No autenticado');
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/groups`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los grupos');
+        }
+
+        const groupsData = await response.json();
+        return Array.isArray(groupsData) ? groupsData.map(mapGroupFromDTO) : [mapGroupFromDTO(groupsData)];
+    } catch (error) {
+        console.error('Error en getAllGroups:', error);
+        
+        // Si estamos en desarrollo, devolvemos datos simulados
+        if (process.env.NODE_ENV === 'development') {
+            return [
+                { id: 100, name: 'Grupo de Matemáticas Avanzadas', memberCount: 20, description: 'Grupo para discutir temas avanzados de matemáticas universitarias' },
+                { id: 101, name: 'Grupo de Física Cuántica', memberCount: 15, description: 'Estudio de principios básicos de física cuántica' },
+                { id: 102, name: 'Grupo de Programación Python', memberCount: 25, description: 'Aprende Python desde cero hasta nivel avanzado' },
+                { id: 103, name: 'Historia del Arte', memberCount: 12, description: 'Grupo para analizar movimientos artísticos y sus contextos históricos' },
+                { id: 104, name: 'Inglés Conversacional', memberCount: 18, description: 'Practica inglés con otros estudiantes' },
+                { id: 105, name: 'Biología Molecular', memberCount: 14, description: 'Estudio de procesos biológicos a nivel molecular' }
+            ];
+        }
+        
+        throw error;
+    }
+};
+
+
 /**
  * Obtiene los grupos a los que pertenece el usuario autenticado.
  * @returns {Promise<Array>} Lista de grupos
@@ -30,14 +77,24 @@ export const getGroupsByUserId = async () => {
         },
     });
 
+    if (response.status === 404) {
+        // Si el error 404 es porque no hay grupos, devolvemos lista vacía
+        const errorText = await response.text();
+        if (errorText.includes("No se encontraron grupos para este usuario")) {
+            return [];
+        } else {
+            throw new Error(`Error 404 inesperado: ${errorText}`);
+        }
+    }
+
     if (!response.ok) {
         throw new Error('Error al obtener los grupos');
     }
 
     const groupsData = await response.json();
     return Array.isArray(groupsData) ? groupsData.map(mapGroupFromDTO) : [mapGroupFromDTO(groupsData)];
-
 }
+
 
 /**
  * Obtiene los detalles de un grupo específico

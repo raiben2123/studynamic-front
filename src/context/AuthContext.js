@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { 
     login, 
+    register,
     saveAuthData, 
     getToken, 
     getUserId,
@@ -95,6 +96,34 @@ export const AuthProvider = ({ children }) => {
             return false;
         }
     };
+
+    const handleRegister = async (username, email, password) => {
+        try {
+            const { token, userId, name, theme } = await register(username, email, password);
+            await saveAuthData(token, userId, email, name, username);
+            setToken(token);
+            setUserId(userId);
+            
+            // Cargar el tema del usuario o el predeterminado
+            const userTheme = theme || localStorage.getItem('theme') || 'default';
+            setUserTheme(userTheme);
+            applyTheme(userTheme);
+            
+            setUser({ 
+                id: userId,
+                username: username || '',
+                name: name || '',
+                email: email || '',
+                profilePicture: null,
+                theme: userTheme
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('Error en registro:', error);
+            return false;
+        }
+    }
 
     const logout = async () => {
         setToken(null);
@@ -203,6 +232,13 @@ export const AuthProvider = ({ children }) => {
             userTheme,
             login: handleLogin, 
             logout,
+            register: handleRegister,
+            setUser,
+            setToken,
+            setUserId,
+            setUserTheme,
+            updateUserProfile,
+            updateProfilePicture,
             updateProfile,
             updateUserTheme,
             loading

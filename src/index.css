@@ -9,13 +9,44 @@
   font-style: normal;
 }
 
-/* Variables base para el tema por defecto */
+/* Colores base manejados por theme-swapper */
 :root {
   --primary-color: #467BAA;
   --primary-color-rgb: 70, 123, 170;
   --secondary-color: #f5a623;
   --accent-color: #5aa0f2;
   --background-color: #e6f0fa;
+  /* Variables personalizadas para tareas y eventos */
+  --color-primary-light: #bfdbfe; /* blue-200, claro de #467BAA */
+  --color-error: #EF4444; /* red-500 */
+  --color-task-finalizada-bg: #DCFCE7; /* green-100 */
+  --color-task-finalizada: #15803D; /* green-700 */
+  --color-task-vencida-bg: #FEE2E2; /* red-100 */
+  --color-task-vencida: #B91C1C; /* red-700 */
+  --color-task-hoy-bg: #FFEDD5; /* orange-100 */
+  --color-task-hoy: #C2410C; /* orange-700 */
+  --color-task-pronto-bg: #FEF9C3; /* yellow-100 */
+  --color-task-pronto: #A16207; /* yellow-700 */
+  --color-task-normal-bg: #DBEAFE; /* blue-100 */
+  --color-task-normal: #1E40AF; /* blue-800 */
+  --color-task-calificacion-bg: #DBEAFE; /* blue-100 */
+  --color-task-calificacion: #1E40AF; /* blue-800 */
+  --color-task-alta: #EF4444; /* red-500 */
+  --color-task-media: #F59E0B; /* orange-500 */
+  --color-task-baja: #3B82F6; /* blue-500 */
+  --color-event-pasado-bg: #F3F4F6; /* gray-100 */
+  --color-event-pasado: #1F2937; /* gray-800 */
+  --color-event-proximo-bg: #FEE2E2; /* red-100 */
+  --color-event-proximo: #B91C1C; /* red-700 */
+  --color-event-cercano-bg: #FFEDD5; /* orange-100 */
+  --color-event-cercano: #C2410C; /* orange-700 */
+  --color-event-futuro-bg: #DCFCE7; /* green-100 */
+  --color-event-futuro: #15803D; /* green-700 */
+  --color-activity-progress: #467BAA; /* primary para default */
+  --color-task-border: #E11D48; /* rose-600 */
+  --color-event-border: #8B5CF6; /* violet-500 */
+  --color-task-text: #E11D48; /* rose-600 */
+  --color-event-text: #8B5CF6; /* violet-500 */
 }
 
 /* Tema oscuro */
@@ -25,36 +56,114 @@
   --secondary-color: #f39c12;
   --accent-color: #3498db;
   --background-color: #1a1a1a;
+  --color-primary-light: #4b5e71; /* azul grisáceo oscuro, claro de #2c3e50 */
+  --color-error: #F87171; /* red-400 */
+  --color-task-finalizada-bg: #064E3B; /* green-900 */
+  --color-task-finalizada: #34D399; /* green-400 */
+  --color-task-vencida-bg: #7F1D1D; /* red-900 */
+  --color-task-vencida: #FCA5A5; /* red-300 */
+  --color-task-hoy-bg: #7C2D12; /* orange-900 */
+  --color-task-hoy: #FDBA74; /* orange-300 */
+  --color-task-pronto-bg: #713F12; /* yellow-900 */
+  --color-task-pronto: #FBBF24; /* yellow-400 */
+  --color-task-normal-bg: #1E3A8A; /* blue-900 */
+  --color-task-normal: #93C5FD; /* blue-300 */
+  --color-task-calificacion-bg: #1E3A8A; /* blue-900 */
+  --color-task-calificacion: #93C5FD; /* blue-300 */
+  --color-task-alta: #F87171; /* red-400 */
+  --color-task-media: #FB923C; /* orange-400 */
+  --color-task-baja: #60A5FA; /* blue-400 */
+  --color-event-pasado-bg: #374151; /* gray-700 */
+  --color-event-pasado: #D1D5DB; /* gray-300 */
+  --color-event-proximo-bg: #7F1D1D; /* red-900 */
+  --color-event-proximo: #FCA5A5; /* red-300 */
+  --color-event-cercano-bg: #7C2D12; /* orange-900 */
+  --color-event-cercano: #FDBA74; /* orange-300 */
+  --color-event-futuro-bg: #064E3B; /* green-900 */
+  --color-event-futuro: #34D399; /* green-400 */
+  --color-activity-progress: #2c3e50; /* primary para dark */
+  --color-task-border: #FCA5A5; /* red-300 */
+  --color-event-border: #A78BFA; /* violet-400 */
+  --color-task-text: #FCA5A5; /* red-300 */
+  --color-event-text: #A78BFA; /* violet-400 */
 }
 
 /* Tema verde */
 .theme-green {
   --primary-color: #27ae60;
   --primary-color-rgb: 39, 174, 96;
-  --secondary-color: #ffcc00;
+  --secondary-color: #f1c40f;
   --accent-color: #2ecc71;
   --background-color: #e8f5e9;
+  --color-primary-light: #86efac; /* green-300, claro de #27ae60 */
+  --color-error: #EF4444; /* red-500 */
+  --color-task-finalizada-bg: #DCFCE7; /* green-100 */
+  --color-task-finalizada: #15803D; /* green-700 */
+  --color-task-vencida-bg: #FEE2E2; /* red-100 */
+  --color-task-vencida: #B91C1C; /* red-700 */
+  --color-task-hoy-bg: #FFEDD5; /* orange-100 */
+  --color-task-hoy: #C2410C; /* orange-700 */
+  --color-task-pronto-bg: #FEF9C3; /* yellow-100 */
+  --color-task-pronto: #A16207; /* yellow-700 */
+  --color-task-normal-bg: #DBEAFE; /* blue-100 */
+  --color-task-normal: #1E40AF; /* blue-800 */
+  --color-task-calificacion-bg: #DBEAFE; /* blue-100 */
+  --color-task-calificacion: #1E40AF; /* blue-800 */
+  --color-task-alta: #EF4444; /* red-500 */
+  --color-task-media: #F59E0B; /* orange-500 */
+  --color-task-baja: #3B82F6; /* blue-500 */
+  --color-event-pasado-bg: #F3F4F6; /* gray-100 */
+  --color-event-pasado: #1F2937; /* gray-800 */
+  --color-event-proximo-bg: #FEE2E2; /* red-100 */
+  --color-event-proximo: #B91C1C; /* red-700 */
+  --color-event-cercano-bg: #FFEDD5; /* orange-100 */
+  --color-event-cercano: #C2410C; /* orange-700 */
+  --color-event-futuro-bg: #DCFCE7; /* green-100 */
+  --color-event-futuro: #15803D; /* green-700 */
+  --color-activity-progress: #27ae60; /* primary para green */
+  --color-task-border: #E11D48; /* rose-600 */
+  --color-event-border: #8B5CF6; /* violet-500 */
+  --color-task-text: #E11D48; /* rose-600 */
+  --color-event-text: #8B5CF6; /* violet-500 */
 }
 
 /* Tema púrpura */
 .theme-purple {
   --primary-color: #8e44ad;
   --primary-color-rgb: 142, 68, 173;
-  --secondary-color: #ffffff;
+  --secondary-color: #e74c3c;
   --accent-color: #9b59b6;
   --background-color: #f3e5f5;
-}
-
-body {
-  margin: 0;
-  font-family: ocr-a-extended, 'Courier New', Courier, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  --color-primary-light: #d8b4fe; /* purple-200, claro de #8e44ad */
+  --color-error: #EF4444; /* red-500 */
+  --color-task-finalizada-bg: #DCFCE7; /* green-100 */
+  --color-task-finalizada: #15803D; /* green-700 */
+  --color-task-vencida-bg: #FEE2E2; /* red-100 */
+  --color-task-vencida: #B91C1C; /* red-700 */
+  --color-task-hoy-bg: #FFEDD5; /* orange-100 */
+  --color-task-hoy: #C2410C; /* orange-700 */
+  --color-task-pronto-bg: #FEF9C3; /* yellow-100 */
+  --color-task-pronto: #A16207; /* yellow-700 */
+  --color-task-normal-bg: #DBEAFE; /* blue-100 */
+  --color-task-normal: #1E40AF; /* blue-800 */
+  --color-task-calificacion-bg: #DBEAFE; /* blue-100 */
+  --color-task-calificacion: #1E40AF; /* blue-800 */
+  --color-task-alta: #EF4444; /* red-500 */
+  --color-task-media: #F59E0B; /* orange-500 */
+  --color-task-baja: #3B82F6; /* blue-500 */
+  --color-event-pasado-bg: #F3F4F6; /* gray-100 */
+  --color-event-pasado: #1F2937; /* gray-800 */
+  --color-event-proximo-bg: #FEE2E2; /* red-100 */
+  --color-event-proximo: #B91C1C; /* red-700 */
+  --color-event-cercano-bg: #FFEDD5; /* orange-100 */
+  --color-event-cercano: #C2410C; /* orange-700 */
+  --color-event-futuro-bg: #DCFCE7; /* green-100 */
+  --color-event-futuro: #15803D; /* green-700 */
+  --color-activity-progress: #8e44ad; /* primary para purple */
+  --color-task-border: #E11D48; /* rose-600 */
+  --color-event-border: #8B5CF6; /* violet-500 */
+  --color-task-text: #E11D48; /* rose-600 */
+  --color-event-text: #8B5CF6; /* violet-500 */
 }
 
 /* Clases utilitarias para componentes */
@@ -70,12 +179,12 @@ code {
   border-color: var(--primary-color);
 }
 
-.hover\:bg-accent:hover {
+.bg-accent {
   background-color: var(--accent-color);
 }
 
-.bg-accent {
-  background-color: var(--accent-color);
+.text-accent {
+  color: var(--accent-color);
 }
 
 .bg-secondary {
@@ -90,39 +199,146 @@ code {
   background-color: var(--background-color);
 }
 
+.bg-primary-light {
+  background-color: var(--color-primary-light);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+.bg-error {
+  background-color: var(--color-error);
+}
+
+.bg-task-finalizada {
+  background-color: var(--color-task-finalizada-bg);
+}
+
+.text-task-finalizada {
+  color: var(--color-task-finalizada);
+}
+
+.bg-task-vencida {
+  background-color: var(--color-task-vencida-bg);
+}
+
+.text-task-vencida {
+  color: var(--color-task-vencida);
+}
+
+.bg-task-hoy {
+  background-color: var(--color-task-hoy-bg);
+}
+
+.text-task-hoy {
+  color: var(--color-task-hoy);
+}
+
+.bg-task-pronto {
+  background-color: var(--color-task-pronto-bg);
+}
+
+.text-task-pronto {
+  color: var(--color-task-pronto);
+}
+
+.bg-task-normal {
+  background-color: var(--color-task-normal-bg);
+}
+
+.text-task-normal {
+  color: var(--color-task-normal);
+}
+
+.bg-task-calificacion {
+  background-color: var(--color-task-calificacion-bg);
+}
+
+.text-task-calificacion {
+  color: var(--color-task-calificacion);
+}
+
+.text-task-alta {
+  color: var(--color-task-alta);
+}
+
+.text-task-media {
+  color: var(--color-task-media);
+}
+
+.text-task-baja {
+  color: var(--color-task-baja);
+}
+
+.bg-event-pasado {
+  background-color: var(--color-event-pasado-bg);
+}
+
+.text-event-pasado {
+  color: var(--color-event-pasado);
+}
+
+.bg-event-proximo {
+  background-color: var(--color-event-proximo-bg);
+}
+
+.text-event-proximo {
+  color: var(--color-event-proximo);
+}
+
+.bg-event-cercano {
+  background-color: var(--color-event-cercano-bg);
+}
+
+.text-event-cercano {
+  color: var(--color-event-cercano);
+}
+
+.bg-event-futuro {
+  background-color: var(--color-event-futuro-bg);
+}
+
+.text-event-futuro {
+  color: var(--color-event-futuro);
+}
+
+.bg-activity-progress {
+  background-color: var(--color-activity-progress);
+}
+
+.border-task {
+  border-color: var(--color-task-border);
+}
+
+.border-event {
+  border-color: var(--color-event-border);
+}
+
+.text-task {
+  color: var(--color-task-text);
+}
+
+.text-event {
+  color: var(--color-event-text);
+}
+
+/* Estilos base */
+body {
+  margin: 0;
+  font-family: ocr-a-extended, 'Courier New', Courier, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
 /* Transición suave al cambiar de tema */
 .theme-transition,
 body,
 button,
 a {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Aislar los estilos de FullCalendar */
-.fc {
-  isolation: isolate; /* Evita que los estilos de Tailwind interfieran */
-  width: 100% !important; /* Asegura que el calendario ocupe el ancho completo del contenedor */
-  height: 100% !important; /* Asegura que el calendario ocupe la altura completa del contenedor */
-}
-
-/* Aseguramos que los botones de la toolbar sean interactivos */
-.fc .fc-button {
-  cursor: pointer !important;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.fc .fc-button:hover {
-  background-color: var(--accent-color);
-}
-
-/* Ajustamos el contenedor de la toolbar para evitar desbordamiento */
-.fc .fc-toolbar {
-  flex-wrap: wrap; /* Permite que los botones se ajusten si no hay suficiente espacio */
-  margin-bottom: 10px;
-}
-
-/* Ajustamos el contenedor de eventos para evitar desbordamiento */
-.fc .fc-scroller {
-  overflow: auto !important; /* Asegura que el contenido del calendario sea desplazable si es necesario */
 }

@@ -1,16 +1,36 @@
-// src/pages/GroupDetailsPage.js - Versión responsive
+// src/pages/GroupDetailsPage.js - Versión modernizada
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
-import CalendarComponent from '../components/CalendarComponent';
+import ModernCalendar from '../components/ModernCalendar'; // Cambiado a ModernCalendar
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SessionModal from '../components/modals/SessionModal';
 import Modal from '../components/modals/Modal';
-import { FaComments, FaTimes, FaShareAlt, FaUsers, FaTasks, FaCalendar, FaBook, FaCog, FaPlus } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    FaComments, 
+    FaTimes, 
+    FaShareAlt, 
+    FaUsers, 
+    FaTasks, 
+    FaCalendarAlt, 
+    FaBook, 
+    FaCog, 
+    FaPlus,
+    FaUserCircle,
+    FaFileUpload,
+    FaEllipsisV,
+    FaCrown,
+    FaDownload,
+    FaVideo,
+    FaUserMinus,
+    FaEye,
+    FaLink
+} from 'react-icons/fa';
 import { formatDateForDisplay } from '../utils/dateUtils';
 
 // API imports
@@ -50,6 +70,10 @@ const GroupDetailsPage = () => {
     const [shareLink, setShareLink] = useState('');
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [memberTooltip, setMemberTooltip] = useState(null);
+
+    // Notificación toast
+    const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
     // Responsive handler
     useEffect(() => {
@@ -84,11 +108,23 @@ const GroupDetailsPage = () => {
                 setEvents(eventsData || []);
                 setSubjects(subjectsData || []);
                 
-                // Initialize notes structure
-                setNotes([]);
+                // Initialize notes structure with default folders
+                setNotes({
+                    'Apuntes de clase': [],
+                    'Ejercicios resueltos': [],
+                    'Material complementario': []
+                });
                 
-                // Initialize study sessions
-                setStudySessions([]);
+                // Initialize study sessions with sample data
+                setStudySessions([
+                    {
+                        id: 1,
+                        title: 'Sesión de repaso',
+                        start: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0], // En 3 días
+                        zoomLink: 'https://zoom.us/j/123456789',
+                        allDay: true
+                    }
+                ]);
                 
                 setError(null);
             } catch (err) {
@@ -107,37 +143,42 @@ const GroupDetailsPage = () => {
     // Check if current user is admin
     const isAdmin = members.find((m) => m.userId === parseInt(userId) && m.roleId === 1) !== undefined;
 
-    const handleDateClick = (info) => {
-        setSelectedDate(info.dateStr);
-        setIsAddModalOpen(true);
+    // Funciones de Toast
+    const showToast = (message, type = 'success') => {
+        setToast({ visible: true, message, type });
+        setTimeout(() => {
+            setToast({ ...toast, visible: false });
+        }, 3000);
     };
 
-    const handleEventClick = (info) => {
-        const eventType = info.event.extendedProps.type;
-        
-        const eventData = {
-            id: parseInt(info.event.id),
-            title: info.event.title,
-            start: info.event.start,
-            end: info.event.end || null,
-            allDay: info.event.allDay,
-            type: eventType,
-            notification: info.event.extendedProps.notification || '',
-        };
-
-        if (eventType === 'task') {
-            eventData.dueDate = info.event.startStr;
-            eventData.importance = info.event.extendedProps.importance || 'Baja';
-            eventData.status = info.event.extendedProps.status || 'Pendiente';
-            eventData.subjectId = info.event.extendedProps.subjectId || null;
-            eventData.subject = info.event.extendedProps.subject || '';
-        } else if (eventType === 'event') {
-            eventData.startDateTime = info.event.startStr;
-            eventData.endDateTime = info.event.end ? info.event.endStr : '';
+    // Manejadores de eventos para el calendario
+    const [modernCalendarEvents, setModernCalendarEvents] = useState([]);
+    const [selectedCalendarDay, setSelectedCalendarDay] = useState(new Date());
+    const [dayEvents, setDayEvents] = useState([]);
+    // Filtrar eventos del día seleccionado
+    useEffect(() => {
+        if (modernCalendarEvents.length > 0) {
+            const filteredEvents = modernCalendarEvents.filter(event => {
+                const eventDate = event.dueDate || event.startDateTime;
+                if (!eventDate) return false;
+                
+                const eventDateObj = new Date(eventDate);
+                return eventDateObj.toDateString() === selectedCalendarDay.toDateString();
+            });
+            
+            setDayEvents(filteredEvents);
+        } else {
+            setDayEvents([]);
         }
-
-        setSelectedEvent(eventData);
-        setIsEventDetailsOpen(true);
+    }, [selectedCalendarDay, modernCalendarEvents]);
+    
+    const handleDaySelect = (date) => {
+        setSelectedCalendarDay(date);
+    };
+    
+    const handleAddForDate = (date) => {
+        setSelectedDate(date.toISOString().split('T')[0]);
+        setIsAddModalOpen(true);
     };
 
     const handleKickMember = async (memberId) => {
@@ -148,6 +189,7 @@ const GroupDetailsPage = () => {
                 // API call to remove member
                 await leaveGroup(groupId, memberId);
                 setMembers(members.filter((m) => m.userId !== memberId));
+                showToast('Miembro expulsado correctamente', 'success');
             } catch (error) {
                 console.error('Error kicking member:', error);
                 setError('Error al expulsar al miembro');
@@ -175,6 +217,7 @@ const GroupDetailsPage = () => {
             setIsTaskModalOpen(false);
             setIsAddModalOpen(false);
             setSelectedDate(null);
+            showToast('Tarea añadida correctamente', 'success');
         } catch (error) {
             console.error('Error adding task:', error);
             setError('Error al añadir la tarea');
@@ -187,6 +230,7 @@ const GroupDetailsPage = () => {
             setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTaskResult : task)));
             setIsTaskModalOpen(false);
             setEditingTask(null);
+            showToast('Tarea actualizada correctamente', 'success');
         } catch (error) {
             console.error('Error updating task:', error);
             setError('Error al actualizar la tarea');
@@ -208,6 +252,7 @@ const GroupDetailsPage = () => {
             setIsEventModalOpen(false);
             setIsAddModalOpen(false);
             setSelectedDate(null);
+            showToast('Evento añadido correctamente', 'success');
         } catch (error) {
             console.error('Error adding event:', error);
             setError('Error al añadir el evento');
@@ -220,6 +265,7 @@ const GroupDetailsPage = () => {
             setEvents(events.map((event) => (event.id === updatedEvent.id ? updatedEventResult : event)));
             setIsEventModalOpen(false);
             setEditingEvent(null);
+            showToast('Evento actualizado correctamente', 'success');
         } catch (error) {
             console.error('Error updating event:', error);
             setError('Error al actualizar el evento');
@@ -235,6 +281,7 @@ const GroupDetailsPage = () => {
         };
         setStudySessions([...studySessions, sessionToAdd]);
         setIsSessionModalOpen(false);
+        showToast('Sesión de estudio programada correctamente', 'success');
     };
 
     const handleAddFolder = () => {
@@ -244,6 +291,7 @@ const GroupDetailsPage = () => {
         }
         setNotes({ ...notes, [newFolderName]: [] });
         setNewFolderName('');
+        showToast('Carpeta creada correctamente', 'success');
     };
 
     const handleFileUpload = (folder, event) => {
@@ -251,64 +299,77 @@ const GroupDetailsPage = () => {
         if (file && (file.type === 'application/pdf' || file.type.includes('word'))) {
             setNotes({
                 ...notes,
-                [folder]: [...notes[folder], { id: Date.now(), name: file.name, file }]
+                [folder]: [...notes[folder], { id: Date.now(), name: file.name, file, uploadDate: new Date().toISOString() }]
             });
+            showToast('Archivo subido correctamente', 'success');
         } else {
             alert('Por favor, sube un archivo PDF o Word válido.');
         }
     };
 
-    // Events for calendar
-    const calendarEvents = [
-        ...tasks.map((task) => ({
-            id: task.id.toString(),
-            title: task.title,
-            start: task.dueDate,
-            allDay: true,
-            color: 'var(--secondary-color)',
-            extendedProps: {
+    // Transformar eventos para el ModernCalendar
+    useEffect(() => {
+        const updatedEvents = [
+            ...tasks.map((task) => ({
+                id: task.id.toString(),
+                title: task.title,
+                dueDate: task.dueDate,
                 type: 'task',
                 importance: task.importance,
                 status: task.status,
-                subjectId: task.subjectId,
-                subject: task.subject,
-                notification: task.notificationDate,
-                groupId: task.groupId, // Identificamos que es una tarea de grupo
-            },
-        })),
-        ...events.map((event) => ({
-            id: event.id.toString(),
-            title: event.title,
-            start: event.startDateTime,
-            end: event.endDateTime || null,
-            allDay: false,
-            color: 'var(--primary-color)',
-            extendedProps: {
-                type: 'event',
-                notification: event.notification,
-                groupId: event.groupId, // Identificamos que es un evento de grupo
-            },
-        })),
-        ...studySessions.map((session) => ({
-            id: session.id.toString(),
-            title: session.title,
-            start: session.start,
-            allDay: true,
-            color: 'var(--accent-color)',
-            extendedProps: {
+                subject: task.subject
+            })),
+            ...events.map((event) => ({
+                id: event.id.toString(),
+                title: event.title,
+                startDateTime: event.startDateTime,
+                endDateTime: event.endDateTime,
+                type: 'event'
+            })),
+            ...studySessions.map((session) => ({
+                id: session.id.toString(),
+                title: session.title,
+                dueDate: session.start,
                 type: 'session',
-                zoomLink: session.zoomLink,
-                groupId: parseInt(groupId), // Todas las sesiones de estudio son del grupo
-            },
-        })),
-    ];
+                zoomLink: session.zoomLink
+            })),
+        ];
+        setModernCalendarEvents(updatedEvents);
+    }, [tasks, events, studySessions]);
+
+    // Obtener un color para el avatar del miembro basado en su nombre
+    const getMemberColor = (memberName) => {
+        const colors = [
+            'bg-violet-500', 'bg-blue-500', 'bg-emerald-500', 
+            'bg-rose-500', 'bg-amber-500', 'bg-indigo-500'
+        ];
+        
+        if (!memberName) return colors[0];
+        
+        // Calculate a hash value from the member name
+        const hash = memberName.split('').reduce((acc, char) => {
+            return acc + char.charCodeAt(0);
+        }, 0);
+        
+        return colors[hash % colors.length];
+    };
+
+    // Navegación con animación entre tabs
+    const tabVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -10 }
+    };
 
     if (loading) {
         return (
-            <div className="main-container">
+            <div className="flex flex-col min-h-screen md:flex-row">
                 <Sidebar />
-                <div className="content-container flex justify-center items-center">
-                    <p className="text-lg">Cargando datos del grupo...</p>
+                <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex justify-center items-center">
+                    <div className="flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500 mb-4"></div>
+                        <p className="text-lg text-gray-600">Cargando datos del grupo...</p>
+                    </div>
                 </div>
             </div>
         );
@@ -316,324 +377,675 @@ const GroupDetailsPage = () => {
 
     if (error && !group) {
         return (
-            <div className="main-container">
+            <div className="flex flex-col min-h-screen md:flex-row">
                 <Sidebar />
-                <div className="content-container flex flex-col justify-center items-center">
-                    <p className="text-lg text-red-500 mb-4">{error}</p>
-                    <button 
-                        onClick={() => navigate('/groups')}
-                        className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent"
-                    >
-                        Volver a Grupos
-                    </button>
+                <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex flex-col justify-center items-center">
+                    <div className="bg-red-100 text-red-700 p-6 rounded-lg mb-6 max-w-md text-center">
+                        <p className="text-lg mb-4">{error}</p>
+                        <p className="text-sm mb-6">No se pudo cargar la información del grupo. Por favor, intenta de nuevo más tarde.</p>
+                        <button 
+                            onClick={() => navigate('/groups')}
+                            className="bg-violet-500 text-white px-6 py-2 rounded-full hover:bg-violet-600 transition-colors"
+                        >
+                            Volver a Grupos
+                        </button>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="main-container">
+        <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="content-container background-logo-container"
-                style={{ backgroundImage: `url(${Logo})` }}
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
+                style={{
+                    backgroundImage: `url(${Logo})`,
+                    backgroundSize: '50%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    opacity: 1,
+                    position: 'relative',
+                }}
             >
+                {/* Toast notification */}
+                <AnimatePresence>
+                    {toast.visible && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+                                toast.type === 'success' ? 'bg-green-100 border-l-4 border-green-500 text-green-700' :
+                                toast.type === 'error' ? 'bg-red-100 border-l-4 border-red-500 text-red-700' :
+                                'bg-blue-100 border-l-4 border-blue-500 text-blue-700'
+                            }`}
+                        >
+                            {toast.message}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4 animate-fade-in">
                             {error}
                         </div>
                     )}
                     
-                    <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
-                        <h1 className="text-xl md:text-3xl text-primary">{group?.name || 'Grupo'}</h1>
-                        <div className="group-action-buttons">
-                            <button
-                                onClick={handleShareLink}
-                                className="bg-primary text-white px-3 md:px-4 py-1 md:py-2 rounded-full hover:bg-accent flex items-center text-sm md:text-base"
-                            >
-                                <FaShareAlt className="mr-1 md:mr-2" /> {isMobile ? '' : 'Compartir'}
-                            </button>
-                            <Link 
-                                to="/groups" 
-                                className="bg-primary text-white px-3 md:px-4 py-1 md:py-2 rounded-full hover:bg-accent text-sm md:text-base"
-                            >
-                                Volver
-                            </Link>
+                    <div className="bg-white p-6 rounded-xl shadow-md mb-6 opacity-95">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <h1 className="text-2xl md:text-3xl text-violet-700 font-bold">{group?.name || 'Grupo'}</h1>
+                                <p className="text-gray-600 mt-1">
+                                    <span className="flex items-center">
+                                        <FaUsers className="mr-2 text-violet-500" /> 
+                                        {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
+                                    </span>
+                                </p>
+                            </div>
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={handleShareLink}
+                                    className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors flex items-center"
+                                >
+                                    <FaShareAlt className="mr-2" /> Compartir
+                                </button>
+                                <Link 
+                                    to="/groups" 
+                                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    Volver
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="tabs-container mb-4">
-                        {['members', 'tasks', 'calendar', 'notes', 'sessions', ...(isAdmin ? ['settings'] : [])].map((tab) => (
+                    <div className="mb-6">
+                        <div className="flex border-b-2 border-gray-200 overflow-x-auto hide-scrollbar">
                             <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`tab-button ${
-                                    activeTab === tab 
-                                        ? 'bg-primary text-white' 
-                                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                onClick={() => setActiveTab('members')}
+                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${
+                                    activeTab === 'members' 
+                                    ? 'text-violet-600 border-b-2 border-violet-600 -mb-0.5' 
+                                    : 'text-gray-500 hover:text-violet-500'
                                 }`}
                             >
-                                {tab === 'members' ? (
-                                    <span className="flex items-center">
-                                        <FaUsers className={`${isMobile ? '' : 'mr-1'}`} />
-                                        {isMobile ? '' : 'Miembros'}
-                                    </span>
-                                ) : tab === 'tasks' ? (
-                                    <span className="flex items-center">
-                                        <FaTasks className={`${isMobile ? '' : 'mr-1'}`} />
-                                        {isMobile ? '' : 'Tareas'}
-                                    </span>
-                                ) : tab === 'calendar' ? (
-                                    <span className="flex items-center">
-                                        <FaCalendar className={`${isMobile ? '' : 'mr-1'}`} />
-                                        {isMobile ? '' : 'Calendario'}
-                                    </span>
-                                ) : tab === 'notes' ? (
-                                    <span className="flex items-center">
-                                        <FaBook className={`${isMobile ? '' : 'mr-1'}`} />
-                                        {isMobile ? '' : 'Apuntes'}
-                                    </span>
-                                ) : tab === 'sessions' ? (
-                                    <span className="flex items-center">
-                                        <FaComments className={`${isMobile ? '' : 'mr-1'}`} />
-                                        {isMobile ? '' : 'Sesiones'}
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center">
-                                        <FaCog className={`${isMobile ? '' : 'mr-1'}`} />
-                                        {isMobile ? '' : 'Ajustes'}
-                                    </span>
-                                )}
+                                <FaUsers className="mr-1.5" /> {!isMobile && 'Miembros'}
                             </button>
-                        ))}
+                            <button
+                                onClick={() => setActiveTab('tasks')}
+                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${
+                                    activeTab === 'tasks' 
+                                    ? 'text-violet-600 border-b-2 border-violet-600 -mb-0.5' 
+                                    : 'text-gray-500 hover:text-violet-500'
+                                }`}
+                            >
+                                <FaTasks className="mr-1.5" /> {!isMobile && 'Tareas'}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('calendar')}
+                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${
+                                    activeTab === 'calendar' 
+                                    ? 'text-violet-600 border-b-2 border-violet-600 -mb-0.5' 
+                                    : 'text-gray-500 hover:text-violet-500'
+                                }`}
+                            >
+                                <FaCalendarAlt className="mr-1.5" /> {!isMobile && 'Calendario'}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('notes')}
+                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${
+                                    activeTab === 'notes' 
+                                    ? 'text-violet-600 border-b-2 border-violet-600 -mb-0.5' 
+                                    : 'text-gray-500 hover:text-violet-500'
+                                }`}
+                            >
+                                <FaBook className="mr-1.5" /> {!isMobile && 'Apuntes'}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('sessions')}
+                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${
+                                    activeTab === 'sessions' 
+                                    ? 'text-violet-600 border-b-2 border-violet-600 -mb-0.5' 
+                                    : 'text-gray-500 hover:text-violet-500'
+                                }`}
+                            >
+                                <FaComments className="mr-1.5" /> {!isMobile && 'Sesiones'}
+                            </button>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => setActiveTab('settings')}
+                                    className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${
+                                        activeTab === 'settings' 
+                                        ? 'text-violet-600 border-b-2 border-violet-600 -mb-0.5' 
+                                        : 'text-gray-500 hover:text-violet-500'
+                                    }`}
+                                >
+                                    <FaCog className="mr-1.5" /> {!isMobile && 'Ajustes'}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="card h-[calc(100vh-180px)] md:h-[calc(100vh-200px)] overflow-y-auto">
-                        {activeTab === 'members' && (
-                            <div>
-                                <h2 className="text-lg md:text-xl font-semibold mb-3 text-primary">Miembros ({members.length})</h2>
-                                <div className="max-h-[65vh] overflow-y-auto">
+                    <div className="bg-white p-6 rounded-xl shadow-md opacity-95 min-h-[60vh]">
+                        <AnimatePresence mode="wait">
+                            {activeTab === 'members' && (
+                                <motion.div
+                                    key="members"
+                                    variants={tabVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold text-violet-700">Miembros ({members.length})</h2>
+                                    </div>
+                                    
                                     {members.length === 0 ? (
-                                        <p className="text-gray-600">No hay miembros en este grupo.</p>
+                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
+                                            <FaUsers className="mx-auto text-gray-400 text-4xl mb-4" />
+                                            <p className="text-gray-600 mb-2">No hay miembros en este grupo.</p>
+                                        </div>
                                     ) : (
-                                        members.map((member) => (
-                                            <div 
-                                                key={member.userId} 
-                                                className="flex justify-between items-center text-sm text-gray-600 mb-2 p-2 hover:bg-gray-100 rounded"
-                                            >
-                                                <span>{member.username} {member.roleId === 1 ? '(Admin)' : ''}</span>
-                                                {isAdmin && member.userId !== parseInt(userId) && (
-                                                    <button
-                                                        onClick={() => handleKickMember(member.userId)}
-                                                        className="text-red-500 hover:text-red-700 p-1"
-                                                        aria-label="Expulsar miembro"
-                                                    >
-                                                        <FaTimes />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'tasks' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Tareas</h2>
-                                    <button
-                                        onClick={() => {
-                                            setEditingTask(null);
-                                            setIsTaskModalOpen(true);
-                                        }}
-                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
-                                    >
-                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Añadir Tarea'}
-                                    </button>
-                                </div>
-                                <div className="max-h-[65vh] overflow-y-auto mb-4">
-                                    {tasks.length === 0 ? (
-                                        <p className="text-gray-600">No hay tareas.</p>
-                                    ) : (
-                                        tasks.map((task) => (
-                                            <TaskCard
-                                                key={task.id}
-                                                task={task}
-                                                onUpdate={(task) => {
-                                                    setEditingTask(task);
-                                                    setIsTaskModalOpen(true);
-                                                }}
-                                                onDelete={(taskId) => {
-                                                    if (window.confirm('¿Estás seguro de eliminar esta tarea?')) {
-                                                        deleteTask(taskId).then(() => {
-                                                            setTasks(tasks.filter(t => t.id !== taskId));
-                                                        }).catch(err => {
-                                                            console.error('Error deleting task:', err);
-                                                            setError('Error al eliminar la tarea');
-                                                        });
-                                                    }
-                                                }}
-                                                subjects={subjects.map((s) => s.title)}
-                                            />
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'calendar' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Calendario</h2>
-                                    <button
-                                        onClick={() => setIsAddModalOpen(true)}
-                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
-                                    >
-                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Añadir'}
-                                    </button>
-                                </div>
-                                <CalendarComponent
-                                    events={calendarEvents}
-                                    onDateClick={handleDateClick}
-                                    onEventClick={handleEventClick}
-                                    height={isMobile ? "50vh" : "60vh"}
-                                    showSubjectSchedules={false}
-                                />
-                            </div>
-                        )}
-
-                        {activeTab === 'notes' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Apuntes</h2>
-                                    <button
-                                        onClick={handleAddFolder}
-                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
-                                    >
-                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Nueva Carpeta'}
-                                    </button>
-                                </div>
-                                <div className="resources-container">
-                                    {Object.keys(notes).length === 0 ? (
-                                        <p className="text-gray-600">No hay carpetas de apuntes.</p>
-                                    ) : (
-                                        Object.keys(notes).map((folder) => (
-                                            <div key={folder} className="resource-folder">
-                                                <div className="resource-folder-header">
-                                                    <h3 className="text-base md:text-lg font-medium text-primary">{folder}</h3>
-                                                    <label className="bg-primary text-white px-2 py-1 rounded-full hover:bg-accent cursor-pointer text-xs flex items-center">
-                                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Subir'}
-                                                        <input
-                                                            type="file"
-                                                            accept=".pdf,.doc,.docx"
-                                                            onChange={(e) => handleFileUpload(folder, e)}
-                                                            className="hidden"
-                                                        />
-                                                    </label>
-                                                </div>
-                                                <div className="resource-files-container">
-                                                    {notes[folder].length === 0 ? (
-                                                        <p className="text-sm text-gray-600">No hay apuntes en esta carpeta.</p>
-                                                    ) : (
-                                                        notes[folder].map((note) => (
-                                                            <div key={note.id} className="flex justify-between items-center p-2 bg-gray-100 rounded-lg mb-1">
-                                                                <span className="text-sm truncate max-w-[200px] md:max-w-full">{note.name}</span>
-                                                                <button
-                                                                    onClick={() => alert(`Simulando apertura de ${note.name}`)}
-                                                                    className="text-primary hover:underline text-xs"
-                                                                >
-                                                                    Ver
-                                                                </button>
-                                                            </div>
-                                                        ))
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {members.map((member) => (
+                                                <div 
+                                                    key={member.userId} 
+                                                    className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-center relative"
+                                                >
+                                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xl ${getMemberColor(member.username)}`}>
+                                                        {member.username ? member.username.charAt(0).toUpperCase() : 'U'}
+                                                    </div>
+                                                    <div className="ml-3 flex-1">
+                                                        <div className="flex items-center">
+                                                            <span className="font-medium text-gray-800">{member.username}</span>
+                                                            {member.roleId === 1 && (
+                                                                <span className="ml-2 text-yellow-500" title="Administrador">
+                                                                    <FaCrown />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-sm text-gray-500">{member.roleId === 1 ? 'Administrador' : 'Miembro'}</span>
+                                                    </div>
+                                                    
+                                                    {isAdmin && member.userId !== parseInt(userId) && (
+                                                        <div className="relative ml-2">
+                                                            <button
+                                                                onClick={() => setMemberTooltip(memberTooltip === member.userId ? null : member.userId)}
+                                                                className="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200"
+                                                            >
+                                                                <FaEllipsisV size={16} />
+                                                            </button>
+                                                            
+                                                            {memberTooltip === member.userId && (
+                                                                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            handleKickMember(member.userId);
+                                                                            setMemberTooltip(null);
+                                                                        }}
+                                                                        className="flex items-center w-full px-4 py-3 text-sm text-left hover:bg-red-50 text-red-600"
+                                                                    >
+                                                                        <FaUserMinus className="mr-2" /> Expulsar del grupo
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
-                                            </div>
-                                        ))
+                                            ))}
+                                        </div>
                                     )}
-                                </div>
-                                <div className="mt-4 flex space-x-2">
-                                    <input
-                                        type="text"
-                                        value={newFolderName}
-                                        onChange={(e) => setNewFolderName(e.target.value)}
-                                        placeholder="Nombre de la carpeta"
-                                        className="flex-1 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                    <button
-                                        onClick={handleAddFolder}
-                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm"
-                                    >
-                                        Crear
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                                </motion.div>
+                            )}
 
-                        {activeTab === 'sessions' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h2 className="text-lg md:text-xl font-semibold text-primary">Sesiones de Estudio</h2>
-                                    <button
-                                        onClick={() => setIsSessionModalOpen(true)}
-                                        className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent text-sm flex items-center"
-                                    >
-                                        <FaPlus className="mr-1" /> {isMobile ? '' : 'Añadir Sesión'}
-                                    </button>
-                                </div>
-                                <div className="max-h-[65vh] overflow-y-auto mb-4">
-                                    {studySessions.length === 0 ? (
-                                        <p className="text-gray-600">No hay sesiones.</p>
-                                    ) : (
-                                        studySessions.map((session) => (
-                                            <div key={session.id} className="text-sm text-gray-600 mb-2 p-3 bg-gray-100 rounded-lg">
-                                                <p className="font-medium text-primary">{session.title}</p>
-                                                <p className="text-xs md:text-sm">Fecha: {formatDateForDisplay(session.start)}</p>
-                                                <a 
-                                                    href={session.zoomLink} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
-                                                    className="text-primary hover:underline text-xs md:text-sm inline-block mt-1"
-                                                >
-                                                    Unirse a Zoom
-                                                </a>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'settings' && isAdmin && (
-                            <div>
-                                <h2 className="text-lg md:text-xl font-semibold mb-3 text-primary">Ajustes</h2>
-                                <p className="text-gray-600 mb-4">Configuración del grupo como administrador.</p>
-                                <div className="space-y-4">
-                                    {/* Aquí irían más ajustes del grupo */}
-                                    <div>
-                                        <h3 className="text-lg font-medium mb-2 text-primary">Peligro</h3>
+                            {activeTab === 'tasks' && (
+                                <motion.div
+                                    key="tasks"
+                                    variants={tabVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold text-violet-700">Tareas</h2>
                                         <button
                                             onClick={() => {
-                                                if (window.confirm('¿Estás seguro? Esta acción no se puede deshacer.')) {
-                                                    // Handle delete group
-                                                    alert('Esta función no está implementada aún.');
-                                                }
+                                                setEditingTask(null);
+                                                setIsTaskModalOpen(true);
                                             }}
-                                            className="bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 text-sm"
+                                            className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors flex items-center"
                                         >
-                                            Eliminar Grupo
+                                            <FaPlus className="mr-2" /> Añadir Tarea
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                        )}
+
+                                    {tasks.length === 0 ? (
+                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
+                                            <FaTasks className="mx-auto text-gray-400 text-4xl mb-4" />
+                                            <p className="text-gray-600 mb-2">No hay tareas asignadas a este grupo.</p>
+                                            <button
+                                                onClick={() => {
+                                                    setEditingTask(null);
+                                                    setIsTaskModalOpen(true);
+                                                }}
+                                                className="mt-2 text-violet-500 hover:text-violet-700"
+                                            >
+                                                Crear la primera tarea
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {tasks.map((task) => (
+                                                <TaskCard
+                                                    key={task.id}
+                                                    task={task}
+                                                    onUpdate={(task) => {
+                                                        setEditingTask(task);
+                                                        setIsTaskModalOpen(true);
+                                                    }}
+                                                    onDelete={(taskId) => {
+                                                        if (window.confirm('¿Estás seguro de eliminar esta tarea?')) {
+                                                            deleteTask(taskId).then(() => {
+                                                                setTasks(tasks.filter(t => t.id !== taskId));
+                                                                showToast('Tarea eliminada correctamente', 'success');
+                                                            }).catch(err => {
+                                                                console.error('Error deleting task:', err);
+                                                                setError('Error al eliminar la tarea');
+                                                            });
+                                                        }
+                                                    }}
+                                                    subjects={subjects.map((s) => s.title)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'calendar' && (
+                                <motion.div
+                                    key="calendar"
+                                    variants={tabVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold text-violet-700">Calendario</h2>
+                                        <button
+                                            onClick={() => setIsAddModalOpen(true)}
+                                            className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors flex items-center"
+                                        >
+                                            <FaPlus className="mr-2" /> Añadir
+                                        </button>
+                                    </div>
+                                    
+                                    {modernCalendarEvents.length === 0 ? (
+                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
+                                            <FaCalendarAlt className="mx-auto text-gray-400 text-4xl mb-4" />
+                                            <p className="text-gray-600 mb-2">No hay eventos en el calendario.</p>
+                                            <button
+                                                onClick={() => setIsAddModalOpen(true)}
+                                                className="mt-2 text-violet-500 hover:text-violet-700"
+                                            >
+                                                Añadir el primer evento
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="h-[60vh] flex flex-col md:flex-row gap-4">
+                                            <div className="md:w-2/3">
+                                                <ModernCalendar 
+                                                    events={modernCalendarEvents} 
+                                                    onDaySelect={handleDaySelect} 
+                                                />
+                                            </div>
+                                            <div className="md:w-1/3 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <h3 className="font-medium text-violet-700">
+                                                        {selectedCalendarDay.toLocaleDateString('es-ES', {
+                                                            weekday: 'long',
+                                                            day: 'numeric',
+                                                            month: 'long'
+                                                        }).charAt(0).toUpperCase() + 
+                                                        selectedCalendarDay.toLocaleDateString('es-ES', {
+                                                            weekday: 'long',
+                                                            day: 'numeric',
+                                                            month: 'long'
+                                                        }).slice(1)}
+                                                    </h3>
+                                                    <button
+                                                        onClick={() => handleAddForDate(selectedCalendarDay)}
+                                                        className="text-sm text-violet-500 hover:text-violet-700"
+                                                    >
+                                                        <FaPlus />
+                                                    </button>
+                                                </div>
+                                                
+                                                {dayEvents.length === 0 ? (
+                                                    <div className="text-center py-4">
+                                                        <p className="text-gray-500 text-sm">No hay eventos programados</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
+                                                        {dayEvents.map(event => (
+                                                            <div key={event.id} 
+                                                                className={`p-3 rounded-lg ${
+                                                                    event.type === 'task' ? 'bg-amber-50 border-l-4 border-amber-400' :
+                                                                    event.type === 'session' ? 'bg-blue-50 border-l-4 border-blue-400' :
+                                                                    'bg-violet-50 border-l-4 border-violet-400'
+                                                                }`}
+                                                            >
+                                                                <div className="font-medium text-gray-800">{event.title}</div>
+                                                                <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                                    {event.type === 'task' && (
+                                                                        <>
+                                                                            <FaTasks className="mr-1" /> Tarea
+                                                                            {event.subject && <span className="ml-2">• {event.subject}</span>}
+                                                                        </>
+                                                                    )}
+                                                                    {event.type === 'event' && (
+                                                                        <>
+                                                                            <FaCalendarAlt className="mr-1" /> Evento
+                                                                        </>
+                                                                    )}
+                                                                    {event.type === 'session' && (
+                                                                        <>
+                                                                            <FaVideo className="mr-1" /> Sesión
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                                {event.type === 'session' && event.zoomLink && (
+                                                                    <a 
+                                                                        href={event.zoomLink}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-xs text-blue-500 hover:text-blue-700 mt-1 flex items-center"
+                                                                    >
+                                                                        <FaLink className="mr-1" /> Unirse
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'notes' && (
+                                <motion.div
+                                    key="notes"
+                                    variants={tabVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold text-violet-700">Apuntes</h2>
+                                        <button
+                                            onClick={() => {
+                                                const folderName = prompt('Introduce el nombre de la nueva carpeta:');
+                                                if (folderName && !notes[folderName]) {
+                                                    setNotes({ ...notes, [folderName]: [] });
+                                                    showToast('Carpeta creada correctamente', 'success');
+                                                } else if (notes[folderName]) {
+                                                    alert('Ya existe una carpeta con ese nombre.');
+                                                }
+                                            }}
+                                            className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors flex items-center"
+                                        >
+                                            <FaPlus className="mr-2" /> Nueva Carpeta
+                                        </button>
+                                    </div>
+                                    
+                                    {Object.keys(notes).length === 0 ? (
+                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
+                                            <FaBook className="mx-auto text-gray-400 text-4xl mb-4" />
+                                            <p className="text-gray-600 mb-2">No hay carpetas de apuntes.</p>
+                                            <button
+                                                onClick={() => {
+                                                    const folderName = prompt('Introduce el nombre de la nueva carpeta:');
+                                                    if (folderName) {
+                                                        setNotes({ ...notes, [folderName]: [] });
+                                                        showToast('Carpeta creada correctamente', 'success');
+                                                    }
+                                                }}
+                                                className="mt-2 text-violet-500 hover:text-violet-700"
+                                            >
+                                                Crear la primera carpeta
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {Object.keys(notes).map((folder) => (
+                                                <div key={folder} className="border border-gray-200 rounded-lg overflow-hidden">
+                                                    <div className="flex justify-between items-center bg-gray-50 p-4 border-b">
+                                                        <h3 className="font-medium text-violet-700 flex items-center">
+                                                            <FaBook className="mr-2 text-violet-500" />
+                                                            {folder}
+                                                        </h3>
+                                                        <label className="flex items-center bg-violet-500 text-white px-3 py-2 rounded-lg hover:bg-violet-600 cursor-pointer text-sm">
+                                                            <FaFileUpload className="mr-2" /> Subir Archivo
+                                                            <input
+                                                                type="file"
+                                                                accept=".pdf,.doc,.docx"
+                                                                onChange={(e) => handleFileUpload(folder, e)}
+                                                                className="hidden"
+                                                            />
+                                                        </label>
+                                                    </div>
+
+                                                    {notes[folder].length === 0 ? (
+                                                        <div className="p-6 text-center text-gray-500">
+                                                            No hay archivos en esta carpeta
+                                                        </div>
+                                                    ) : (
+                                                        <div className="divide-y divide-gray-100">
+                                                            {notes[folder].map((note, index) => (
+                                                                <div
+                                                                    key={note.id}
+                                                                    className="p-4 hover:bg-gray-50 flex items-center justify-between"
+                                                                >
+                                                                    <div className="flex-1">
+                                                                        <div className="font-medium text-gray-800">{note.name}</div>
+                                                                        <div className="text-xs text-gray-500">
+                                                                            Subido {note.uploadDate ? new Date(note.uploadDate).toLocaleDateString() : 'Fecha desconocida'}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex space-x-2">
+                                                                        <button
+                                                                            onClick={() => alert(`Ver ${note.name}`)}
+                                                                            className="p-2 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-50"
+                                                                            title="Ver"
+                                                                        >
+                                                                            <FaEye />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => alert(`Descargar ${note.name}`)}
+                                                                            className="p-2 text-green-500 hover:text-green-700 rounded-full hover:bg-green-50"
+                                                                            title="Descargar"
+                                                                        >
+                                                                            <FaDownload />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                if (window.confirm(`¿Estás seguro de eliminar "${note.name}"?`)) {
+                                                                                    const updatedNotes = { ...notes };
+                                                                                    updatedNotes[folder].splice(index, 1);
+                                                                                    setNotes(updatedNotes);
+                                                                                    showToast('Archivo eliminado correctamente', 'success');
+                                                                                }
+                                                                            }}
+                                                                            className="p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50"
+                                                                            title="Eliminar"
+                                                                        >
+                                                                            <FaTimes />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'sessions' && (
+                                <motion.div
+                                    key="sessions"
+                                    variants={tabVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold text-violet-700">Sesiones de Estudio</h2>
+                                        <button
+                                            onClick={() => setIsSessionModalOpen(true)}
+                                            className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors flex items-center"
+                                        >
+                                            <FaPlus className="mr-2" /> Programar Sesión
+                                        </button>
+                                    </div>
+                                    
+                                    {studySessions.length === 0 ? (
+                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
+                                            <FaVideo className="mx-auto text-gray-400 text-4xl mb-4" />
+                                            <p className="text-gray-600 mb-2">No hay sesiones de estudio programadas.</p>
+                                            <button
+                                                onClick={() => setIsSessionModalOpen(true)}
+                                                className="mt-2 text-violet-500 hover:text-violet-700"
+                                            >
+                                                Programar la primera sesión
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {studySessions.map((session) => (
+                                                <div key={session.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                                    <div className="font-medium text-violet-700 text-lg mb-1">{session.title}</div>
+                                                    <div className="text-gray-600 flex items-center mb-2">
+                                                        <FaCalendarAlt className="mr-2 text-gray-400" />
+                                                        {formatDateForDisplay(session.start)}
+                                                    </div>
+                                                    <a 
+                                                        href={session.zoomLink} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer" 
+                                                        className="flex items-center text-blue-500 hover:text-blue-700 mb-3"
+                                                    >
+                                                        <FaVideo className="mr-2" />
+                                                        Enlace de la sesión
+                                                    </a>
+                                                    <div className="flex justify-end">
+                                                        <button
+                                                            onClick={() => {
+                                                                if (window.confirm('¿Estás seguro de eliminar esta sesión?')) {
+                                                                    setStudySessions(studySessions.filter(s => s.id !== session.id));
+                                                                    showToast('Sesión eliminada correctamente', 'success');
+                                                                }
+                                                            }}
+                                                            className="text-red-500 hover:text-red-700 text-sm"
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'settings' && isAdmin && (
+                                <motion.div
+                                    key="settings"
+                                    variants={tabVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="exit"
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-xl font-semibold text-violet-700">Ajustes del Grupo</h2>
+                                    </div>
+                                    
+                                    <div className="space-y-6">
+                                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                                            <h3 className="text-lg font-medium text-gray-800 mb-4">Información General</h3>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                                                        Nombre del grupo
+                                                    </label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={group.name} 
+                                                        onChange={(e) => setGroup({...group, name: e.target.value})}
+                                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                                                        Descripción del grupo
+                                                    </label>
+                                                    <textarea 
+                                                        value={group.description || ''} 
+                                                        onChange={(e) => setGroup({...group, description: e.target.value})}
+                                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                                <div className="pt-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            // En un caso real esto actualizaría la información del grupo
+                                                            showToast('Información actualizada correctamente', 'success');
+                                                        }}
+                                                        className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors"
+                                                    >
+                                                        Guardar Cambios
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                                            <h3 className="text-lg font-medium text-gray-800 mb-4">Zona de Peligro</h3>
+                                            <p className="text-gray-600 mb-4">Estas acciones no se pueden deshacer. Ten cuidado.</p>
+                                            <div className="flex flex-col space-y-3">
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm('¿Estás seguro? Esta acción eliminará el grupo y todos sus datos.')) {
+                                                            // En un caso real esto eliminaría el grupo
+                                                            showToast('Operación no implementada', 'error');
+                                                        }
+                                                    }}
+                                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center"
+                                                >
+                                                    <FaTimes className="mr-2" /> Eliminar Grupo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
-                
-                {/* Espaciador para dispositivos móviles */}
-                <div className="footer-spacer"></div>
                 
                 {/* Modal para compartir enlace */}
                 <Modal
@@ -643,7 +1055,7 @@ const GroupDetailsPage = () => {
                     size="sm"
                 >
                     <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-gray-600">
                             Comparte este enlace para que otros usuarios puedan unirse al grupo:
                         </p>
                         <div className="flex">
@@ -656,9 +1068,10 @@ const GroupDetailsPage = () => {
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(shareLink);
-                                    alert('Enlace copiado al portapapeles');
+                                    showToast('Enlace copiado al portapapeles', 'success');
+                                    setIsShareModalOpen(false);
                                 }}
-                                className="bg-primary text-white px-3 py-2 rounded-r"
+                                className="bg-violet-500 text-white px-4 py-2 rounded-r hover:bg-violet-600"
                             >
                                 Copiar
                             </button>
@@ -668,40 +1081,42 @@ const GroupDetailsPage = () => {
 
                 {/* Modal de selección para calendario */}
                 {isAddModalOpen && (
-                    <div className="selection-modal">
-                        <div className="selection-modal-content">
-                            <h3 className="text-lg font-semibold mb-3">Añadir en {formatDateForDisplay(selectedDate)}</h3>
-                            <div className="space-y-2">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
+                            <h3 className="text-lg font-semibold mb-4 text-violet-700">
+                                Añadir en {formatDateForDisplay(selectedDate)}
+                            </h3>
+                            <div className="space-y-3">
                                 <button
                                     onClick={() => {
                                         setIsAddModalOpen(false);
                                         setIsTaskModalOpen(true);
                                     }}
-                                    className="w-full bg-orange-400 text-white px-3 py-2 rounded-lg hover:bg-orange-500"
+                                    className="w-full bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 flex items-center justify-center"
                                 >
-                                    Nueva Tarea
+                                    <FaTasks className="mr-2" /> Nueva Tarea
                                 </button>
                                 <button
                                     onClick={() => {
                                         setIsAddModalOpen(false);
                                         setIsEventModalOpen(true);
                                     }}
-                                    className="w-full bg-primary text-white px-3 py-2 rounded-lg hover:bg-accent"
+                                    className="w-full bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 flex items-center justify-center"
                                 >
-                                    Nuevo Evento
+                                    <FaCalendarAlt className="mr-2" /> Nuevo Evento
                                 </button>
                                 <button
                                     onClick={() => {
                                         setIsAddModalOpen(false);
                                         setIsSessionModalOpen(true);
                                     }}
-                                    className="w-full bg-accent text-white px-3 py-2 rounded-lg hover:bg-opacity-80"
+                                    className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center"
                                 >
-                                    Nueva Sesión
+                                    <FaVideo className="mr-2" /> Nueva Sesión
                                 </button>
                                 <button
                                     onClick={() => setIsAddModalOpen(false)}
-                                    className="w-full bg-gray-200 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-300"
+                                    className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
                                 >
                                     Cancelar
                                 </button>
@@ -751,30 +1166,79 @@ const GroupDetailsPage = () => {
                     size="md"
                 >
                     {selectedEvent && (
-                        <div className="space-y-2">
-                            <p><strong className="text-primary">Título:</strong> {selectedEvent.title}</p>
-                            <p><strong className="text-primary">Fecha de inicio:</strong> {formatDateForDisplay(selectedEvent.start)}</p>
-                            {selectedEvent.end && (
-                                <p><strong className="text-primary">Fecha de fin:</strong> {formatDateForDisplay(selectedEvent.end)}</p>
-                            )}
-                            <p><strong className="text-primary">Todo el día:</strong> {selectedEvent.allDay ? 'Sí' : 'No'}</p>
-                            {selectedEvent.type === 'task' && (
-                                <>
-                                    <p><strong className="text-primary">Estado:</strong> {selectedEvent.status}</p>
-                                    <p><strong className="text-primary">Importancia:</strong> {selectedEvent.importance}</p>
-                                    <p><strong className="text-primary">Asignatura:</strong> {selectedEvent.subject}</p>
-                                </>
-                            )}
-                            {selectedEvent.type === 'session' && selectedEvent.zoomLink && (
-                                <p>
-                                    <strong className="text-primary">Enlace Zoom:</strong> 
-                                    <a href={selectedEvent.zoomLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                                        {selectedEvent.zoomLink}
-                                    </a>
-                                </p>
-                            )}
+                        <div className="space-y-3">
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-violet-700 text-lg">{selectedEvent.title}</h3>
+                                
+                                <div className="mt-3 space-y-2">
+                                    <div className="flex items-start">
+                                        <div className="min-w-8 text-gray-400 mt-1">
+                                            <FaCalendarAlt />
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-800">Fecha de inicio:</p>
+                                            <p className="text-gray-600">{formatDateForDisplay(selectedEvent.start)}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {selectedEvent.end && (
+                                        <div className="flex items-start">
+                                            <div className="min-w-8 text-gray-400 mt-1">
+                                                <FaCalendarAlt />
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-800">Fecha de fin:</p>
+                                                <p className="text-gray-600">{formatDateForDisplay(selectedEvent.end)}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {selectedEvent.type === 'task' && (
+                                        <>
+                                            <div className="flex items-start">
+                                                <div className="min-w-8 text-gray-400 mt-1">
+                                                    <FaTasks />
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-800">Estado:</p>
+                                                    <p className="text-gray-600">{selectedEvent.status}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-start">
+                                                <div className="min-w-8 text-gray-400 mt-1">
+                                                    <FaBook />
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-800">Asignatura:</p>
+                                                    <p className="text-gray-600">{selectedEvent.subject || 'No especificada'}</p>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                    
+                                    {selectedEvent.type === 'session' && selectedEvent.zoomLink && (
+                                        <div className="flex items-start">
+                                            <div className="min-w-8 text-gray-400 mt-1">
+                                                <FaLink />
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-800">Enlace de la sesión:</p>
+                                                <a 
+                                                    href={selectedEvent.zoomLink} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    className="text-blue-500 hover:text-blue-700"
+                                                >
+                                                    {selectedEvent.zoomLink}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             
-                            <div className="flex justify-end space-x-2 mt-3">
+                            <div className="flex justify-end space-x-3 mt-4">
                                 {selectedEvent.type === 'task' && (
                                     <button
                                         onClick={() => {
@@ -790,7 +1254,7 @@ const GroupDetailsPage = () => {
                                             setIsTaskModalOpen(true);
                                             setIsEventDetailsOpen(false);
                                         }}
-                                        className="px-3 py-1 bg-primary text-white rounded-lg hover:bg-accent text-sm"
+                                        className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors"
                                     >
                                         Editar
                                     </button>
@@ -808,14 +1272,14 @@ const GroupDetailsPage = () => {
                                             setIsEventModalOpen(true);
                                             setIsEventDetailsOpen(false);
                                         }}
-                                        className="px-3 py-1 bg-primary text-white rounded-lg hover:bg-accent text-sm"
+                                        className="bg-violet-500 text-white px-4 py-2 rounded-lg hover:bg-violet-600 transition-colors"
                                     >
                                         Editar
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setIsEventDetailsOpen(false)}
-                                    className="px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm"
+                                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
                                 >
                                     Cerrar
                                 </button>
