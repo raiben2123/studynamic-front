@@ -1,4 +1,4 @@
-// src/components/dashboard/TaskCard.js - Enhanced for the new design
+// src/components/dashboard/TaskCard.js - Enhanced for the new design with Theme Support
 import React from 'react';
 import PropTypes from 'prop-types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
@@ -27,21 +27,21 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     
     // Apply different styling based on importance and days remaining
     const getTaskStatusColor = () => {
-        if (task.status === 'Finalizada') return 'bg-green-100 text-green-800';
-        if (daysRemaining < 0) return 'bg-red-100 text-red-800';
-        if (daysRemaining === 0) return 'bg-orange-100 text-orange-800';
-        if (daysRemaining <= 2) return 'bg-yellow-100 text-yellow-800';
-        return 'bg-blue-100 text-blue-800';
+        if (task.status === 'Finalizada') return 'bg-task-finalizada text-task-finalizada';
+        if (daysRemaining < 0) return 'bg-task-vencida text-task-vencida';
+        if (daysRemaining === 0) return 'bg-task-hoy text-task-hoy';
+        if (daysRemaining <= 2) return 'bg-task-pronto text-task-pronto';
+        return 'bg-task-normal text-task-normal';
     };
     
     const getImportanceIcon = () => {
         switch (task.importance) {
             case 'Alta':
-                return <FaExclamationCircle className="text-red-500" />;
+                return <FaExclamationCircle className="text-task-alta" />;
             case 'Media':
-                return <FaBookmark className="text-orange-500" />;
+                return <FaBookmark className="text-task-media" />;
             default:
-                return <FaBookmark className="text-blue-500" />;
+                return <FaBookmark className="text-task-baja" />;
         }
     };
     
@@ -56,22 +56,22 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
             <div className="flex items-start mb-2">
-                <div className="mr-2 text-violet-500">{getImportanceIcon()}</div>
+                <div className="mr-2 text-primary">{getImportanceIcon()}</div>
                 <div className="flex-1">
-                    <h3 className="font-semibold text-violet-700 truncate">{task.title}</h3>
+                    <h3 className="font-semibold text-primary truncate">{task.title}</h3>
                     <p className="text-sm text-gray-600">{task.subject}</p>
                 </div>
                 <div className="flex space-x-1 ml-2">
                     <button
                         onClick={() => onUpdate(task)}
-                        className="p-1.5 text-gray-400 hover:text-violet-500 rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-gray-400 hover:text-primary rounded-full hover:bg-gray-100 transition"
                         aria-label="Editar tarea"
                     >
                         <FaEdit size={16} />
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
                         aria-label="Eliminar tarea"
                     >
                         <FaTrash size={16} />
@@ -90,14 +90,14 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
             </div>
             
             {task.status === 'Finalizada' && (
-                <div className="mt-2 flex items-center text-green-600 text-xs">
+                <div className="mt-2 flex items-center text-task-finalizada text-xs">
                     <FaCheck className="mr-1" />
                     <span>Completada</span>
                 </div>
             )}
             
             {(task.markObtained || task.markMax) && (
-                <div className="mt-2 text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800 inline-block">
+                <div className="mt-2 text-xs font-medium px-2 py-1 rounded-full bg-task-calificacion text-task-calificacion inline-block">
                     Calificación: {task.markObtained || '0'}/{task.markMax || '0'}
                 </div>
             )}

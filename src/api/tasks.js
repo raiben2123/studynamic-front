@@ -42,7 +42,7 @@ export const getTasks = async () => {
         throw new Error('No autenticado');
     }
 
-    const response = await fetch(`${BASE_URL}/tasks/user/${userId}`, {
+    const response = await fetch(`${BASE_URL}/usertasks/user/${userId}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -83,7 +83,7 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
         notification: notificationDateForApi,
     };
 
-    const response = await fetch(`${BASE_URL}/tasks`, {
+    const response = await fetch(`${BASE_URL}/usertasks`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -128,7 +128,7 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
 
     console.log('Actualizando tarea en la API:', taskDTO);
 
-    const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
+    const response = await fetch(`${BASE_URL}/usertasks/${taskId}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -177,7 +177,7 @@ export const deleteTask = async (taskId) => {
         throw new Error('No autenticado');
     }
 
-    const response = await fetch(`${BASE_URL}/tasks/${taskId}`, {
+    const response = await fetch(`${BASE_URL}/usertasks/${taskId}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,

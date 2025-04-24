@@ -6,7 +6,7 @@ import { getEvents } from '../api/events';
 import Sidebar from '../components/Sidebar';
 import ModernCalendar from '../components/ModernCalendar';
 import { FaCalendarAlt, FaChartBar } from 'react-icons/fa';
-import Logo from '../assets/Logo_opacidad33.png'; // Importa la imagen de fondo
+import Logo from '../assets/Logo_opacidad33.png';
 
 const CalendarPage = () => {
     const [tasks, setTasks] = useState([]);
@@ -19,7 +19,6 @@ const CalendarPage = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Obtener tareas y eventos para el calendario
                 const [tasksData, eventsData] = await Promise.all([
                     getTasks(),
                     getEvents()
@@ -85,7 +84,7 @@ const CalendarPage = () => {
             >
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        <div className="bg-error text-error p-3 rounded mb-4">
                             {error}
                         </div>
                     )}
@@ -102,47 +101,50 @@ const CalendarPage = () => {
                                 </div>
                             ) : (
                                 <div className="w-full">
-                                    {/* El calendario ahora ocupará más espacio horizontal */}
                                     <ModernCalendar events={calendarItems} />
                                 </div>
                             )}
                         </div>
 
-                        {/* Panel lateral con estadísticas - Similar al dashboard */}
+                        {/* Panel lateral con estadísticas */}
                         <div className="lg:w-1/4 space-y-4">
                             <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
-                                <h3 className="text-lg font-medium text-violet-700 mb-4 flex items-center">
+                                <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
                                     <FaChartBar className="mr-2" /> Resumen
                                 </h3>
 
                                 <div className="space-y-3">
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                         <div className="text-sm text-gray-600">Tareas pendientes</div>
-                                        <div className="text-2xl font-bold text-violet-600">{pendingTasks}</div>
+                                        <div className="text-2xl font-bold text-primary">{pendingTasks}</div>
                                     </div>
 
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                         <div className="text-sm text-gray-600">Eventos próximos</div>
-                                        <div className="text-2xl font-bold text-violet-600">{upcomingEvents}</div>
+                                        <div className="text-2xl font-bold text-primary">{upcomingEvents}</div>
                                     </div>
 
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                         <div className="text-sm text-gray-600">Días ocupados en {currentMonth}</div>
-                                        <div className="text-2xl font-bold text-violet-600">{busyDays.size}</div>
+                                        <div className="text-2xl font-bold text-primary">{busyDays.size}</div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Recordatorios recientes */}
                             <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
-                                <h3 className="text-lg font-medium text-violet-700 mb-4 flex items-center">
+                                <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
                                     <FaCalendarAlt className="mr-2" /> Próximos
                                 </h3>
 
                                 {calendarItems.length > 0 ? (
                                     calendarItems.slice(0, 3).map((item, index) => (
-                                        <div key={index} className="mb-3 border-l-4 pl-3 py-1"
-                                            style={{ borderColor: item.type === 'task' ? '#e11d48' : '#8b5cf6' }}>
+                                        <div
+                                            key={index}
+                                            className={`mb-3 border-l-4 pl-3 py-1 ${
+                                                item.type === 'task' ? 'border-task' : 'border-event'
+                                            }`}
+                                        >
                                             <div className="font-medium text-gray-800 text-sm">{item.title}</div>
                                             <div className="text-xs text-gray-500">
                                                 {new Date(item.dueDate || item.startDateTime).toLocaleDateString('es-ES')}

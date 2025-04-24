@@ -1,4 +1,3 @@
-// src/pages/TasksPage.js - Versión modernizada
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
@@ -165,85 +164,87 @@ const TasksPage = () => {
             >
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        <div className="bg-error/10 text-error p-3 rounded-lg mb-4">
                             {error}
                         </div>
                     )}
                     {loading && (
-                        <div className="text-center mb-4">Cargando...</div>
+                        <div className="text-center mb-4 text-primary font-medium">
+                            Cargando...
+                        </div>
                     )}
 
                     {/* Panel superior con estadísticas */}
                     <div className="bg-white p-4 md:p-6 rounded-xl shadow-md mb-6 opacity-95">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                            <h1 className="text-2xl md:text-3xl text-violet-700 font-bold flex items-center">
+                            <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
                                 <FaTasks className="mr-2" /> Mis Tareas
                             </h1>
-                            <div className="flex mt-3 md:mt-0">
+                            <div className="flex mt-3 md:mt-0 gap-2">
                                 <button
                                     onClick={() => setIsSubjectModalOpen(true)}
-                                    className="bg-violet-500 text-white px-3 py-2 rounded-full hover:bg-violet-600 mr-2"
+                                    className="bg-primary text-white px-3 py-2 rounded-full hover:bg-accent flex items-center gap-1"
                                 >
-                                    + Asignatura
+                                    <FaPlus /> Asignatura
                                 </button>
                                 <button
                                     onClick={() => {
                                         setEditingTask(null);
                                         setIsTaskModalOpen(true);
                                     }}
-                                    className="bg-violet-500 text-white px-3 py-2 rounded-full hover:bg-violet-600"
+                                    className="bg-primary text-white px-3 py-2 rounded-full hover:bg-accent flex items-center gap-1"
                                 >
-                                    + Nueva Tarea
+                                    <FaPlus /> Nueva Tarea
                                 </button>
                             </div>
                         </div>
 
                         {/* Estadísticas en tarjetas */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                            <div className="bg-violet-50 p-3 rounded-lg border border-violet-100">
+                            <div className="bg-primary-light p-3 rounded-lg border border-primary/20">
                                 <div className="text-sm text-gray-600">Total de tareas</div>
-                                <div className="text-lg font-bold text-violet-700">{totalTasks}</div>
+                                <div className="text-lg font-bold text-primary">{totalTasks}</div>
                             </div>
-                            <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+                            <div className="bg-task-finalizada-bg p-3 rounded-lg border border-task-finalizada/20">
                                 <div className="text-sm text-gray-600">Completadas</div>
-                                <div className="text-lg font-bold text-green-600">{completedTasksCount}</div>
+                                <div className="text-lg font-bold text-task-finalizada">{completedTasksCount}</div>
                             </div>
-                            <div className="bg-rose-50 p-3 rounded-lg border border-rose-100">
+                            <div className="bg-task-vencida-bg p-3 rounded-lg border border-task-vencida/20">
                                 <div className="text-sm text-gray-600">Pendientes</div>
-                                <div className="text-lg font-bold text-rose-600">{totalTasks - completedTasksCount}</div>
+                                <div className="text-lg font-bold text-task-vencida">{totalTasks - completedTasksCount}</div>
                             </div>
-                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <div className="bg-primary-light p-3 rounded-lg border border-primary/20">
                                 <div className="text-sm text-gray-600">Tasa de completado</div>
-                                <div className="text-lg font-bold text-blue-600">{completionRate}%</div>
+                                <div className="text-lg font-bold text-primary">{completionRate}%</div>
                             </div>
                         </div>
 
                         {/* Filtros */}
-                        <div className="flex flex-col md:flex-row justify-between">
-                            <div className="flex flex-wrap gap-2 mb-3 md:mb-0">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={() => setView('all')}
-                                    className={`px-3 py-1 rounded-full text-sm ${view === 'all'
-                                            ? 'bg-violet-500 text-white'
-                                            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${view === 'all'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-primary-light'
                                         }`}
                                 >
                                     Todas
                                 </button>
                                 <button
                                     onClick={() => setView('pending')}
-                                    className={`px-3 py-1 rounded-full text-sm ${view === 'pending'
-                                            ? 'bg-rose-500 text-white'
-                                            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${view === 'pending'
+                                            ? 'bg-task-vencida text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-task-vencida-bg'
                                         }`}
                                 >
                                     Pendientes
                                 </button>
                                 <button
                                     onClick={() => setView('completed')}
-                                    className={`px-3 py-1 rounded-full text-sm ${view === 'completed'
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${view === 'completed'
+                                            ? 'bg-task-finalizada text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-task-finalizada-bg'
                                         }`}
                                 >
                                     Completadas
@@ -251,14 +252,14 @@ const TasksPage = () => {
                             </div>
 
                             {/* Filtro de asignaturas */}
-                            <div className="relative">
+                            <div className="relative w-full md:w-auto">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <FaFilter className="text-gray-400" />
+                                    <FaFilter className="text-primary" />
                                 </div>
                                 <select
                                     value={selectedSubject}
                                     onChange={(e) => setSelectedSubject(e.target.value)}
-                                    className="block pl-10 pr-4 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                    className="block w-full pl-10 pr-4 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                 >
                                     <option value="">Todas las asignaturas</option>
                                     {subjects.map((subject) => (
@@ -272,12 +273,12 @@ const TasksPage = () => {
                     </div>
 
                     {/* Lista de tareas */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Vista pendientes */}
                         {(view === 'all' || view === 'pending') && (
                             <div className="bg-white p-4 md:p-6 rounded-xl shadow-md opacity-95">
                                 <div className="flex items-center mb-4">
-                                    <FaTasks className="text-rose-500 mr-2" />
+                                    <FaTasks className="text-task-vencida mr-2" />
                                     <h2 className="text-xl font-semibold text-gray-800">
                                         Tareas Pendientes
                                         <span className="ml-2 text-xs text-gray-500">({pendingTasks.length})</span>
@@ -293,7 +294,7 @@ const TasksPage = () => {
                                                     setEditingTask(null);
                                                     setIsTaskModalOpen(true);
                                                 }}
-                                                className="mt-2 text-violet-500 hover:text-violet-700"
+                                                className="mt-2 text-primary hover:text-accent font-medium"
                                             >
                                                 Añadir una tarea
                                             </button>
@@ -319,7 +320,7 @@ const TasksPage = () => {
                         {(view === 'all' || view === 'completed') && (
                             <div className="bg-white p-4 md:p-6 rounded-xl shadow-md opacity-95">
                                 <div className="flex items-center mb-4">
-                                    <FaCheckCircle className="text-green-500 mr-2" />
+                                    <FaCheckCircle className="text-task-finalizada mr-2" />
                                     <h2 className="text-xl font-semibold text-gray-800">
                                         Tareas Completadas
                                         <span className="ml-2 text-xs text-gray-500">({completedTasks.length})</span>
@@ -348,15 +349,15 @@ const TasksPage = () => {
                             </div>
                         )}
 
-                        {/* Gráfico resumen (opcional - en vista de escritorio) */}
-                        {view === 'all' && window.innerWidth >= 768 && subjects.length > 0 && (
-                            <div className="md:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-md mt-6 opacity-95">
+                        {/* Gráfico resumen (visible en todas las pantallas) */}
+                        {view === 'all' && subjects.length > 0 && (
+                            <div className="md:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-md mt-4 opacity-95">
                                 <div className="flex items-center mb-4">
-                                    <FaChartBar className="text-violet-500 mr-2" />
+                                    <FaChartBar className="text-primary mr-2" />
                                     <h2 className="text-xl font-semibold text-gray-800">Resumen por Asignatura</h2>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="space-y-4">
                                     {subjects.map(subject => {
                                         const subjectTasks = tasks.filter(task => task.subject === subject.title);
                                         const completed = subjectTasks.filter(task => task.status === 'Finalizada').length;
@@ -364,15 +365,15 @@ const TasksPage = () => {
                                         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
                                         return (
-                                            <div key={subject.id} className="bg-gray-50 p-3 rounded-lg">
-                                                <div className="font-medium text-violet-700">{subject.title}</div>
+                                            <div key={subject.id} className="bg-primary-light p-3 rounded-lg">
+                                                <div className="font-medium text-primary">{subject.title}</div>
                                                 <div className="flex justify-between text-sm text-gray-600 mt-1">
                                                     <span>{completed}/{total} completadas</span>
                                                     <span>{percentage}%</span>
                                                 </div>
                                                 <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                                                     <div
-                                                        className="bg-violet-500 h-2 rounded-full"
+                                                        className="bg-primary h-2 rounded-full transition-all duration-300"
                                                         style={{ width: `${percentage}%` }}
                                                     ></div>
                                                 </div>

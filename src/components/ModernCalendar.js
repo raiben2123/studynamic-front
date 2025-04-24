@@ -25,13 +25,13 @@ const ModernCalendar = ({ events = [] }) => {
         setCurrentDate(new Date());
         setSelectedDay(new Date());
     };
-
-    // Obtener días del mes actual
+	
+	// Obtener días del mes actual
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
     const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // Determinar el inicio de la semana (lunes)
+    // Obtener días de la semana
     const getWeekDays = () => {
         return ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
     };
@@ -53,7 +53,6 @@ const ModernCalendar = ({ events = [] }) => {
         const isCurrentMonth = isSameMonth(day, currentDate);
         const isTodayDate = isToday(day);
 
-        // Ajuste para mayor tamaño
         let dayClass = "relative h-16 w-full flex items-center justify-center rounded-full text-lg ";
 
         // Base styling
@@ -71,9 +70,9 @@ const ModernCalendar = ({ events = [] }) => {
         // Selected day styling
         if (isSelected) {
             if (isTodayDate) {
-                dayClass += "bg-rose-600 text-white ";
+                dayClass += "bg-primary text-white ";
             } else {
-                dayClass += "border-2 border-rose-600 text-rose-600 ";
+                dayClass += "border-2 border-primary text-primary ";
             }
         } else {
             dayClass += "hover:bg-gray-200 ";
@@ -87,7 +86,7 @@ const ModernCalendar = ({ events = [] }) => {
             >
                 {dayNumber}
                 {hasEvents && !isSelected && (
-                    <span className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                    <span className="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full"></span>
                 )}
             </button>
         );
@@ -108,13 +107,13 @@ const ModernCalendar = ({ events = [] }) => {
                     return (
                         <div
                             key={event.id}
-                            className={`bg-white p-4 rounded-lg border-l-4 ${isTask ? 'border-rose-500' : 'border-violet-500'} shadow-sm`}
+                            className={`bg-white p-4 rounded-lg border-l-4 ${isTask ? 'border-task' : 'border-event'} shadow-sm`}
                         >
                             <h4 className="font-medium text-gray-800">{event.title}</h4>
                             <p className="text-gray-600 text-sm">
                                 A las {format(parseISO(time), 'HH:mm')}
                             </p>
-                            <p className={`${isTask ? 'text-rose-500' : 'text-violet-500'} text-xs mt-1`}>
+                            <p className={`${isTask ? 'text-task' : 'text-event'} text-xs mt-1`}>
                                 {isTask ? 'Tarea' : 'Evento'}
                             </p>
                         </div>
@@ -136,7 +135,7 @@ const ModernCalendar = ({ events = [] }) => {
                     Hoy
                 </button>
                 <button className="p-2 rounded-full hover:bg-gray-100">
-                    <FaCalendarDay className="text-rose-500" size={22} />
+                    <FaCalendarDay className="text-primary" size={22} />
                 </button>
             </div>
 
@@ -161,7 +160,7 @@ const ModernCalendar = ({ events = [] }) => {
                 </div>
             </div>
 
-            {/* Días de la semana - aumentado el tamaño */}
+            {/* Días de la semana */}
             <div className="grid grid-cols-7 gap-2 px-3 pb-2">
                 {getWeekDays().map((day) => (
                     <div key={day} className="text-center py-3 text-gray-500 font-medium">
@@ -170,7 +169,7 @@ const ModernCalendar = ({ events = [] }) => {
                 ))}
             </div>
 
-            {/* Días del mes - aumentado el tamaño */}
+            {/* Días del mes */}
             <div className="grid grid-cols-7 gap-2 px-3 pb-6">
                 {monthDays.map((day) => renderDay(day))}
             </div>

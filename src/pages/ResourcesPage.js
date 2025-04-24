@@ -1,4 +1,3 @@
-// src/pages/ResourcesPage.js - Versión modernizada
 import React, { useState, useEffect } from 'react';
 import { getSubjectsByUser } from '../api/subjects';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +13,7 @@ const ResourcesPage = () => {
     const [currentSubject, setCurrentSubject] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [notification, setNotification] = useState(null); // Para notificaciones
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSubject, setSelectedSubject] = useState(null);
     const { token, userId } = useAuth();
@@ -54,6 +54,11 @@ const ResourcesPage = () => {
         }
     }, [token, userId]);
 
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
     const handleFileUpload = (subjectId, folder, event) => {
         const file = event.target.files[0];
         if (
@@ -62,7 +67,6 @@ const ResourcesPage = () => {
                 file.type === 'application/msword' ||
                 file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         ) {
-            // Update resources for this specific subject and folder
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
                 if (!updatedResources[subjectId]) {
@@ -84,8 +88,9 @@ const ResourcesPage = () => {
 
                 return updatedResources;
             });
+            showNotification(`Archivo ${file.name} subido con éxito`, 'success');
         } else {
-            alert('Por favor, sube un archivo PDF o Word válido.');
+            showNotification('Por favor, sube un archivo PDF o Word válido.', 'error');
         }
     };
 
@@ -104,17 +109,15 @@ const ResourcesPage = () => {
     const handleAddFolder = () => {
         const folderName = newFolderName.trim();
         if (!folderName) {
-            alert('Por favor, ingresa un nombre para la carpeta.');
+            showNotification('Por favor, ingresa un nombre para la carpeta.', 'error');
             return;
         }
 
-        // Check if the folder already exists for this subject
         if (resources[currentSubject] && resources[currentSubject][folderName]) {
-            alert('Ya existe una carpeta con ese nombre para esta asignatura.');
+            showNotification('Ya existe una carpeta con ese nombre para esta asignatura.', 'error');
             return;
         }
 
-        // Update resources for this specific subject
         setResources(prevResources => {
             const updatedResources = { ...prevResources };
             if (!updatedResources[currentSubject]) {
@@ -124,17 +127,17 @@ const ResourcesPage = () => {
             return updatedResources;
         });
 
+        showNotification(`Carpeta ${folderName} creada con éxito`, 'success');
         closeModal();
     };
 
     const handleDeleteResource = (subjectId, folder, resourceIndex) => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) {
-            setResources(prevResources => {
-                const updatedResources = { ...prevResources };
-                updatedResources[subjectId][folder].splice(resourceIndex, 1);
-                return updatedResources;
-            });
-        }
+        setResources(prevResources => {
+            const updatedResources = { ...prevResources };
+            updatedResources[subjectId][folder].splice(resourceIndex, 1);
+            return updatedResources;
+        });
+        showNotification('Recurso eliminado con éxito', 'success');
     };
 
     // Filtrar recursos por término de búsqueda
@@ -185,29 +188,34 @@ const ResourcesPage = () => {
                 }}
             >
                 <div className="relative z-10">
+                    {notification && (
+                        <div className={`fixed top-4 right-4 p-3 rounded-lg shadow-md transition-opacity duration-300 ${notification.type === 'success' ? 'bg-task-finalizada-bg text-task-finalizada' : 'bg-error/10 text-error'}`}>
+                            {notification.message}
+                        </div>
+                    )}
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        <div className="bg-error/10 text-error p-3 rounded-lg mb-4">
                             {error}
                         </div>
                     )}
 
                     {/* Header con título y búsqueda */}
-                    <div className="bg-white p-4 md:p-6 rounded-xl shadow-md mb-6 opacity-95">
+                    <div className="bg-white p-4 md:p-6 rounded-xl shadow-md mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                            <h1 className="text-2xl md:text-3xl text-violet-700 font-bold flex items-center">
+                            <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
                                 <FaBook className="mr-2" /> Recursos y Apuntes
                             </h1>
 
                             <div className="relative w-full md:w-64 mt-3 md:mt-0">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <FaSearch className="text-gray-400" />
+                                    <FaSearch className="text-primary" />
                                 </div>
                                 <input
                                     type="text"
                                     placeholder="Buscar recursos..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                 />
                             </div>
                         </div>
@@ -218,9 +226,9 @@ const ResourcesPage = () => {
                                     <button
                                         key={subject.id}
                                         onClick={() => setSelectedSubject(subject.id)}
-                                        className={`px-4 py-2 rounded-full text-sm ${selectedSubject === subject.id
-                                                ? 'bg-violet-500 text-white'
-                                                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedSubject === subject.id
+                                                ? 'bg-primary text-white'
+                                                : 'bg-gray-200 text-gray-800 hover:bg-primary-light'
                                             }`}
                                     >
                                         {subject.title}
@@ -231,15 +239,15 @@ const ResourcesPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="bg-white p-6 rounded-xl shadow-md flex justify-center items-center opacity-95">
-                            <p className="text-gray-500">Cargando recursos...</p>
+                        <div className="bg-white p-6 rounded-xl shadow-md flex justify-center items-center">
+                            <p className="text-primary font-medium">Cargando recursos...</p>
                         </div>
                     ) : subjects.length === 0 ? (
-                        <div className="bg-white p-6 rounded-xl shadow-md text-center opacity-95">
+                        <div className="bg-white p-6 rounded-xl shadow-md text-center">
                             <p className="text-gray-600 mb-4">No tienes asignaturas registradas. Añade asignaturas en el dashboard.</p>
                         </div>
                     ) : (
-                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-md opacity-95">
+                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-md">
                             {/* Mostrar contenido de la asignatura seleccionada */}
                             {selectedSubject && (
                                 <div>
@@ -249,7 +257,7 @@ const ResourcesPage = () => {
                                         </h2>
                                         <button
                                             onClick={() => openModal(selectedSubject)}
-                                            className="flex items-center text-violet-500 hover:text-violet-700"
+                                            className="flex items-center text-primary hover:text-accent font-medium"
                                         >
                                             <FaFolderPlus className="mr-1" />
                                             <span>Nueva Carpeta</span>
@@ -259,36 +267,30 @@ const ResourcesPage = () => {
                                     {/* Mostrar carpetas y recursos */}
                                     {Object.keys(filteredSubjectResources).length === 0 ? (
                                         searchTerm ? (
-                                            <div className="text-center py-8 bg-gray-50 rounded-lg">
+                                            <div className="text-center py-8 bg-primary-light rounded-lg">
                                                 <p className="text-gray-500">No se encontraron recursos para "{searchTerm}"</p>
                                             </div>
                                         ) : (
-                                            <div className="text-center py-8 bg-gray-50 rounded-lg">
+                                            <div className="text-center py-8 bg-primary-light rounded-lg">
                                                 <p className="text-gray-500">No hay carpetas creadas para esta asignatura</p>
                                                 <button
                                                     onClick={() => openModal(selectedSubject)}
-                                                    className="mt-2 text-violet-500 hover:text-violet-700"
+                                                    className="mt-2 text-primary hover:text-accent font-medium"
                                                 >
                                                     Crear carpeta
                                                 </button>
-                                                    <button
-                                                        onClick={() => openModal(selectedSubject)}
-                                                        className="mt-2 text-violet-500 hover:text-violet-700"
-                                                    >
-                                                        Crear carpeta
-                                                    </button>
                                             </div>
                                         )
                                     ) : (
                                         <div className="space-y-6">
                                             {Object.keys(filteredSubjectResources).map((folder) => (
                                                 <div key={folder} className="border border-gray-200 rounded-lg overflow-hidden">
-                                                    <div className="flex justify-between items-center bg-gray-50 p-3 border-b">
-                                                        <h3 className="font-medium text-violet-700 flex items-center">
-                                                            <FaBook className="mr-2 text-violet-500" />
+                                                    <div className="flex justify-between items-center bg-primary-light p-3 border-b">
+                                                        <h3 className="font-medium text-primary flex items-center">
+                                                            <FaBook className="mr-2 text-primary" />
                                                             {folder}
                                                         </h3>
-                                                        <label className="flex items-center bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 cursor-pointer text-sm">
+                                                        <label className="flex items-center bg-primary text-white px-3 py-1 rounded-full hover:bg-accent cursor-pointer text-sm">
                                                             <FaPlus className="mr-1" /> Subir
                                                             <input
                                                                 type="file"
@@ -308,35 +310,35 @@ const ResourcesPage = () => {
                                                             {filteredSubjectResources[folder].map((resource, index) => (
                                                                 <div
                                                                     key={index}
-                                                                    className="flex justify-between items-center p-3 hover:bg-gray-50"
+                                                                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 hover:bg-primary-light/50"
                                                                 >
                                                                     <div className="flex-1 pr-4">
                                                                         <div className="font-medium text-gray-800">{resource.name}</div>
-                                                                        <div className="flex text-xs text-gray-500 mt-1">
+                                                                        <div className="flex flex-col sm:flex-row text-xs text-gray-500 mt-1">
                                                                             <span className="mr-4">
                                                                                 {resource.date ? formatDate(resource.date) : 'Sin fecha'}
                                                                             </span>
                                                                             <span>{resource.size || '--'}</span>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="flex space-x-2">
+                                                                    <div className="flex space-x-2 mt-2 sm:mt-0">
                                                                         <button
-                                                                            onClick={() => alert(`Ver ${resource.name}`)}
-                                                                            className="p-2 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-50"
+                                                                            onClick={() => showNotification(`Ver ${resource.name}`, 'success')}
+                                                                            className="p-2 text-accent hover:text-accent/80 rounded-full hover:bg-accent/10"
                                                                             title="Ver"
                                                                         >
                                                                             <FaEye />
                                                                         </button>
                                                                         <button
-                                                                            onClick={() => alert(`Descargar ${resource.name}`)}
-                                                                            className="p-2 text-green-500 hover:text-green-700 rounded-full hover:bg-green-50"
+                                                                            onClick={() => showNotification(`Descargar ${resource.name}`, 'success')}
+                                                                            className="p-2 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada-bg"
                                                                             title="Descargar"
                                                                         >
                                                                             <FaDownload />
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleDeleteResource(selectedSubject, folder, index)}
-                                                                            className="p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50"
+                                                                            className="p-2 text-error hover:text-error/80 rounded-full hover:bg-error/10"
                                                                             title="Eliminar"
                                                                         >
                                                                             <FaTrash />
@@ -361,7 +363,7 @@ const ResourcesPage = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
-                        <h3 className="text-lg font-semibold mb-4 text-violet-700">
+                        <h3 className="text-lg font-semibold mb-4 text-primary">
                             Nueva Carpeta en {subjects.find(s => s.id === currentSubject)?.title || ''}
                         </h3>
                         <input
@@ -369,18 +371,18 @@ const ResourcesPage = () => {
                             value={newFolderName}
                             onChange={(e) => setNewFolderName(e.target.value)}
                             placeholder="Nombre de la carpeta"
-                            className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                            className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                         />
                         <div className="flex justify-end space-x-2">
                             <button
                                 onClick={closeModal}
-                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleAddFolder}
-                                className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600"
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-accent transition-colors"
                             >
                                 Crear
                             </button>
