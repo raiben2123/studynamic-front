@@ -120,11 +120,14 @@ const GroupsPage = () => {
 
         setLoading(true);
         try {
+            // Usar la función actualizada de joinGroup
             await joinGroup(joinGroupId, joinPassword);
 
+            // Actualizar la lista de grupos tras unirse exitosamente
             const updatedGroups = await getGroupsByUserId();
             setGroups(updatedGroups);
 
+            // Limpiar el estado
             setJoinPassword('');
             setJoinGroupId(null);
             setSearchQuery('');
@@ -133,7 +136,7 @@ const GroupsPage = () => {
             showNotification('¡Te has unido al grupo correctamente!', 'success');
         } catch (err) {
             console.error('Error joining group:', err);
-            setError('Error al unirse al grupo. Verifica la contraseña.');
+            setError(err.message || 'Error al unirse al grupo. Verifica la contraseña.');
         } finally {
             setLoading(false);
         }

@@ -31,18 +31,36 @@ const mapTaskFromDTO = (dto) => {
         subject: dto.subjectTitle,
         subjectId: dto.subjectId,
         notificationDate: notificationDate,
+        groupId: dto.groupId, // Añadimos el groupId para poder filtrar tareas de grupos
+        groupName: dto.groupName,
+        userId: dto.userId,
+        username: dto.username
     };
 };
 
-export const getTasks = async () => {
+/**
+ * Obtiene las tareas según el contexto (usuario o grupo)
+ * @param {boolean} isGroup - Indica si se deben obtener las tareas de un grupo
+ * @param {number} groupId - ID del grupo (solo si isGroup es true)
+ * @returns {Promise<Array>} Lista de tareas
+ */
+export const getTasks = async (isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
 
-    if (!token || !userId) {
+    if (!token || (!userId && !isGroup)) {
         throw new Error('No autenticado');
     }
 
-    const response = await fetch(`${BASE_URL}/usertasks/user/${userId}`, {
+    // Determinamos la URL a utilizar
+    let url;
+    if (isGroup && groupId) {
+        url = `${BASE_URL}/usertasks/group/${groupId}`;
+    } else {
+        url = `${BASE_URL}/usertasks/user/${userId}`;
+    }
+
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -51,13 +69,20 @@ export const getTasks = async () => {
     });
 
     if (!response.ok) {
-        throw new Error('Error al obtener las tareas');
+        throw new Error(`Error al obtener las tareas ${isGroup ? 'del grupo' : 'del usuario'}`);
     }
 
     const tasksData = await response.json();
     return Array.isArray(tasksData) ? tasksData.map(mapTaskFromDTO) : [mapTaskFromDTO(tasksData)];
 };
 
+/**
+ * Añade una nueva tarea
+ * @param {Object} task - Datos de la tarea
+ * @param {boolean} isGroup - Indica si es una tarea de grupo
+ * @param {number} groupId - ID del grupo (solo si isGroup es true)
+ * @returns {Promise<Object>} Tarea añadida
+ */
 export const addTask = async (task, isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -72,7 +97,8 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
 
     const taskDTO = {
         id: task.id || null,
-        [isGroup ? 'groupId' : 'userId']: isGroup ? parseInt(groupId) : parseInt(userId),
+        userId: isGroup ? null : parseInt(userId),
+        groupId: isGroup ? parseInt(groupId) : null,
         subjectId: parseInt(task.subjectId),
         title: task.title,
         dueDate: dueDateForApi,
@@ -101,6 +127,14 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
     return mapTaskFromDTO(addedTask);
 };
 
+/**
+ * Actualiza una tarea existente
+ * @param {number} taskId - ID de la tarea a actualizar
+ * @param {Object} task - Nuevos datos de la tarea
+ * @param {boolean} isGroup - Indica si es una tarea de grupo
+ * @param {number} groupId - ID del grupo (solo si isGroup es true)
+ * @returns {Promise<Object>} Tarea actualizada
+ */
 export const updateTask = async (taskId, task, isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -115,7 +149,8 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
 
     const taskDTO = {
         id: parseInt(taskId),
-        [isGroup ? 'groupId' : 'userId']: isGroup ? parseInt(groupId) : parseInt(userId),
+        userId: isGroup ? null : parseInt(userId),
+        groupId: isGroup ? parseInt(groupId) : null,
         subjectId: parseInt(task.subjectId),
         title: task.title,
         dueDate: dueDateForApi,
@@ -162,6 +197,8 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
             subjectTitle: task.subject,
             subjectId: taskDTO.subjectId,
             notification: taskDTO.notification,
+            groupId: taskDTO.groupId,
+            userId: taskDTO.userId
         });
     }
 
@@ -169,6 +206,11 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
     return mapTaskFromDTO(updatedTask);
 };
 
+/**
+ * Elimina una tarea
+ * @param {number} taskId - ID de la tarea a eliminar
+ * @returns {Promise<boolean>} Resultado de la operación
+ */
 export const deleteTask = async (taskId) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -191,4 +233,21 @@ export const deleteTask = async (taskId) => {
     }
 
     return true;
+};
+
+/**
+ * Obtiene las tareas de un grupo específico
+ * @param {number} groupId - ID del grupo
+ * @returns {Promise<Array>} Lista de tareas del grupo
+ */
+export const getGroupTasks = async (groupId) => {
+    return getTasks(true, groupId);
+};
+
+export default {
+    getTasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    getGroupTasks
 };

@@ -1,4 +1,4 @@
-// src/components/Sidebar.js - Versión Modernizada con Soporte para Temas
+// src/components/Sidebar.js - Con arreglos de z-index y textos en hover
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -21,7 +21,7 @@ const Sidebar = () => {
     const location = useLocation();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isExpanded, setIsExpanded] = useState(false);
-    const { logout, user, userTheme } = useAuth(); // Obtener userTheme
+    const { logout, user, userTheme } = useAuth();
     const userProfilePic = user?.profilePicture || null;
 
     useEffect(() => {
@@ -78,7 +78,7 @@ const Sidebar = () => {
         <>
             {/* Mobile Bottom Tab Bar */}
             {isMobile && (
-                <div className="w-full h-14 bg-primary fixed bottom-0 left-0 z-20 flex items-center justify-around py-1 shadow-lg">
+                <div className="w-full h-14 bg-primary fixed bottom-0 left-0 z-50 flex items-center justify-around py-1 shadow-lg">
                     <button onClick={toggleDrawer} className="p-2 text-white flex flex-col items-center justify-center">
                         <FaBars className="text-xl" />
                         <span className="text-xs">Menú</span>
@@ -91,10 +91,10 @@ const Sidebar = () => {
                             onClick={() => navigate(item.path)}
                             className="p-1 flex flex-col items-center justify-center"
                         >
-                            <div className={`p-1 ${getActiveStyle(item.path) ? 'text-white' : 'text-accent'}`}>
+                            <div className={`p-1 ${getActiveStyle(item.path) ? 'text-white' : 'text-white/70'}`}>
                                 {item.icon}
                             </div>
-                            <span className={`text-[10px] ${getActiveStyle(item.path) ? 'text-white' : 'text-accent'}`}>
+                            <span className={`text-[10px] ${getActiveStyle(item.path) ? 'text-white' : 'text-white/70'}`}>
                                 {item.name}
                             </span>
                         </button>
@@ -110,7 +110,7 @@ const Sidebar = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 0.5 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black z-30"
+                            className="fixed inset-0 bg-black z-50"
                             onClick={() => setIsExpanded(false)}
                         />
 
@@ -120,7 +120,7 @@ const Sidebar = () => {
                             exit="hidden"
                             variants={drawerVariants}
                             transition={{ type: "tween", duration: 0.3 }}
-                            className="fixed inset-y-0 left-0 max-w-[280px] w-4/5 bg-white transform z-40 py-4 px-2 shadow-xl flex flex-col h-screen"
+                            className="fixed inset-y-0 left-0 max-w-[280px] w-4/5 bg-white transform z-50 py-4 px-2 shadow-xl flex flex-col h-screen"
                         >
                             <div className="flex justify-between items-center px-4 mb-6">
                                 <div className="flex items-center space-x-3">
@@ -184,40 +184,44 @@ const Sidebar = () => {
                 )}
             </AnimatePresence>
 
-            {/* Desktop Sidebar */}
+            {/* Desktop Sidebar - ARREGLADO con z-index elevado y clases para mostrar texto */}
             {!isMobile && (
-                <div className="w-20 min-h-screen bg-primary flex flex-col items-center py-6 shadow-xl relative group hover:w-56 transition-all duration-300 ease-in-out">
-                    <div className="overflow-hidden whitespace-nowrap absolute top-0 left-0 w-full py-6 flex flex-col items-center z-10">
-                        <div className="relative">
-                            <img
-                                src={userProfilePic || defaultProfile}
-                                alt="Profile"
-                                className="w-14 h-14 rounded-full border-2 border-white object-cover"
-                                onClick={() => navigate('/settings')}
-                                style={{ cursor: 'pointer' }}
-                                title="Ver configuración de perfil"
-                            />
-                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                        </div>
-                        <div className="mt-2 text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <p className="font-medium truncate w-40">{user?.name || 'Usuario'}</p>
-                            <p className="text-xs text-accent truncate w-40">{user?.email || ''}</p>
+                <div className="fixed left-0 top-0 h-full w-20 bg-primary flex flex-col items-center py-6 shadow-xl group hover:w-56 transition-all duration-300 ease-in-out z-50">
+                    <div className="overflow-hidden whitespace-nowrap flex-shrink-0 mb-6">
+                        <div className="flex flex-col items-center">
+                            <div className="relative">
+                                <img
+                                    src={userProfilePic || defaultProfile}
+                                    alt="Profile"
+                                    className="w-14 h-14 rounded-full border-2 border-white object-cover"
+                                    onClick={() => navigate('/settings')}
+                                    style={{ cursor: 'pointer' }}
+                                    title="Ver configuración de perfil"
+                                />
+                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            </div>
+                            
+                            <div className="mt-2 invisible group-hover:visible w-40 text-center">
+                                <p className="font-medium text-white truncate">{user?.name || 'Usuario'}</p>
+                                <p className="text-xs text-white/80 truncate">{user?.email || ''}</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col space-y-6 mt-32">
+                    <div className="flex flex-col space-y-6 items-center flex-1">
                         {menuItems.map(item => (
                             <button
                                 key={item.path}
                                 onClick={() => navigate(item.path)}
-                                className={`group-hover:w-48 w-12 h-12 rounded-full group-hover:rounded-lg transition-all duration-300 flex items-center group-hover:justify-start group-hover:px-4 ${getActiveStyle(item.path)
+                                className={`group relative w-12 h-12 rounded-full group-hover:w-48 group-hover:rounded-lg group-hover:justify-start group-hover:pl-4 transition-all duration-300 flex items-center justify-center ${
+                                    getActiveStyle(item.path)
                                         ? 'bg-white text-primary'
-                                        : 'text-white hover:bg-accent'
-                                    }`}
+                                        : 'text-white hover:bg-white/20'
+                                }`}
                                 title={item.name}
                             >
                                 <div className="text-xl">{item.icon}</div>
-                                <span className="ml-4 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span className="invisible absolute left-12 group-hover:static group-hover:visible group-hover:ml-3 font-medium whitespace-nowrap">
                                     {item.name}
                                 </span>
                             </button>
@@ -226,16 +230,19 @@ const Sidebar = () => {
 
                     <button
                         onClick={handleLogout}
-                        className="mt-auto group-hover:w-48 w-12 h-12 rounded-full group-hover:rounded-lg transition-all duration-300 flex items-center group-hover:justify-start group-hover:px-4 text-white hover:bg-red-500"
+                        className="group relative w-12 h-12 rounded-full group-hover:w-48 group-hover:rounded-lg group-hover:justify-start group-hover:pl-4 transition-all duration-300 flex items-center justify-center text-white hover:bg-red-500 mt-auto"
                         title="Cerrar Sesión"
                     >
                         <FaSignOutAlt className="text-xl" />
-                        <span className="ml-4 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <span className="invisible absolute left-12 group-hover:static group-hover:visible group-hover:ml-3 font-medium whitespace-nowrap">
                             Cerrar Sesión
                         </span>
                     </button>
                 </div>
             )}
+
+            {/* Espacio de compensación para que el contenido no sea ocultado por la barra lateral */}
+            {!isMobile && <div className="w-20 flex-shrink-0"></div>}
         </>
     );
 };

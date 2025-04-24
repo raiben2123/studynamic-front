@@ -1,3 +1,4 @@
+// src/api/groups.js
 import { getToken, getUserId } from './auth';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
@@ -6,9 +7,9 @@ const mapGroupFromDTO = (dto) => ({
     id: dto.id,
     name: dto.name,
     membersIds: dto.membersIds,
-    memberCount: dto.memberIds.length
+    memberCount: dto.memberIds?.length || 0,
+    description: dto.description
 });
-
 
 /**
  * Obtiene todos los grupos disponibles en el sistema.
@@ -93,7 +94,7 @@ export const getGroupsByUserId = async () => {
 
     const groupsData = await response.json();
     return Array.isArray(groupsData) ? groupsData.map(mapGroupFromDTO) : [mapGroupFromDTO(groupsData)];
-}
+};
 
 
 /**
@@ -131,7 +132,8 @@ export const getGroupById = async (groupId) => {
             return {
                 id: parseInt(groupId),
                 name: `Grupo ${groupId}`,
-                password: 'password123'
+                password: 'password123',
+                description: 'Descripción del grupo generada para desarrollo'
             };
         }
         
@@ -175,6 +177,118 @@ export const getGroupMembers = async (groupId) => {
                 { userId: 1, username: 'Usuario 1', roleId: 1, roleName: 'Admin' },
                 { userId: parseInt(userId), username: 'Tú', roleId: 2, roleName: 'Miembro' },
                 { userId: 3, username: 'Usuario 3', roleId: 2, roleName: 'Miembro' },
+            ];
+        }
+        
+        throw error;
+    }
+};
+
+/**
+ * Obtiene las tareas de un grupo específico
+ * @param {number} groupId - ID del grupo
+ * @returns {Promise<Array>} Lista de tareas del grupo
+ */
+export const getGroupTasks = async (groupId) => {
+    const token = await getToken();
+
+    if (!token) {
+        throw new Error('No autenticado');
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/usertasks/group/${groupId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener las tareas del grupo');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error en getGroupTasks:', error);
+        
+        // Si estamos en desarrollo, devolvemos datos simulados
+        if (process.env.NODE_ENV === 'development') {
+            return [
+                {
+                    id: 1001,
+                    title: 'Tarea grupal 1',
+                    dueDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+                    statusName: 'Pendiente',
+                    priorityName: 'Alta',
+                    subjectTitle: 'Matemáticas',
+                    groupId: parseInt(groupId)
+                },
+                {
+                    id: 1002,
+                    title: 'Tarea grupal 2',
+                    dueDate: new Date(Date.now() + 86400000 * 10).toISOString(),
+                    statusName: 'En curso',
+                    priorityName: 'Media',
+                    subjectTitle: 'Física',
+                    groupId: parseInt(groupId)
+                }
+            ];
+        }
+        
+        throw error;
+    }
+};
+
+/**
+ * Obtiene los eventos de un grupo específico
+ * @param {number} groupId - ID del grupo
+ * @returns {Promise<Array>} Lista de eventos del grupo
+ */
+export const getGroupEvents = async (groupId) => {
+    const token = await getToken();
+
+    if (!token) {
+        throw new Error('No autenticado');
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/events/group/${groupId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los eventos del grupo');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error en getGroupEvents:', error);
+        
+        // Si estamos en desarrollo, devolvemos datos simulados
+        if (process.env.NODE_ENV === 'development') {
+            return [
+                {
+                    id: 2001,
+                    title: 'Reunión de grupo',
+                    startDateTime: new Date(Date.now() + 86400000 * 2).toISOString(),
+                    endDateTime: new Date(Date.now() + 86400000 * 2 + 7200000).toISOString(),
+                    description: 'Reunión para discutir el progreso del proyecto',
+                    groupId: parseInt(groupId)
+                },
+                {
+                    id: 2002,
+                    title: 'Presentación final',
+                    startDateTime: new Date(Date.now() + 86400000 * 15).toISOString(),
+                    endDateTime: new Date(Date.now() + 86400000 * 15 + 5400000).toISOString(),
+                    description: 'Presentación de resultados al profesor',
+                    groupId: parseInt(groupId)
+                }
             ];
         }
         
@@ -274,7 +388,8 @@ export const updateGroup = async (groupId, groupData) => {
             body: JSON.stringify({
                 id: parseInt(groupId),
                 name: groupData.name,
-                password: groupData.password
+                password: groupData.password,
+                description: groupData.description
             }),
         });
 
@@ -287,7 +402,8 @@ export const updateGroup = async (groupId, groupData) => {
             return {
                 id: parseInt(groupId),
                 name: groupData.name,
-                password: groupData.password
+                password: groupData.password,
+                description: groupData.description
             };
         }
 
@@ -300,7 +416,8 @@ export const updateGroup = async (groupId, groupData) => {
             return {
                 id: parseInt(groupId),
                 name: groupData.name,
-                password: groupData.password
+                password: groupData.password,
+                description: groupData.description
             };
         }
         
@@ -353,6 +470,12 @@ export const deleteGroup = async (groupId) => {
  * @param {string} password - Contraseña del grupo
  * @returns {Promise<Object>} Información del miembro añadido
  */
+/**
+ * Une a un usuario a un grupo usando la contraseña
+ * @param {number} groupId - ID del grupo
+ * @param {string} password - Contraseña del grupo
+ * @returns {Promise<Object>} Información del miembro añadido
+ */
 export const joinGroup = async (groupId, password) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -362,39 +485,25 @@ export const joinGroup = async (groupId, password) => {
     }
 
     try {
-        // Verificar que la contraseña es correcta
-        const groupResponse = await fetch(`${BASE_URL}/groups/${groupId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!groupResponse.ok) {
-            throw new Error('Error al obtener información del grupo');
-        }
-
-        const group = await groupResponse.json();
-        if (group.password !== password) {
-            throw new Error('Contraseña incorrecta');
-        }
-
-        // Añadir al usuario como miembro
-        const memberResponse = await fetch(`${BASE_URL}/groupmembers`, {
+        // Llamada directa al endpoint para unirse usando el nuevo formato
+        const memberResponse = await fetch(`${BASE_URL}/groupmembers/user/${userId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                groupId: parseInt(groupId),
-                userId: parseInt(userId),
-                roleId: 2 // Rol de miembro normal
+                GroupId: parseInt(groupId),
+                UserId: parseInt(userId),
+                RoleId: 2, // Rol de miembro normal
+                Password: password
             }),
         });
 
         if (!memberResponse.ok) {
+            if (memberResponse.status === 401) {
+                throw new Error('Contraseña incorrecta o no tienes permisos para unirte a este grupo');
+            }
             throw new Error('Error al unirse al grupo');
         }
 
@@ -405,11 +514,11 @@ export const joinGroup = async (groupId, password) => {
         // Si estamos en desarrollo, devolvemos datos simulados
         if (process.env.NODE_ENV === 'development') {
             return {
-                userId: parseInt(userId),
-                groupId: parseInt(groupId),
-                roleId: 2,
-                username: 'Tú',
-                roleName: 'Miembro'
+                GroupId: parseInt(groupId),
+                UserId: parseInt(userId),
+                RoleId: 2,
+                Username: 'Tú',
+                RoleName: 'Miembro'
             };
         }
         
@@ -463,10 +572,12 @@ export default {
     getGroupsByUserId,
     getGroupById,
     getGroupMembers,
+    getGroupTasks,
+    getGroupEvents,
     createGroup,
     updateGroup,
     deleteGroup,
     joinGroup,
-    leaveGroup
+    leaveGroup,
+    getAllGroups
 };
-
