@@ -2,6 +2,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 
 const EventCard = ({ event, onUpdate, onDelete }) => {
     console.log('Event recibido:', event); // Log para depuración
@@ -13,65 +20,40 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     }
 
     const formatDateTime = (dateString) => {
-        if (!dateString) {
-            console.warn('dateString no proporcionado:', dateString);
-            return 'Sin fecha';
-        }
+        if (!dateString) return 'Sin fecha';
         try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) {
-                console.warn('Fecha inválida:', dateString);
-                return 'Fecha inválida';
-            }
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const date = dayjs.utc(dateString).tz('Europe/Madrid'); // ajusta a tu zona horaria
             const isMobile = window.innerWidth < 768;
-
             return isMobile
-                ? `${day}/${month} ${hours}:${minutes}`
-                : `${day}/${month}/${year} ${hours}:${minutes}`;
+                ? date.format('DD/MM HH:mm')
+                : date.format('DD/MM/YYYY HH:mm');
         } catch (error) {
-            console.error('Error formateando fecha:', error);
+            console.error('Error con dayjs:', error);
             return 'Error en fecha';
         }
     };
-
-    // Calculate time until event
+    
     const getTimeUntil = () => {
-        if (!event.startDateTime) {
-            console.warn('No hay startDateTime:', event);
-            return 'Sin fecha';
-        }
-
+        if (!event.startDateTime) return 'Sin fecha';
         try {
-            const eventDate = new Date(event.startDateTime);
-            if (isNaN(eventDate.getTime())) {
-                console.warn('startDateTime inválido:', event.startDateTime);
-                return 'Fecha inválida';
-            }
-
-            const now = new Date();
-            if (eventDate < now) {
-                return 'Evento pasado';
-            }
-
-            const diffTime = eventDate - now;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
+            const eventDate = dayjs.utc(event.startDateTime).tz('Europe/Madrid');
+            const now = dayjs().tz('Europe/Madrid');
+    
+            if (eventDate.isBefore(now)) return 'Evento pasado';
+    
+            const diffDays = eventDate.diff(now, 'day');
+            const diffHours = eventDate.diff(now, 'hour') % 24;
+            const diffMinutes = eventDate.diff(now, 'minute') % 60;
+    
             if (diffDays > 0) {
                 return `En ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
             } else if (diffHours > 0) {
                 return `En ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
             } else {
-                const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
                 return `En ${diffMinutes} ${diffMinutes === 1 ? 'minuto' : 'minutos'}`;
             }
         } catch (error) {
-            console.error('Error calculando tiempo hasta el evento:', error);
+            console.error('Error calculando tiempo:', error);
             return 'Error en fecha';
         }
     };

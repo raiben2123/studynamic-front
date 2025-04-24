@@ -3,6 +3,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react-icons/fa';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 
 const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     console.log('Task recibido:', task); // Log para depuración
@@ -27,24 +34,17 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
         }
 
         try {
-            const dueDate = new Date(task.dueDate);
-            if (isNaN(dueDate.getTime())) {
-                console.warn('dueDate inválido:', task.dueDate);
-                return null;
-            }
+            const dueDate = dayjs.utc(task.dueDate).tz('Europe/Madrid');
+            const today = dayjs().tz('Europe/Madrid').startOf('day');
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Normaliza a medianoche
-
-            const diffTime = dueDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+            const diffDays = dueDate.startOf('day').diff(today, 'day');
             return diffDays;
         } catch (error) {
             console.error('Error calculando días restantes:', error);
             return null;
         }
     };
+
 
     const daysRemaining = calculateDaysRemaining();
 
@@ -108,7 +108,9 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
                 <div className="flex items-center">
                     <div className="mr-2 w-2 h-2 rounded-full bg-primary"></div>
                     <span className="text-xs text-gray-600">
-                        {task.dueDate ? formatDateForDisplay(task.dueDate) : 'Sin fecha'}
+                        {task.dueDate
+                            ? dayjs.utc(task.dueDate).tz('Europe/Madrid').format('DD/MM/YYYY')
+                            : 'Sin fecha'}
                     </span>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded-full ${getTaskStatusColor()}`}>
