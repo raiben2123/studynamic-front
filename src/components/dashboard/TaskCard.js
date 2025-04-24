@@ -1,7 +1,8 @@
-// src/components/dashboard/TaskCard.js - Versión responsiva
+// src/components/dashboard/TaskCard.js - Enhanced for the new design
 import React from 'react';
 import PropTypes from 'prop-types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
+import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react-icons/fa';
 
 const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     const handleDelete = () => {
@@ -10,68 +11,96 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
         }
     };
 
-    // Detectar si es móvil para ajustar el diseño
-    const isMobile = window.innerWidth < 768;
+    // Calculate days remaining
+    const calculateDaysRemaining = () => {
+        const dueDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const diffTime = dueDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        return diffDays;
+    };
+    
+    const daysRemaining = calculateDaysRemaining();
+    
+    // Apply different styling based on importance and days remaining
+    const getTaskStatusColor = () => {
+        if (task.status === 'Finalizada') return 'bg-green-100 text-green-800';
+        if (daysRemaining < 0) return 'bg-red-100 text-red-800';
+        if (daysRemaining === 0) return 'bg-orange-100 text-orange-800';
+        if (daysRemaining <= 2) return 'bg-yellow-100 text-yellow-800';
+        return 'bg-blue-100 text-blue-800';
+    };
+    
+    const getImportanceIcon = () => {
+        switch (task.importance) {
+            case 'Alta':
+                return <FaExclamationCircle className="text-red-500" />;
+            case 'Media':
+                return <FaBookmark className="text-orange-500" />;
+            default:
+                return <FaBookmark className="text-blue-500" />;
+        }
+    };
+    
+    const getStatusText = () => {
+        if (task.status === 'Finalizada') return 'Completada';
+        if (daysRemaining < 0) return `Vencida (${Math.abs(daysRemaining)} días)`;
+        if (daysRemaining === 0) return 'Vence hoy';
+        if (daysRemaining === 1) return 'Vence mañana';
+        return `${daysRemaining} días restantes`;
+    };
 
     return (
-        <div className="bg-gray-100 p-2 sm:p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-200 transition">
-            <div className="flex flex-col space-y-1 sm:space-y-2">
-                <div className="flex justify-between items-start">
-                    <div className="w-[calc(100%-60px)]">
-                        <p className="font-medium text-sm sm:text-base text-primary truncate">{task.title}</p>
-                        <p className="text-xs sm:text-sm text-gray-600">Fecha: {formatDateForDisplay(task.dueDate)}</p>
-                        {!isMobile && <p className="text-xs sm:text-sm text-gray-600 truncate">Asignatura: {task.subject}</p>}
-                    </div>
-                    <div className="flex space-x-1 sm:space-x-2">
-                        <button
-                            onClick={() => onUpdate(task)}
-                            className="text-gray-500 hover:text-primary p-1"
-                            aria-label="Editar tarea"
-                        >
-                            ✏️
-                        </button>
-                        <button
-                            onClick={handleDelete}
-                            className="text-gray-500 hover:text-red-500 p-1"
-                            aria-label="Eliminar tarea"
-                        >
-                            🗑️
-                        </button>
-                    </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
+            <div className="flex items-start mb-2">
+                <div className="mr-2 text-violet-500">{getImportanceIcon()}</div>
+                <div className="flex-1">
+                    <h3 className="font-semibold text-violet-700 truncate">{task.title}</h3>
+                    <p className="text-sm text-gray-600">{task.subject}</p>
                 </div>
-                {isMobile && (
-                    <p className="text-xs text-gray-600 truncate">Asignatura: {task.subject}</p>
-                )}
-                <div className="flex flex-wrap gap-1 sm:gap-2">
-                    <span
-                        className={`text-xs font-medium px-1 py-0.5 sm:px-2 sm:py-1 rounded-full ${
-                            task.status === 'Pendiente'
-                                ? 'bg-red-100 text-red-800'
-                                : task.status === 'En curso'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-green-100 text-green-800'
-                        }`}
+                <div className="flex space-x-1 ml-2">
+                    <button
+                        onClick={() => onUpdate(task)}
+                        className="p-1.5 text-gray-400 hover:text-violet-500 rounded-full hover:bg-gray-100 transition"
+                        aria-label="Editar tarea"
                     >
-                        {task.status}
-                    </span>
-                    <span
-                        className={`text-xs font-medium px-1 py-0.5 sm:px-2 sm:py-1 rounded-full ${
-                            task.importance === 'Alta'
-                                ? 'bg-red-100 text-red-800'
-                                : task.importance === 'Media'
-                                ? 'bg-orange-100 text-orange-800'
-                                : 'bg-gray-100 text-gray-800'
-                        }`}
+                        <FaEdit size={16} />
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition"
+                        aria-label="Eliminar tarea"
                     >
-                        {task.importance}
-                    </span>
-                    {(task.markObtained || task.markMax) && (
-                        <span className="text-xs font-medium px-1 py-0.5 sm:px-2 sm:py-1 rounded-full bg-blue-100 text-blue-800">
-                            {task.markObtained || '0'}/{task.markMax || '0'}
-                        </span>
-                    )}
+                        <FaTrash size={16} />
+                    </button>
                 </div>
             </div>
+            
+            <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center">
+                    <div className="mr-2 w-2 h-2 rounded-full bg-primary"></div>
+                    <span className="text-xs text-gray-600">{formatDateForDisplay(task.dueDate)}</span>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${getTaskStatusColor()}`}>
+                    {getStatusText()}
+                </span>
+            </div>
+            
+            {task.status === 'Finalizada' && (
+                <div className="mt-2 flex items-center text-green-600 text-xs">
+                    <FaCheck className="mr-1" />
+                    <span>Completada</span>
+                </div>
+            )}
+            
+            {(task.markObtained || task.markMax) && (
+                <div className="mt-2 text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800 inline-block">
+                    Calificación: {task.markObtained || '0'}/{task.markMax || '0'}
+                </div>
+            )}
         </div>
     );
 };
@@ -89,7 +118,8 @@ TaskCard.propTypes = {
         notificationDate: PropTypes.string
     }).isRequired,
     onUpdate: PropTypes.func.isRequired,
-    onDelete: PropTypes.func.isRequired
+    onDelete: PropTypes.func.isRequired,
+    subjects: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default TaskCard;

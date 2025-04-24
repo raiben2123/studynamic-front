@@ -1,4 +1,4 @@
-// src/pages/Dashboard.js - versión actualizada utilizando clases de tema
+// src/pages/Dashboard.js - Updated with modern UI and carousel
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -11,9 +11,12 @@ import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
 import SubjectCard from '../components/dashboard/SubjectCard';
 import EventCard from '../components/dashboard/EventCard';
+import GroupCard from '../components/dashboard/GroupCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
+import Carousel from '../components/Carousel'; // Import the new Carousel component
+import { FaChartPie, FaCalendarAlt, FaBook, FaUsers, FaTasks, FaPlus } from 'react-icons/fa';
 
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);
@@ -28,8 +31,18 @@ const Dashboard = () => {
     const [editingEvent, setEditingEvent] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const { token, userId } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -56,7 +69,6 @@ const Dashboard = () => {
                 setSubjects(subjectsData);
                 setEvents(sortedEvents);
                 setGroups(groupsData);
-                console.log('Grupos:', groupsData);
                 setError(null);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -71,7 +83,6 @@ const Dashboard = () => {
     const handleAddTask = async (newTask) => {
         setLoading(true);
         try {
-            console.log('Dashboard - Añadiendo tarea:', newTask);
             const addedTask = await addTask(newTask);
             
             // Añadimos la nueva tarea y reordenamos
@@ -92,7 +103,6 @@ const Dashboard = () => {
     };
 
     const handleEditTask = (task) => {
-        console.log('Dashboard - Editando tarea:', task);
         setEditingTask(task);
         setIsTaskModalOpen(true);
     };
@@ -100,7 +110,6 @@ const Dashboard = () => {
     const handleTaskUpdate = async (updatedTask) => {
         setLoading(true);
         try {
-            console.log('Dashboard - Actualizando tarea:', updatedTask);
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
             
             // Actualizamos la tarea y reordenamos
@@ -197,7 +206,6 @@ const Dashboard = () => {
     const handleAddEvent = async (newEvent) => {
         setLoading(true);
         try {
-            console.log('Dashboard - Añadiendo evento:', newEvent);
             const addedEvent = await addEvent(newEvent);
             
             // Añadimos el nuevo evento y reordenamos
@@ -219,7 +227,6 @@ const Dashboard = () => {
     };
 
     const handleEditEvent = (event) => {
-        console.log('Dashboard - Editando evento:', event);
         setEditingEvent(event);
         setIsEventModalOpen(true);
     };
@@ -228,7 +235,6 @@ const Dashboard = () => {
         if (!editingEvent) return;
         setLoading(true);
         try {
-            console.log('Dashboard - Actualizando evento:', updatedEvent);
             const updatedEventFromBackend = await updateEvent(editingEvent.id, updatedEvent);
             
             // Actualizamos el evento y reordenamos
@@ -264,6 +270,10 @@ const Dashboard = () => {
         }
     };
 
+    const handleNavigateToGroup = (groupId) => {
+        navigate(`/groups/${groupId}`);
+    };
+
     const handleAddGroup = () => {
         navigate('/groups');
     };
@@ -280,6 +290,43 @@ const Dashboard = () => {
             : 0);
 
     const sortedGroups = groups.sort((a, b) => b.memberCount - a.memberCount);
+
+    // Prepare items for carousel
+    const createCarouselItems = (items, Component, onUpdate, onDelete, props = {}) => {
+        return items.map((item, index) => (
+            <div key={item.id || index} className="min-w-full">
+                <Component 
+                    {...props}
+                    {...{[Component.name.toLowerCase().replace('card', '')]: item}}
+                    onUpdate={onUpdate}
+                    onDelete={onDelete}
+                />
+            </div>
+        ));
+    };
+
+    const taskItems = createCarouselItems(
+        pendingTasks.slice(0, 5), 
+        TaskCard, 
+        handleEditTask, 
+        handleTaskDelete, 
+        { subjects: subjects.map(s => s.title) }
+    );
+    
+    const eventItems = createCarouselItems(
+        upcomingEvents.slice(0, 5), 
+        EventCard, 
+        handleEditEvent, 
+        handleEventDelete
+    );
+    
+    const groupItems = createCarouselItems(
+        sortedGroups.slice(0, 5), 
+        GroupCard, 
+        null, 
+        null, 
+        { onNavigate: handleNavigateToGroup }
+    );
 
     return (
         <div className="flex flex-col min-h-screen md:flex-row">
@@ -304,145 +351,210 @@ const Dashboard = () => {
                     {loading && (
                         <div className="text-center mb-4">Cargando...</div>
                     )}
-                    <h1 className="text-2xl md:text-3xl mb-6 text-primary">Dashboard</h1>
+                    
+                    {/* Welcome Section - Simplified */}
+                    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-6 opacity-95">
+                        <h1 className="text-2xl md:text-3xl mb-2 text-violet-700 font-bold">
+                            ¡Bienvenido a StudyNamic!
+                        </h1>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 opacity-95">
-                        {/* Tareas Pendientes */}
-                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
+                        {/* Stats in a simplified row */}
+                        <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+                            <div className="bg-white rounded">
+                                <p className="text-sm text-violet-700 font-medium">Tareas</p>
+                                <p className="text-lg font-bold text-violet-900">{tasks.length}</p>
+                            </div>
+                            
+                            <div className="bg-white rounded">
+                                <p className="text-sm text-violet-700 font-medium">Eventos</p>
+                                <p className="text-lg font-bold text-violet-900">{events.length}</p>
+                            </div>
+                            
+                            <div className="bg-white rounded">
+                                <p className="text-sm text-violet-700 font-medium">Asignaturas</p>
+                                <p className="text-lg font-bold text-violet-900">{subjects.length}</p>
+                            </div>
+                            
+                            <div className="bg-white rounded">
+                                <p className="text-sm text-violet-700 font-medium">Grupos</p>
+                                <p className="text-lg font-bold text-violet-900">{groups.length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        {/* Tareas Pendientes con Carousel */}
+                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold text-primary">Tareas Pendientes</h2>
+                                <div className="flex items-center">
+                                    <h2 className="text-xl font-semibold text-primary">Tareas Pendientes</h2>
+                                    <span className="ml-2 text-xs text-gray-500">({pendingTasks.length})</span>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setEditingTask(null);
                                         setIsTaskModalOpen(true);
                                     }}
-                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
-                                    disabled={loading}
+                                    className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
                                 >
-                                    + Añadir Tarea
+                                    <FaPlus className="mr-1" /> 
+                                    {!isMobile && "Añadir"}
                                 </button>
                             </div>
-                            <div className="max-h-[30vh] lg:max-h-[50vh] overflow-y-auto">
-                                {pendingTasks.length === 0 ? (
-                                    <p className="text-gray-600">No hay tareas pendientes.</p>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {pendingTasks.map((task) => (
-                                            <TaskCard
-                                                key={task.id}
-                                                task={task}
-                                                onUpdate={handleEditTask}
-                                                onDelete={handleTaskDelete}
-                                                subjects={subjects.map((s) => s.title)}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            
+                            {pendingTasks.length === 0 ? (
+                                <p className="text-gray-600">No hay tareas pendientes.</p>
+                            ) : (
+                                <div className="max-h-[300px] relative">
+                                    <Carousel autoSlide={false} autoSlideInterval={5000} showArrows={true} showDots={true}>
+                                        {taskItems}
+                                    </Carousel>
+                                </div>
+                            )}
+                            
+                            {pendingTasks.length > 0 && (
+                                <div className="text-center mt-4">
+                                    <button
+                                        onClick={() => navigate('/tasks')}
+                                        className="text-violet-500 hover:text-violet-700 text-sm"
+                                    >
+                                        Ver todas las tareas
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Próximos Eventos */}
-                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
+                        {/* Próximos Eventos con Carousel */}
+                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold text-primary">Próximos Eventos</h2>
+                                <div className="flex items-center">
+                                    <h2 className="text-xl font-semibold text-primary">Próximos Eventos</h2>
+                                    <span className="ml-2 text-xs text-gray-500">({upcomingEvents.length})</span>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setEditingEvent(null);
                                         setIsEventModalOpen(true);
                                     }}
-                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
-                                    disabled={loading}
+                                    className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
                                 >
-                                    + Añadir Evento
+                                    <FaPlus className="mr-1" /> 
+                                    {!isMobile && "Añadir"}
                                 </button>
                             </div>
-                            <div className="max-h-[30vh] lg:max-h-[50vh] overflow-y-auto">
-                                {upcomingEvents.length === 0 ? (
-                                    <p className="text-gray-600">No hay eventos próximos.</p>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {upcomingEvents.map((event) => (
-                                            <EventCard
-                                                key={event.id}
-                                                event={event}
-                                                onUpdate={handleEditEvent}
-                                                onDelete={handleEventDelete}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            
+                            {upcomingEvents.length === 0 ? (
+                                <p className="text-gray-600">No hay eventos próximos.</p>
+                            ) : (
+                                <div className="max-h-[300px] relative">
+                                    <Carousel autoSlide={false} autoSlideInterval={6000} showArrows={true} showDots={true}>
+                                        {eventItems}
+                                    </Carousel>
+                                </div>
+                            )}
+                            
+                            {upcomingEvents.length > 0 && (
+                                <div className="text-center mt-4">
+                                    <button
+                                        onClick={() => navigate('/calendar')}
+                                        className="text-violet-500 hover:text-violet-700 text-sm"
+                                    >
+                                        Ver calendario completo
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Mis Grupos */}
-                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6">
+                        {/* Mis Grupos con Carousel */}
+                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold text-primary">Mis Grupos</h2>
+                                <div className="flex items-center">
+                                    <h2 className="text-xl font-semibold text-primary">Mis Grupos</h2>
+                                    <span className="ml-2 text-xs text-gray-500">({sortedGroups.length})</span>
+                                </div>
                                 <button
                                     onClick={handleAddGroup}
-                                    className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
-                                    disabled={loading}
+                                    className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
                                 >
-                                    + Añadir Grupo
+                                    <FaPlus className="mr-1" /> 
+                                    {!isMobile && "Añadir"}
                                 </button>
                             </div>
-                            <div className="max-h-[30vh] lg:max-h-[50vh] overflow-y-auto">
-                                {sortedGroups.length === 0 ? (
-                                    <p className="text-gray-600">No estás en ningún grupo.</p>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {sortedGroups.map((group) => (
-                                            <div
-                                                key={group.id}
-                                                className="p-3 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200 transition"
-                                            >
-                                                <div>
-                                                    <p className="font-medium text-primary">{group.name}</p>
-                                                    <p className="text-sm text-gray-600">{group.memberCount} miembros</p>
-                                                </div>
-                                                <button 
-                                                    className="text-sm px-3 py-1 bg-primary text-white rounded-full hover:bg-accent"
-                                                    onClick={() => navigate(`/groups/${group.id}`)}
-                                                >
-                                                    Ver Grupo
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            
+                            {sortedGroups.length === 0 ? (
+                                <p className="text-gray-600">No estás en ningún grupo.</p>
+                            ) : (
+                                <div className="max-h-[300px] relative">
+                                    <Carousel autoSlide={false} autoSlideInterval={7000} showArrows={true} showDots={true}>
+                                        {groupItems}
+                                    </Carousel>
+                                </div>
+                            )}
+                            
+                            {sortedGroups.length > 0 && (
+                                <div className="text-center mt-4">
+                                    <button
+                                        onClick={() => navigate('/groups')}
+                                        className="text-violet-500 hover:text-violet-700 text-sm"
+                                    >
+                                        Ver todos los grupos
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Sección de Asignaturas */}
                     <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold text-primary">Mis Asignaturas</h2>
+                            <div className="flex items-center">
+                                <h2 className="text-xl font-semibold text-primary">Mis Asignaturas</h2>
+                                <span className="ml-2 text-xs text-gray-500">({subjects.length})</span>
+                            </div>
                             <button
                                 onClick={() => {
                                     setEditingSubject(null);
                                     setIsSubjectModalOpen(true);
                                 }}
-                                className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent"
-                                disabled={loading}
+                                className="bg-violet-500 text-white px-3 py-1 rounded-full hover:bg-violet-600 flex items-center"
                             >
-                                + Añadir Asignatura
+                                <FaPlus className="mr-1" /> 
+                                {!isMobile && "Añadir Asignatura"}
                             </button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {subjects.length === 0 ? (
-                                <p className="text-gray-600">No tienes asignaturas registradas.</p>
-                            ) : (
-                                subjects.map((subject) => (
-                                    <SubjectCard
-                                        key={subject.id}
-                                        subject={subject}
-                                        onUpdate={handleEditSubject}
-                                        onDelete={handleSubjectDelete}
-                                    />
-                                ))
-                            )}
-                        </div>
+                        
+                        {subjects.length === 0 ? (
+                            <p className="text-gray-600">No tienes asignaturas registradas.</p>
+                        ) : (
+                            <>
+                                {/* Desktop View - Grid */}
+                                <div className="hidden md:grid md:grid-cols-3 gap-4">
+                                    {subjects.map((subject) => (
+                                        <SubjectCard
+                                            key={subject.id}
+                                            subject={subject}
+                                            onUpdate={handleEditSubject}
+                                            onDelete={handleSubjectDelete}
+                                        />
+                                    ))}
+                                </div>
+                                
+                                {/* Mobile View - Carousel */}
+                                <div className="md:hidden relative">
+                                    <Carousel autoSlide={false} autoSlideInterval={4000} showArrows={true} showDots={true}>
+                                        {subjects.map((subject) => (
+                                            <div key={subject.id} className="min-w-full">
+                                                <SubjectCard
+                                                    subject={subject}
+                                                    onUpdate={handleEditSubject}
+                                                    onDelete={handleSubjectDelete}
+                                                />
+                                            </div>
+                                        ))}
+                                    </Carousel>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
