@@ -4,51 +4,84 @@ import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
 
 const EventCard = ({ event, onUpdate, onDelete }) => {
+    console.log('Event recibido:', event); // Log para depuración
+
+    // Verifica si event existe
+    if (!event) {
+        console.warn('Event es undefined o null');
+        return <div className="text-error">Error: Evento no disponible</div>;
+    }
+
     const formatDateTime = (dateString) => {
-        if (!dateString) return 'Sin fecha';
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const isMobile = window.innerWidth < 768;
-        
-        return isMobile 
-            ? `${day}/${month} ${hours}:${minutes}`
-            : `${day}/${month}/${year} ${hours}:${minutes}`;
+        if (!dateString) {
+            console.warn('dateString no proporcionado:', dateString);
+            return 'Sin fecha';
+        }
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                console.warn('Fecha inválida:', dateString);
+                return 'Fecha inválida';
+            }
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const isMobile = window.innerWidth < 768;
+
+            return isMobile
+                ? `${day}/${month} ${hours}:${minutes}`
+                : `${day}/${month}/${year} ${hours}:${minutes}`;
+        } catch (error) {
+            console.error('Error formateando fecha:', error);
+            return 'Error en fecha';
+        }
     };
 
     // Calculate time until event
     const getTimeUntil = () => {
-        if (!event.startDateTime) return '';
-        
-        const eventDate = new Date(event.startDateTime);
-        const now = new Date();
-        
-        if (eventDate < now) {
-            return 'Evento pasado';
+        if (!event.startDateTime) {
+            console.warn('No hay startDateTime:', event);
+            return 'Sin fecha';
         }
-        
-        const diffTime = eventDate - now;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        
-        if (diffDays > 0) {
-            return `En ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
-        } else if (diffHours > 0) {
-            return `En ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
-        } else {
-            const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-            return `En ${diffMinutes} ${diffMinutes === 1 ? 'minuto' : 'minutos'}`;
+
+        try {
+            const eventDate = new Date(event.startDateTime);
+            if (isNaN(eventDate.getTime())) {
+                console.warn('startDateTime inválido:', event.startDateTime);
+                return 'Fecha inválida';
+            }
+
+            const now = new Date();
+            if (eventDate < now) {
+                return 'Evento pasado';
+            }
+
+            const diffTime = eventDate - now;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+            if (diffDays > 0) {
+                return `En ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+            } else if (diffHours > 0) {
+                return `En ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+            } else {
+                const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+                return `En ${diffMinutes} ${diffMinutes === 1 ? 'minuto' : 'minutos'}`;
+            }
+        } catch (error) {
+            console.error('Error calculando tiempo hasta el evento:', error);
+            return 'Error en fecha';
         }
     };
-    
+
     const timeUntil = getTimeUntil();
-    
+
     // Determine badge color based on time until event
     const getBadgeColor = () => {
         if (timeUntil === 'Evento pasado') return 'bg-event-pasado text-event-pasado';
+        if (timeUntil === 'Sin fecha' || timeUntil === 'Fecha inválida') return 'bg-event-normal text-event-normal';
         if (timeUntil.includes('minutos') || (timeUntil.includes('hora') && !timeUntil.includes('horas'))) {
             return 'bg-event-proximo text-event-proximo';
         }
@@ -65,7 +98,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                     <FaCalendarAlt className="text-primary" />
                 </div>
                 <div className="flex-1">
-                    <h3 className="font-semibold text-primary truncate">{event.title}</h3>
+                    <h3 className="font-semibold text-primary truncate">{event.title || 'Sin título'}</h3>
                     {event.description && (
                         <p className="text-sm text-gray-600 line-clamp-1">{event.description}</p>
                     )}
@@ -93,13 +126,13 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                     </button>
                 </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-y-2 text-xs">
                 <div className="flex items-center mr-3">
                     <FaCalendarAlt className="text-gray-400 mr-1" size={12} />
                     <span className="text-gray-600">{formatDateTime(event.startDateTime)}</span>
                 </div>
-                
+
                 {event.endDateTime && (
                     <div className="flex items-center">
                         <FaClock className="text-gray-400 mr-1" size={12} />
@@ -107,7 +140,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                     </div>
                 )}
             </div>
-            
+
             <div className="mt-3">
                 <span className={`text-xs px-2 py-1 rounded-full ${getBadgeColor()}`}>
                     {timeUntil}
@@ -119,13 +152,13 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
 
 EventCard.propTypes = {
     event: PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        title: PropTypes.string.isRequired,
-        startDateTime: PropTypes.string,
+        id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+        title: PropTypes.string,
+        startDateTime: PropTypes.string, // Opcional
         endDateTime: PropTypes.string,
         description: PropTypes.string,
         notification: PropTypes.string,
-    }).isRequired,
+    }),
     onUpdate: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
 };
