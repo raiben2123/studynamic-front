@@ -2,8 +2,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import { dayjs } from '../../dayjs'
+import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);

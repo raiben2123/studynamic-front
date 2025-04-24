@@ -1,6 +1,6 @@
 // src/App.js
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
@@ -31,6 +31,19 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
+  // Establecer la ruta base para producción
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      // Configurar ruta base si es necesario
+      const base = document.querySelector('base');
+      if (!base) {
+        const baseEl = document.createElement('base');
+        baseEl.href = process.env.PUBLIC_URL || './';
+        document.head.insertBefore(baseEl, document.head.firstChild);
+      }
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <ThemeProvider>

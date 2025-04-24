@@ -3,8 +3,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react-icons/fa';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
+import { dayjs } from '../../dayjs'
+import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
