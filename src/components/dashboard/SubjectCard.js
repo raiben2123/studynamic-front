@@ -1,4 +1,4 @@
-// src/components/dashboard/SubjectCard.js - Enhanced for modern design
+// src/components/dashboard/SubjectCard.js - Modified to use confirmation modal
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaBook, FaClock, FaCalendarAlt, FaAngleDown, FaAngleUp } from 'react-icons/fa';
@@ -49,7 +49,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
         if (hours === 0) {
             return `${mins} min`;
         } else if (mins === 0) {
-            return hours === 1 ? `${hours} h` : `${hours} h`;
+            return hours === 1 ? `${hours} hora` : `${hours} horas`;
         } else {
             return `${hours}h ${mins}m`;
         }
@@ -80,6 +80,12 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     
     const subjectColor = getSubjectColor();
 
+    const handleDeleteClick = () => {
+        // En lugar de usar window.confirm, simplemente llamamos a onDelete
+        // El componente padre ahora se encargará de mostrar el modal de confirmación
+        onDelete(subject.id);
+    };
+
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex justify-between items-start">
@@ -87,7 +93,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                     <div className={`p-2.5 rounded-lg ${subjectColor}`}>
                         <FaBook className="text-white" />
                     </div>
-                    <h3 className="font-semibold text-lg text-primary truncate">{subject.title}</h3>
+                    <h3 className="font-semibold text-lg text-primary truncate">{subject.title || 'Sin título'}</h3>
                 </div>
                 <div className="flex space-x-1">
                     <button
@@ -99,12 +105,8 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                         <FaEdit size={16} />
                     </button>
                     <button
-                        onClick={() => {
-                            if (window.confirm('¿Estás seguro de eliminar esta asignatura?')) {
-                                onDelete(subject.id);
-                            }
-                        }}
-                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition"
+                        onClick={handleDeleteClick}
+                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
                         title="Eliminar"
                         aria-label="Eliminar asignatura"
                     >

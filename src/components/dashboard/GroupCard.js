@@ -18,17 +18,6 @@ const GroupCard = ({ group, onNavigate }) => {
                         </p>
                     </div>
                 </div>
-                
-                {/* Group Activity Indicator */}
-                <div className="mt-3 flex items-center">
-                    <div className="w-full bg-gray-200 rounded-full h-1">
-                        <div 
-                            className="bg-activity-progress h-1 rounded-full" 
-                            style={{ width: `${Math.min(100, (group.memberCount || 1) * 10)}%` }} 
-                        ></div>
-                    </div>
-                    <span className="ml-2 text-xs text-gray-500">Actividad</span>
-                </div>
             </div>
             
             <button 

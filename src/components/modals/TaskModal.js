@@ -1,4 +1,4 @@
-// src/components/modals/TaskModal.js - Implementación usando el Modal base
+// src/components/modals/TaskModal.js - Version mejorada
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { extractDateFromIso } from '../../utils/dateUtils';
@@ -25,9 +25,18 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
             const normalizedDueDate = extractDateFromIso(task.dueDate);
             const normalizedNotificationDate = extractDateFromIso(task.notificationDate);
             
+            // Si la tarea tiene subject pero no subjectId, buscamos el subjectId
+            let subjectId = task.subjectId;
+            if (!subjectId && task.subject) {
+                const foundSubject = subjects.find(s => s.title === task.subject);
+                if (foundSubject) {
+                    subjectId = foundSubject.id;
+                }
+            }
+            
             setFormData({
                 id: task.id || '',
-                subjectId: subjects.find((s) => s.title === task.subject)?.id || '',
+                subjectId: subjectId ? subjectId.toString() : '',
                 title: task.title || '',
                 dueDate: normalizedDueDate,
                 importance: task.importance || 'Baja',
@@ -89,13 +98,13 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
             return;
         }
         
-        // Añadir subject al formData para que updateTask lo use
+        // Añadir subject al formData para que tenga tanto ID como nombre
         const subjectTitle = subjects.find((s) => s.id === parseInt(formData.subjectId))?.title || '';
         
         // Preparar los datos antes de enviarlos
         const taskData = {
             ...formData,
-            subject: subjectTitle
+            subject: subjectTitle  // Aseguramos que la tarea tenga el nombre de la asignatura
         };
         
         onSave(taskData);
@@ -271,6 +280,7 @@ TaskModal.propTypes = {
         markMax: PropTypes.string,
         notificationDate: PropTypes.string,
         subject: PropTypes.string,
+        subjectId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     }),
 };
 

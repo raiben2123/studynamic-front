@@ -339,7 +339,8 @@ export const createGroup = async (groupData) => {
             body: JSON.stringify({
                 groupId: newGroup.id,
                 userId: parseInt(userId),
-                roleId: 1 // Rol de admin
+                roleId: 1, // Rol de admin
+                password: groupData.password
             }),
         });
 
@@ -495,7 +496,7 @@ export const joinGroup = async (groupId, password) => {
             body: JSON.stringify({
                 GroupId: parseInt(groupId),
                 UserId: parseInt(userId),
-                RoleId: 2, // Rol de miembro normal
+                RoleId: 2, // Rol de miembro normal (forzamos siempre el 2 para miembros)
                 Password: password
             }),
         });
@@ -516,7 +517,7 @@ export const joinGroup = async (groupId, password) => {
             return {
                 GroupId: parseInt(groupId),
                 UserId: parseInt(userId),
-                RoleId: 2,
+                RoleId: 2, // Siempre 2 para nuevos miembros
                 Username: 'Tú',
                 RoleName: 'Miembro'
             };

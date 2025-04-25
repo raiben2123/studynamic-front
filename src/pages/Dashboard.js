@@ -1,4 +1,4 @@
-// src/pages/Dashboard.js - Adaptado para usar el sistema de temas
+// src/pages/Dashboard.js modificado con modales de confirmación
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,7 @@ import GroupCard from '../components/dashboard/GroupCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
+import ConfirmationModal from '../components/modals/ConfirmationModal'; // Importar el modal de confirmación
 import Carousel from '../components/Carousel'; 
 import { FaChartPie, FaCalendarAlt, FaBook, FaUsers, FaTasks, FaPlus } from 'react-icons/fa';
 
@@ -32,8 +33,17 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const { token, userId, userTheme } = useAuth(); // Ahora obtenemos userTheme del contexto
+    const { token, userId, userTheme } = useAuth();
     const navigate = useNavigate();
+
+    // Estados para los modales de confirmación
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'warning'
+    });
 
     useEffect(() => {
         const handleResize = () => {
@@ -83,9 +93,22 @@ const Dashboard = () => {
     const handleAddTask = async (newTask) => {
         setLoading(true);
         try {
+            // Añadir la tarea a través de la API
             const addedTask = await addTask(newTask);
             
-            const updatedTasks = [...tasks, addedTask].sort((a, b) => {
+            // Asegurar que la tarea tenga la asignatura correcta
+            let taskWithSubject = { ...addedTask };
+            
+            // Buscar el nombre de la asignatura si tenemos el subjectId
+            if (addedTask.subjectId) {
+                const subject = subjects.find(s => s.id === parseInt(addedTask.subjectId));
+                if (subject) {
+                    taskWithSubject.subject = subject.title;
+                }
+            }
+            
+            // Ordenar las tareas por fecha
+            const updatedTasks = [...tasks, taskWithSubject].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
             
@@ -105,14 +128,26 @@ const Dashboard = () => {
         setEditingTask(task);
         setIsTaskModalOpen(true);
     };
-
     const handleTaskUpdate = async (updatedTask) => {
         setLoading(true);
         try {
+            // Actualizar la tarea a través de la API
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
             
+            // Asegurar que la tarea tenga la asignatura correcta
+            let taskWithSubject = { ...updatedTaskFromBackend };
+            
+            // Buscar el nombre de la asignatura si tenemos el subjectId
+            if (updatedTaskFromBackend.subjectId) {
+                const subject = subjects.find(s => s.id === parseInt(updatedTaskFromBackend.subjectId));
+                if (subject) {
+                    taskWithSubject.subject = subject.title;
+                }
+            }
+            
+            // Actualizar el estado con la tarea actualizada
             const updatedTasks = tasks
-                .map((task) => (task.id === updatedTask.id ? updatedTaskFromBackend : task))
+                .map((task) => (task.id === updatedTask.id ? taskWithSubject : task))
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
             
             setTasks(updatedTasks);
@@ -130,17 +165,26 @@ const Dashboard = () => {
     };
 
     const handleTaskDelete = async (taskId) => {
-        setLoading(true);
-        try {
-            await deleteTask(taskId);
-            setTasks(tasks.filter((task) => task.id !== taskId));
-            setError(null);
-        } catch (error) {
-            console.error('Error deleting task:', error);
-            setError(error.message || 'Error al eliminar la tarea');
-        } finally {
-            setLoading(false);
-        }
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Tarea',
+            message: '¿Estás seguro de que quieres eliminar esta tarea? Esta acción no se puede deshacer.',
+            onConfirm: async () => {
+                setLoading(true);
+                try {
+                    await deleteTask(taskId);
+                    setTasks(tasks.filter((task) => task.id !== taskId));
+                    setError(null);
+                } catch (error) {
+                    console.error('Error deleting task:', error);
+                    setError(error.message || 'Error al eliminar la tarea');
+                } finally {
+                    setLoading(false);
+                }
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
     };
 
     const handleAddSubject = async (subjectName) => {
@@ -188,17 +232,26 @@ const Dashboard = () => {
     };
 
     const handleSubjectDelete = async (subjectId) => {
-        setLoading(true);
-        try {
-            await deleteSubject(subjectId);
-            setSubjects(subjects.filter((subject) => subject.id !== subjectId));
-            setError(null);
-        } catch (error) {
-            console.error('Error deleting subject:', error);
-            setError(error.message || 'Error al eliminar la asignatura');
-        } finally {
-            setLoading(false);
-        }
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Asignatura',
+            message: '¿Estás seguro de que quieres eliminar esta asignatura? Se eliminarán también todos los horarios asociados.',
+            onConfirm: async () => {
+                setLoading(true);
+                try {
+                    await deleteSubject(subjectId);
+                    setSubjects(subjects.filter((subject) => subject.id !== subjectId));
+                    setError(null);
+                } catch (error) {
+                    console.error('Error deleting subject:', error);
+                    setError(error.message || 'Error al eliminar la asignatura');
+                } finally {
+                    setLoading(false);
+                }
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
     };
 
     const handleAddEvent = async (newEvent) => {
@@ -253,17 +306,26 @@ const Dashboard = () => {
     };
 
     const handleEventDelete = async (eventId) => {
-        setLoading(true);
-        try {
-            await deleteEvent(eventId);
-            setEvents(events.filter((event) => event.id !== eventId));
-            setError(null);
-        } catch (error) {
-            console.error('Error deleting event:', error);
-            setError(error.message || 'Error al eliminar el evento');
-        } finally {
-            setLoading(false);
-        }
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Evento',
+            message: '¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.',
+            onConfirm: async () => {
+                setLoading(true);
+                try {
+                    await deleteEvent(eventId);
+                    setEvents(events.filter((event) => event.id !== eventId));
+                    setError(null);
+                } catch (error) {
+                    console.error('Error deleting event:', error);
+                    setError(error.message || 'Error al eliminar el evento');
+                } finally {
+                    setLoading(false);
+                }
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
     };
 
     const handleNavigateToGroup = (groupId) => {
@@ -272,6 +334,14 @@ const Dashboard = () => {
 
     const handleAddGroup = () => {
         navigate('/groups');
+    };
+
+    // Cerrar el modal de confirmación
+    const closeConfirmationModal = () => {
+        setConfirmationModal({
+            ...confirmationModal,
+            isOpen: false
+        });
     };
 
     // Filtramos las tareas pendientes y las ordenamos por fecha
@@ -586,6 +656,17 @@ const Dashboard = () => {
                 }}
                 onSave={editingSubject ? handleSubjectUpdate : handleAddSubject}
                 subject={editingSubject}
+            />
+            
+            {/* Modal de Confirmación */}
+            <ConfirmationModal
+                isOpen={confirmationModal.isOpen}
+                onClose={closeConfirmationModal}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
+                onConfirm={confirmationModal.onConfirm}
+                type={confirmationModal.type}
+                confirmText={confirmationModal.confirmText || 'Confirmar'}
             />
         </div>
     );

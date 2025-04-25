@@ -75,6 +75,16 @@ const GroupDetailsPage = () => {
     // Notificación toast
     const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
+    // Estado para el modal de confirmación
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        type: 'warning',
+        confirmText: 'Confirmar'
+    });
+
     // Responsive handler
     useEffect(() => {
         const handleResize = () => {
@@ -143,7 +153,12 @@ const GroupDetailsPage = () => {
     }, [groupId, token, userId]);
 
     // Check if current user is admin
-    const isAdmin = members.find((m) => m.userId === parseInt(userId) && m.roleId === 1) !== undefined;
+    const isAdmin = React.useMemo(() => {
+        return members.some(member =>
+            member.userId === parseInt(userId) &&
+            member.roleId === 1
+        );
+    }, [members, userId]);
 
     // Funciones de Toast
     const showToast = (message, type = 'success') => {
@@ -188,20 +203,118 @@ const GroupDetailsPage = () => {
         setIsAddModalOpen(true);
     };
 
+    // Reemplazar la llamada a window.confirm para eliminar tarea
+    const handleTaskDelete = async (taskId) => {
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Tarea',
+            message: '¿Estás seguro de que quieres eliminar esta tarea? Esta acción no se puede deshacer.',
+            onConfirm: async () => {
+                try {
+                    await deleteTask(taskId);
+                    setTasks(tasks.filter(t => t.id !== taskId));
+                    showToast('Tarea eliminada correctamente', 'success');
+                } catch (err) {
+                    console.error('Error deleting task:', err);
+                    setError('Error al eliminar la tarea');
+                }
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
+    };
+
+    // Reemplazar la llamada a window.confirm para eliminar evento
+    const handleEventDelete = async (eventId) => {
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Evento',
+            message: '¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.',
+            onConfirm: async () => {
+                try {
+                    await deleteEvent(eventId);
+                    setEvents(events.filter(e => e.id !== eventId));
+                    showToast('Evento eliminado correctamente', 'success');
+                } catch (err) {
+                    console.error('Error deleting event:', err);
+                    setError('Error al eliminar el evento');
+                }
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
+    };
+
+    // Reemplazar la llamada a window.confirm para eliminar una sesión de estudio
+    const handleSessionDelete = (sessionId) => {
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Sesión',
+            message: '¿Estás seguro de que quieres eliminar esta sesión de estudio? Esta acción no se puede deshacer.',
+            onConfirm: () => {
+                setStudySessions(studySessions.filter(s => s.id !== sessionId));
+                showToast('Sesión eliminada correctamente', 'success');
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
+    };
+
+    // Reemplazar la llamada a window.confirm para eliminar un archivo/nota
+    const handleFileDelete = (folder, index) => {
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Archivo',
+            message: `¿Estás seguro de eliminar "${notes[folder][index].name}"? Esta acción no se puede deshacer.`,
+            onConfirm: () => {
+                const updatedNotes = { ...notes };
+                updatedNotes[folder].splice(index, 1);
+                setNotes(updatedNotes);
+                showToast('Archivo eliminado correctamente', 'success');
+            },
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
+    };
+
+    // Reemplazar la llamada a window.confirm para eliminar el grupo
+    const handleDeleteGroup = () => {
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Eliminar Grupo',
+            message: 'Esta acción eliminará permanentemente el grupo y todos sus datos. No se puede deshacer. ¿Estás seguro?',
+            onConfirm: () => {
+                // En un caso real, aquí se haría la llamada a la API
+                showToast('Operación no implementada', 'error');
+            },
+            type: 'danger',
+            confirmText: 'Eliminar Permanentemente'
+        });
+    };
+
+    
+
     const handleKickMember = async (memberId) => {
         if (!isAdmin) return;
 
-        if (window.confirm('¿Estás seguro de que quieres expulsar a este miembro?')) {
-            try {
-                // API call to remove member
-                await leaveGroup(groupId, memberId);
-                setMembers(members.filter((m) => m.userId !== memberId));
-                showToast('Miembro expulsado correctamente', 'success');
-            } catch (error) {
-                console.error('Error kicking member:', error);
-                setError('Error al expulsar al miembro');
-            }
-        }
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Expulsar Miembro',
+            message: '¿Estás seguro de que quieres expulsar a este miembro del grupo?',
+            onConfirm: async () => {
+                try {
+                    // API call to remove member
+                    await leaveGroup(groupId, memberId);
+                    setMembers(members.filter((m) => m.userId !== memberId));
+                    showToast('Miembro expulsado correctamente', 'success');
+                } catch (error) {
+                    console.error('Error kicking member:', error);
+                    setError('Error al expulsar al miembro');
+                }
+            },
+            type: 'warning',
+            confirmText: 'Expulsar'
+        });
     };
 
     const handleShareLink = () => {
@@ -669,17 +782,7 @@ const GroupDetailsPage = () => {
                                                         setEditingTask(task);
                                                         setIsTaskModalOpen(true);
                                                     }}
-                                                    onDelete={(taskId) => {
-                                                        if (window.confirm('¿Estás seguro de eliminar esta tarea?')) {
-                                                            deleteTask(taskId).then(() => {
-                                                                setTasks(tasks.filter(t => t.id !== taskId));
-                                                                showToast('Tarea eliminada correctamente', 'success');
-                                                            }).catch(err => {
-                                                                console.error('Error deleting task:', err);
-                                                                setError('Error al eliminar la tarea');
-                                                            });
-                                                        }
-                                                    }}
+                                                    onDelete={handleTaskDelete}
                                                     subjects={subjects.map((s) => s.title)}
                                                 />
                                             ))}
@@ -897,14 +1000,7 @@ const GroupDetailsPage = () => {
                                                                             <FaDownload />
                                                                         </button>
                                                                         <button
-                                                                            onClick={() => {
-                                                                                if (window.confirm(`¿Estás seguro de eliminar "${note.name}"?`)) {
-                                                                                    const updatedNotes = { ...notes };
-                                                                                    updatedNotes[folder].splice(index, 1);
-                                                                                    setNotes(updatedNotes);
-                                                                                    showToast('Archivo eliminado correctamente', 'success');
-                                                                                }
-                                                                            }}
+                                                                            onClick={() => handleFileDelete(folder, index)}
                                                                             className="p-2 text-error hover:text-error rounded-full hover:bg-error/10"
                                                                             title="Eliminar"
                                                                         >
@@ -972,12 +1068,7 @@ const GroupDetailsPage = () => {
                                                     </a>
                                                     <div className="flex justify-end">
                                                         <button
-                                                            onClick={() => {
-                                                                if (window.confirm('¿Estás seguro de eliminar esta sesión?')) {
-                                                                    setStudySessions(studySessions.filter(s => s.id !== session.id));
-                                                                    showToast('Sesión eliminada correctamente', 'success');
-                                                                }
-                                                            }}
+                                                            onClick={() => handleSessionDelete(session.id)}
                                                             className="text-error hover:text-error text-sm"
                                                         >
                                                             Eliminar
@@ -1048,12 +1139,7 @@ const GroupDetailsPage = () => {
                                             <p className="text-gray-600 mb-4">Estas acciones no se pueden deshacer. Ten cuidado.</p>
                                             <div className="flex flex-col space-y-3">
                                                 <button
-                                                    onClick={() => {
-                                                        if (window.confirm('¿Estás seguro? Esta acción eliminará el grupo y todos sus datos.')) {
-                                                            // En un caso real esto eliminaría el grupo
-                                                            showToast('Operación no implementada', 'error');
-                                                        }
-                                                    }}
+                                                    onClick={handleDeleteGroup}
                                                     className="bg-error text-white px-4 py-2 rounded-lg hover:bg-error/80 transition-colors flex items-center justify-center"
                                                 >
                                                     <FaTimes className="mr-2" /> Eliminar Grupo

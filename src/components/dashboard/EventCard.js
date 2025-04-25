@@ -1,4 +1,4 @@
-// src/components/dashboard/EventCard.js - Enhanced for modern design with Theme Support
+// src/components/dashboard/EventCard.js - Modified to use confirmation modal
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
@@ -73,6 +73,11 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
         return 'bg-event-futuro text-event-futuro';
     };
 
+    const handleDelete = () => {
+        // Llamamos directamente a onDelete sin window.confirm
+        onDelete(event.id);
+    };
+
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
             <div className="flex items-start mb-3">
@@ -95,11 +100,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                         <FaEdit size={16} />
                     </button>
                     <button
-                        onClick={() => {
-                            if (window.confirm('¿Estás seguro de que quieres eliminar este evento?')) {
-                                onDelete(event.id);
-                            }
-                        }}
+                        onClick={handleDelete}
                         className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
                         title="Eliminar"
                         aria-label="Eliminar evento"

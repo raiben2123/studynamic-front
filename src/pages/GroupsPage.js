@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
+import ConfirmationModal from '../components/modals/ConfirmationModal'; // Importar el modal de confirmación
 import {
     FaSearch,
     FaTimes,
@@ -39,6 +40,15 @@ const GroupsPage = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [allGroups, setAllGroups] = useState([]);
     const [activePage, setActivePage] = useState('my-groups'); // 'my-groups' or 'join-groups'
+
+    // Estado para el modal de confirmación
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'warning'
+    });
 
     // Load user's groups and all available groups
     useEffect(() => {
@@ -99,6 +109,14 @@ const GroupsPage = () => {
     const showNotification = (message, type = 'error') => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 3000);
+    };
+
+    // Cerrar el modal de confirmación
+    const closeConfirmationModal = () => {
+        setConfirmationModal({
+            ...confirmationModal,
+            isOpen: false
+        });
     };
 
     const handleJoinGroup = async (groupId) => {
@@ -181,18 +199,28 @@ const GroupsPage = () => {
             return;
         }
 
-        setLoading(true);
-        try {
-            await leaveGroup(groupId);
-            setGroups(groups.filter(g => g.id !== groupId));
-            setError(null);
-            showNotification('Has abandonado el grupo correctamente', 'success');
-        } catch (err) {
-            console.error('Error leaving group:', err);
-            setError('Error al abandonar el grupo');
-        } finally {
-            setLoading(false);
-        }
+        // Abrir modal de confirmación
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Abandonar Grupo',
+            message: '¿Estás seguro de que quieres abandonar este grupo? Esta acción no se puede deshacer.',
+            onConfirm: async () => {
+                setLoading(true);
+                try {
+                    await leaveGroup(groupId);
+                    setGroups(groups.filter(g => g.id !== groupId));
+                    setError(null);
+                    showNotification('Has abandonado el grupo correctamente', 'success');
+                } catch (err) {
+                    console.error('Error leaving group:', err);
+                    setError('Error al abandonar el grupo');
+                } finally {
+                    setLoading(false);
+                }
+            },
+            type: 'danger',
+            confirmText: 'Abandonar'
+        });
     };
 
     // Dynamic group card colors based on theme-swapper
@@ -358,7 +386,10 @@ const GroupsPage = () => {
                                                                         <ul className="py-1">
                                                                             <li>
                                                                                 <button
-                                                                                    onClick={() => handleLeaveGroup(group.id)}
+                                                                                    onClick={() => {
+                                                                                        setIsTooltipOpen(null);
+                                                                                        handleLeaveGroup(group.id);
+                                                                                    }}
                                                                                     className="px-4 py-2 text-sm text-error hover:bg-error/10 w-full text-left flex items-center"
                                                                                 >
                                                                                     <FaTimes className="mr-2" /> Abandonar
@@ -575,6 +606,17 @@ const GroupsPage = () => {
                     </motion.div>
                 </motion.div>
             )}
+
+            {/* Modal de Confirmación */}
+            <ConfirmationModal
+                isOpen={confirmationModal.isOpen}
+                onClose={closeConfirmationModal}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
+                onConfirm={confirmationModal.onConfirm}
+                type={confirmationModal.type}
+                confirmText={confirmationModal.confirmText || 'Confirmar'}
+            />
         </div>
     );
 };

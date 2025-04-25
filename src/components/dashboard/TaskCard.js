@@ -1,4 +1,4 @@
-// src/components/dashboard/TaskCard.js - Enhanced for the new design with Theme Support
+// src/components/dashboard/TaskCard.js - Modified to use confirmation modal
 import React from 'react';
 import PropTypes from 'prop-types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
@@ -21,9 +21,8 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     }
 
     const handleDelete = () => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
-            onDelete(task.id);
-        }
+        // En lugar de window.confirm, directamente llamamos a onDelete que ahora mostrará el modal de confirmación
+        onDelete(task.id);
     };
 
     // Calculate days remaining
