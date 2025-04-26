@@ -4,9 +4,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
-import TaskCard from '../components/dashboard/TaskCard';
+import TaskCardGroup from '../components/dashboard/TaskCardGroup';
 import ModernCalendar from '../components/ModernCalendar'; // Cambiado a ModernCalendar
-import TaskModal from '../components/modals/TaskModal';
+import TaskModalGroup from '../components/modals/TaskModalGroup';
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 import EventModal from '../components/modals/EventModal';
 import SessionModal from '../components/modals/SessionModal';
 import Modal from '../components/modals/Modal';
@@ -34,7 +35,7 @@ import {
 import { formatDateForDisplay } from '../utils/dateUtils';
 
 // API imports
-import { getGroupById, getGroupMembers, leaveGroup } from '../api/groups';
+import { deleteGroup, getGroupById, getGroupMembers, leaveGroup } from '../api/groups';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
 import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
 import { getSubjects } from '../api/subjects';
@@ -85,6 +86,13 @@ const GroupDetailsPage = () => {
         confirmText: 'Confirmar'
     });
 
+    const closeConfirmationModal = () => {
+        setConfirmationModal({
+            ...confirmationModal,
+            isOpen: false
+        });
+    };
+
     // Responsive handler
     useEffect(() => {
         const handleResize = () => {
@@ -120,9 +128,6 @@ const GroupDetailsPage = () => {
 
                 // Initialize notes structure with default folders
                 setNotes({
-                    'Apuntes de clase': [],
-                    'Ejercicios resueltos': [],
-                    'Material complementario': []
                 });
 
                 // Initialize study sessions with sample data
@@ -283,16 +288,18 @@ const GroupDetailsPage = () => {
             isOpen: true,
             title: 'Eliminar Grupo',
             message: 'Esta acción eliminará permanentemente el grupo y todos sus datos. No se puede deshacer. ¿Estás seguro?',
-            onConfirm: () => {
-                // En un caso real, aquí se haría la llamada a la API
-                showToast('Operación no implementada', 'error');
+            onConfirm: async () => {
+                await deleteGroup(groupId);
+                showToast('Grupo eliminado correctamente', 'success');
+                navigate('/groups');
             },
             type: 'danger',
             confirmText: 'Eliminar Permanentemente'
+
         });
     };
 
-    
+
 
     const handleKickMember = async (memberId) => {
         if (!isAdmin) return;
@@ -430,15 +437,12 @@ const GroupDetailsPage = () => {
 
     // Transformar eventos para el ModernCalendar
     useEffect(() => {
-        // CORREGIDO: No usar groupId directamente dentro de useEffect 
-        // ya que se está accediendo como parámetro en vez de como variable 
-        // del componente
         const currentGroupId = parseInt(groupId);
 
         const updatedEvents = [
-            // Filtrar tareas del grupo
+            // Tareas del grupo con la asignatura correctamente asociada
             ...tasks
-                .filter(task => task.groupId === currentGroupId || task.groupId === groupId)
+                .filter(task => task.groupId === currentGroupId)
                 .map((task) => ({
                     id: task.id.toString(),
                     title: task.title,
@@ -446,13 +450,14 @@ const GroupDetailsPage = () => {
                     type: 'task',
                     importance: task.importance,
                     status: task.status,
-                    subject: task.subject,
+                    // Aseguramos que siempre tenga una asignatura
+                    subject: task.subject || 'Sin asignatura',
                     groupId: task.groupId
                 })),
 
-            // Filtrar eventos del grupo
+            // Eventos del grupo
             ...events
-                .filter(event => event.groupId === currentGroupId || event.groupId === groupId)
+                .filter(event => event.groupId === currentGroupId)
                 .map((event) => ({
                     id: event.id.toString(),
                     title: event.title,
@@ -462,9 +467,9 @@ const GroupDetailsPage = () => {
                     groupId: event.groupId
                 })),
 
-            // Filtrar sesiones del grupo
+            // Sesiones de estudio
             ...studySessions
-                .filter(session => session.groupId === currentGroupId || session.groupId === groupId)
+                .filter(session => session.groupId === currentGroupId)
                 .map((session) => ({
                     id: session.id.toString(),
                     title: session.title,
@@ -775,7 +780,7 @@ const GroupDetailsPage = () => {
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {tasks.map((task) => (
-                                                <TaskCard
+                                                <TaskCardGroup
                                                     key={task.id}
                                                     task={task}
                                                     onUpdate={(task) => {
@@ -802,12 +807,6 @@ const GroupDetailsPage = () => {
                                 >
                                     <div className="flex justify-between items-center mb-4">
                                         <h2 className="text-xl font-semibold text-primary">Calendario</h2>
-                                        <button
-                                            onClick={() => setIsAddModalOpen(true)}
-                                            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors flex items-center"
-                                        >
-                                            <FaPlus className="mr-2" /> Añadir
-                                        </button>
                                     </div>
 
                                     {modernCalendarEvents.length === 0 ? (
@@ -822,82 +821,16 @@ const GroupDetailsPage = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="h-[60vh] flex flex-col md:flex-row gap-4">
-                                            <div className="md:w-2/3">
-                                                <ModernCalendar
-                                                    events={modernCalendarEvents}
-                                                    onDaySelect={handleDaySelect}
-                                                />
-                                            </div>
-                                            <div className="md:w-1/3 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <h3 className="font-medium text-primary">
-                                                        {selectedCalendarDay.toLocaleDateString('es-ES', {
-                                                            weekday: 'long',
-                                                            day: 'numeric',
-                                                            month: 'long'
-                                                        }).charAt(0).toUpperCase() +
-                                                            selectedCalendarDay.toLocaleDateString('es-ES', {
-                                                                weekday: 'long',
-                                                                day: 'numeric',
-                                                                month: 'long'
-                                                            }).slice(1)}
-                                                    </h3>
-                                                    <button
-                                                        onClick={() => handleAddForDate(selectedCalendarDay)}
-                                                        className="text-sm text-primary hover:text-accent"
-                                                    >
-                                                        <FaPlus />
-                                                    </button>
-                                                </div>
-
-                                                {dayEvents.length === 0 ? (
-                                                    <div className="text-center py-4">
-                                                        <p className="text-gray-500 text-sm">No hay eventos programados</p>
-                                                    </div>
-                                                ) : (
-                                                    <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
-                                                        {dayEvents.map(event => (
-                                                            <div key={event.id}
-                                                                className={`p-3 rounded-lg ${event.type === 'task' ? 'bg-task-normal-bg border-l-4 border-task' :
-                                                                    event.type === 'session' ? 'bg-primary-light border-l-4 border-primary' :
-                                                                        'bg-event-proximo-bg border-l-4 border-event'
-                                                                    }`}
-                                                            >
-                                                                <div className="font-medium text-gray-800">{event.title}</div>
-                                                                <div className="text-xs text-gray-500 mt-1 flex items-center">
-                                                                    {event.type === 'task' && (
-                                                                        <>
-                                                                            <FaTasks className="mr-1" /> Tarea
-                                                                            {event.subject && <span className="ml-2">• {event.subject}</span>}
-                                                                        </>
-                                                                    )}
-                                                                    {event.type === 'event' && (
-                                                                        <>
-                                                                            <FaCalendarAlt className="mr-1" /> Evento
-                                                                        </>
-                                                                    )}
-                                                                    {event.type === 'session' && (
-                                                                        <>
-                                                                            <FaVideo className="mr-1" /> Sesión
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                                {event.type === 'session' && event.zoomLink && (
-                                                                    <a
-                                                                        href={event.zoomLink}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="text-xs text-primary hover:text-accent mt-1 flex items-center"
-                                                                    >
-                                                                        <FaLink className="mr-1" /> Unirse
-                                                                    </a>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
+                                        <div className="h-[60vh]">
+                                            <ModernCalendar
+                                                layout='side'
+                                                events={modernCalendarEvents}
+                                                onAddEvent={(date) => {
+                                                    // Convertir la fecha a formato ISO string YYYY-MM-DD
+                                                    setSelectedDate(date.toISOString().split('T')[0]);
+                                                    setIsAddModalOpen(true);
+                                                }}
+                                            />
                                         </div>
                                     )}
                                 </motion.div>
@@ -1232,7 +1165,7 @@ const GroupDetailsPage = () => {
                 )}
 
                 {/* Modal para añadir/editar tarea */}
-                <TaskModal
+                <TaskModalGroup
                     isOpen={isTaskModalOpen}
                     onClose={() => {
                         setIsTaskModalOpen(false);
@@ -1374,7 +1307,18 @@ const GroupDetailsPage = () => {
                     )}
                 </Modal>
             </div>
+            {/* Modal de Confirmación */}
+            <ConfirmationModal
+                isOpen={confirmationModal.isOpen}
+                onClose={closeConfirmationModal}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
+                onConfirm={confirmationModal.onConfirm}
+                type={confirmationModal.type}
+                confirmText={confirmationModal.confirmText || 'Confirmar'}
+            />
         </div>
+
     );
 };
 

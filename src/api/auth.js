@@ -18,7 +18,7 @@ export const login = async (username, password) => {
         }
 
         const data = await response.json();
-        return { token: data.token, userId: data.userId, email: data.email, theme: data.theme, name: data.name, username: data.username }; 
+        return { token: data.token, userId: data.userId, email: data.email, theme: data.theme, name: data.name, username: data.username, password: data.password };
 
     } catch (error) {
         console.error('Error en login:', error);
@@ -33,9 +33,9 @@ export const register = async (username, email, password, name = '') => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
-                username, 
-                email, 
+            body: JSON.stringify({
+                username,
+                email,
                 password,
                 name
             }),
@@ -54,15 +54,15 @@ export const register = async (username, email, password, name = '') => {
     }
 };
 
-export const saveAuthData = async (token, userId, email, name, theme, username) => {
+export const saveAuthData = async (token, userId, email, name, theme, username, password) => {
     await Preferences.set({ key: 'token', value: token });
     await Preferences.set({ key: 'userId', value: userId.toString() });
-    
-    // Guardar datos adicionales del usuario
+
     if (email) await Preferences.set({ key: 'userEmail', value: email });
     if (name) await Preferences.set({ key: 'name', value: name });
     if (theme) await Preferences.set({ key: 'userTheme', value: theme });
     if (username) await Preferences.set({ key: 'username', value: username });
+    await Preferences.set({ key: 'password', value: password });
 
 };
 
@@ -96,6 +96,11 @@ export const getUserTheme = async () => {
     return value;
 };
 
+export const getPassword = async () => {
+    const { value } = await Preferences.get({ key: 'password' });
+    return value;
+};
+
 export const removeAuthData = async () => {
     await Preferences.remove({ key: 'token' });
     await Preferences.remove({ key: 'userId' });
@@ -103,7 +108,9 @@ export const removeAuthData = async () => {
     await Preferences.remove({ key: 'userEmail' });
     await Preferences.remove({ key: 'name' });
     await Preferences.remove({ key: 'username' });
-    
+    await Preferences.remove({ key: 'theme' });
+    await Preferences.remove({ key: 'password' });
+
     // Eliminar tema del localStorage
     localStorage.removeItem('theme');
 };
@@ -122,7 +129,8 @@ export const updateUserProfile = async (userData) => {
             username: userData.username || await getUserUsername(),
             email: userData.email || await getUserEmail(),
             name: userData.name || await getName(),
-            theme: userData.theme || await getUserTheme()
+            theme: userData.theme || await getUserTheme(),
+            password: userData.password || await getPassword()
         };
         const response = await fetch(`${API_URL}/users/${userId}`, {
             method: 'PUT',
@@ -141,6 +149,7 @@ export const updateUserProfile = async (userData) => {
         if (userData.name) await Preferences.set({ key: 'name', value: userData.name });
         if (userData.theme) await Preferences.set({ key: 'theme', value: userData.theme });
         if (userData.username) await Preferences.set({ key: 'username', value: userData.username });
+        if (userData.password) await Preferences.set({ key: 'password', value: userData.password });
         return true;
     } catch (error) {
         console.error('Error actualizando perfil:', error);
@@ -176,7 +185,7 @@ export const updateProfilePicture = async (file) => {
         return data.profilePicture;
     } catch (error) {
         console.error('Error actualizando foto de perfil:', error);
-        
+
         // En desarrollo, simular la subida
         if (process.env.NODE_ENV === 'development') {
             return new Promise((resolve) => {
@@ -188,7 +197,7 @@ export const updateProfilePicture = async (file) => {
                 reader.readAsDataURL(file);
             });
         }
-        
+
         throw error;
     }
 };

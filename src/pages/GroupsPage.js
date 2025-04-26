@@ -20,7 +20,6 @@ import { getGroupsByUserId, getAllGroups, createGroup, joinGroup, leaveGroup } f
 const GroupsPage = () => {
     const navigate = useNavigate();
     const { token, userId } = useAuth();
-
     // State
     const [groups, setGroups] = useState([]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -165,23 +164,24 @@ const GroupsPage = () => {
             showNotification('Por favor, completa todos los campos.', 'error');
             return;
         }
-
+    
         setLoading(true);
         try {
-            await createGroup({
+            const createdGroup = await createGroup({
                 name: newGroupName,
                 password: newGroupPassword
             });
-
+    
             const updatedGroups = await getGroupsByUserId();
             setGroups(updatedGroups);
-
+    
             setNewGroupName('');
             setNewGroupPassword('');
             setIsAddModalOpen(false);
             setError(null);
-
             showNotification(`Grupo ${newGroupName} creado con éxito`, 'success');
+    
+            navigate(`/groups/${createdGroup.id}`); // Redirige al grupo recién creado
         } catch (err) {
             console.error('Error creating group:', err);
             setError('Error al crear el grupo');

@@ -11,7 +11,6 @@ dayjs.extend(timezone);
 
 
 const EventCard = ({ event, onUpdate, onDelete }) => {
-    console.log('Event recibido:', event); // Log para depuración
 
     // Verifica si event existe
     if (!event) {

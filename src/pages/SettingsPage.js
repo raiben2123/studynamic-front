@@ -1,10 +1,11 @@
-// src/pages/SettingsPage.js - actualizado para manejar correctamente el tema
+// src/pages/SettingsPage.js - actualizado para manejar correctamente el tema y contraseña
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import defaultProfile1 from '../assets/default_profile_picture1.png';
 import { applyTheme, colorThemes } from '../services/themeService';
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 
 const SettingsPage = () => {
     const { user, userTheme, updateProfile, loading: authLoading } = useAuth();
@@ -18,6 +19,18 @@ const SettingsPage = () => {
     const [profilePicture, setProfilePicture] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
     const [selectedTheme, setSelectedTheme] = useState('default');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    
+    // Estado para el modal de confirmación
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'warning',
+        confirmText: 'Confirmar'
+    });
 
     useEffect(() => {
         // Cargar datos del usuario
@@ -25,6 +38,7 @@ const SettingsPage = () => {
             setName(user.name || '');
             setEmail(user.email || '');
             setPreviewImage(user.profilePicture || null);
+            setPassword(user.password || '');
         }
 
         // Cargar tema guardado
@@ -91,6 +105,10 @@ const SettingsPage = () => {
                 applyTheme(selectedTheme);
             }
 
+            if (password !== (user?.password || '')) {
+                updateData.password = password;
+            }
+
             // Incluir foto de perfil solo si se cambió
             if (profilePicture) {
                 updateData.profilePicture = profilePicture;
@@ -121,16 +139,31 @@ const SettingsPage = () => {
     };
 
     const handleResetToDefault = () => {
-        if (window.confirm('¿Estás seguro de que quieres restaurar la configuración predeterminada?')) {
-            setSelectedTheme('default');
+        setConfirmationModal({
+            isOpen: true,
+            title: 'Restaurar Configuración',
+            message: '¿Estás seguro de que quieres restaurar la configuración predeterminada?',
+            onConfirm: () => {
+                setSelectedTheme('default');
+                
+                updateProfile({
+                    theme: 'default'
+                });
+                
+                setSavedMessage('Configuración restaurada a valores predeterminados');
+                setTimeout(() => setSavedMessage(''), 3000);
+            },
+            type: 'warning',
+            confirmText: 'Restaurar'
+        });
+    };
 
-            updateProfile({
-                theme: 'default'
-            });
-
-            setSavedMessage('Configuración restaurada a valores predeterminados');
-            setTimeout(() => setSavedMessage(''), 3000);
-        }
+    // Cerrar el modal de confirmación
+    const closeConfirmationModal = () => {
+        setConfirmationModal({
+            ...confirmationModal,
+            isOpen: false
+        });
     };
 
     // Determinar si hay cambios sin guardar
@@ -140,7 +173,8 @@ const SettingsPage = () => {
         return name !== (user.name || '') ||
             email !== (user.email || '') ||
             profilePicture !== null ||
-            selectedTheme !== userTheme;
+            selectedTheme !== userTheme ||
+            password !== (user.password || '');
     };
 
     // Obtener el color primario según el tema seleccionado
@@ -193,18 +227,18 @@ const SettingsPage = () => {
             >
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        <div className="bg-error/10 text-error p-3 rounded-lg mb-4">
                             {error}
                         </div>
                     )}
 
                     {savedMessage && (
-                        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+                        <div className="bg-task-finalizada-bg text-task-finalizada p-3 rounded-lg mb-4">
                             {savedMessage}
                         </div>
                     )}
 
-                    <h1 className="text-2xl md:text-3xl mb-6">Configuración</h1>
+                    <h1 className="text-2xl md:text-3xl mb-6 text-primary font-bold">Configuración</h1>
 
                     {authLoading || loading ? (
                         <div className="bg-white p-6 rounded-xl shadow-md flex justify-center items-center">
@@ -237,7 +271,7 @@ const SettingsPage = () => {
                                         {previewImage && (
                                             <button
                                                 onClick={handleRemovePhoto}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                                className="px-4 py-2 bg-error text-white rounded-full hover:bg-error/80"
                                             >
                                                 Eliminar
                                             </button>
@@ -268,6 +302,36 @@ const SettingsPage = () => {
                                             onChange={(e) => setEmail(e.target.value)}
                                             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                                            Contraseña
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 hover:text-gray-700"
+                                            >
+                                                {showPassword ? (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">Deja en blanco para mantener la contraseña actual</p>
                                     </div>
                                 </div>
                             </div>
@@ -334,6 +398,17 @@ const SettingsPage = () => {
                     </div>
                 </div>
             </div>
+            
+            {/* Modal de Confirmación */}
+            <ConfirmationModal
+                isOpen={confirmationModal.isOpen}
+                onClose={closeConfirmationModal}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
+                onConfirm={confirmationModal.onConfirm}
+                type={confirmationModal.type}
+                confirmText={confirmationModal.confirmText}
+            />
         </div>
     );
 };

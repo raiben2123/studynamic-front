@@ -1,17 +1,15 @@
-// src/components/dashboard/TaskCard.js - Modified to use confirmation modal
 import React from 'react';
 import PropTypes from 'prop-types';
-import { formatDateForDisplay } from '../../utils/dateUtils';
 import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react-icons/fa';
-import { dayjs } from '../../dayjs'
-import utc from 'dayjs/plugin/utc'
+import { dayjs } from '../../dayjs';
+import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-
-const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
+const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
+    console.log('Task recibido:', task); // Log para depuración
 
     // Verifica si task existe
     if (!task) {
@@ -20,7 +18,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     }
 
     const handleDelete = () => {
-        // En lugar de window.confirm, directamente llamamos a onDelete que ahora mostrará el modal de confirmación
         onDelete(task.id);
     };
 
@@ -42,7 +39,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
             return null;
         }
     };
-
 
     const daysRemaining = calculateDaysRemaining();
 
@@ -82,7 +78,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
                 <div className="mr-2 text-primary">{getImportanceIcon()}</div>
                 <div className="flex-1">
                     <h3 className="font-semibold text-primary truncate">{task.title || 'Sin título'}</h3>
-                    <p className="text-sm text-gray-600">{task.subject || 'Sin asignatura'}</p>
                 </div>
                 <div className="flex space-x-1 ml-2">
                     <button
@@ -132,21 +127,19 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     );
 };
 
-TaskCard.propTypes = {
+TaskCardGroup.propTypes = {
     task: PropTypes.shape({
         id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
         title: PropTypes.string,
-        dueDate: PropTypes.string, // Opcional
+        dueDate: PropTypes.string,
         status: PropTypes.string,
         importance: PropTypes.string,
         markObtained: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         markMax: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        subject: PropTypes.string,
-        notificationDate: PropTypes.string
+        notificationDate: PropTypes.string,
     }),
     onUpdate: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
-    subjects: PropTypes.arrayOf(PropTypes.string)
 };
 
-export default TaskCard;
+export default TaskCardGroup;

@@ -1,4 +1,4 @@
-// src/context/AuthContext.js
+// src/context/AuthContext.js - Actualizado para el manejo de contraseña
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { 
     login, 
@@ -10,6 +10,7 @@ import {
     getName,
     getUserUsername,
     getUserTheme,
+    getPassword,
     removeAuthData, 
     updateUserProfile,
     updateProfilePicture
@@ -42,10 +43,10 @@ export const AuthProvider = ({ children }) => {
                     const name = await getName();
                     const theme = await getUserTheme();
                     const username = await getUserUsername();
+                    const password = await getPassword();
                     
                     // Cargar tema del usuario
                     const savedTheme = theme || localStorage.getItem('theme') || 'default';
-                    console.log('Tema Auth:', savedTheme);
                     setUserTheme(savedTheme);
                     applyTheme(savedTheme);
                     
@@ -55,6 +56,7 @@ export const AuthProvider = ({ children }) => {
                         name: name || '',
                         username: username || '',
                         email: email || '',
+                        password: password || '',
                         profilePicture: localStorage.getItem('profilePicture') || null,
                         theme: savedTheme
                     });
@@ -71,8 +73,8 @@ export const AuthProvider = ({ children }) => {
 
     const handleLogin = async (username, password) => {
         try {
-            const { token, userId, email, theme, name } = await login(username, password);
-            await saveAuthData(token, userId, email, name, theme, username);
+            const { token, userId, email, theme, name, password: userPassword } = await login(username, password);
+            await saveAuthData(token, userId, email, name, theme, username, userPassword);
             setToken(token);
             setUserId(userId);
             
@@ -86,6 +88,7 @@ export const AuthProvider = ({ children }) => {
                 username: username || '',
                 name: name || '',
                 email: email || '',
+                password: userPassword || '',
                 profilePicture: null,
                 theme: userTheme
             });
@@ -100,7 +103,7 @@ export const AuthProvider = ({ children }) => {
     const handleRegister = async (username, email, password) => {
         try {
             const { token, userId, name, theme } = await register(username, email, password);
-            await saveAuthData(token, userId, email, name, username);
+            await saveAuthData(token, userId, email, name, theme, username, password);
             setToken(token);
             setUserId(userId);
             
@@ -114,6 +117,7 @@ export const AuthProvider = ({ children }) => {
                 username: username || '',
                 name: name || '',
                 email: email || '',
+                password: password || '',
                 profilePicture: null,
                 theme: userTheme
             });
@@ -180,6 +184,7 @@ export const AuthProvider = ({ children }) => {
             if (updateData.email !== undefined) dataToUpdate.email = updateData.email;
             if (updateData.theme !== undefined) dataToUpdate.theme = updateData.theme;
             if (updateData.username !== undefined) dataToUpdate.username = updateData.username;
+            if (updateData.password !== undefined) dataToUpdate.password = updateData.password;
             
             // Actualizar información del usuario en el backend
             if (Object.keys(dataToUpdate).length > 0) {
@@ -203,6 +208,10 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('username', updateData.username);
             }
             
+            if (updateData.password !== undefined) {
+                localStorage.setItem('password', updateData.password);
+            }
+            
             // Actualizar el estado del usuario
             setUser(prevUser => ({
                 ...prevUser,
@@ -210,7 +219,8 @@ export const AuthProvider = ({ children }) => {
                 email: updateData.email !== undefined ? updateData.email : prevUser?.email,
                 profilePicture: updatedProfilePicture !== undefined ? updatedProfilePicture : prevUser?.profilePicture,
                 theme: updateData.theme !== undefined ? updateData.theme : prevUser?.theme,
-                username: updateData.username !== undefined ? updateData.username : prevUser?.username
+                username: updateData.username !== undefined ? updateData.username : prevUser?.username,
+                password: updateData.password !== undefined ? updateData.password : prevUser?.password
             }));
             
             return true;
