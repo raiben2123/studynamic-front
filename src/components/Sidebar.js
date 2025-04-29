@@ -55,7 +55,7 @@ const Sidebar = () => {
         { path: '/home', name: 'Inicio', icon: <FaHome /> },
         { path: '/calendar', name: 'Calendario', icon: <FaCalendarAlt /> },
         { path: '/tasks', name: 'Tareas', icon: <FaTasks /> },
-        { path: '/resources', name: 'Recursos', icon: <FaBook /> },
+        { path: '/resources', name: 'Apuntes', icon: <FaBook /> },
         { path: '/groups', name: 'Grupos', icon: <FaUsers /> },
         { path: '/settings', name: 'Configuración', icon: <FaCog /> },
     ];
@@ -202,7 +202,7 @@ const Sidebar = () => {
                             </div>
                             
                             <div className="mt-2 invisible group-hover:visible w-40 text-center">
-                                <p className="font-medium text-white truncate">{user?.name || 'Usuario'}</p>
+                                <p className="font-medium text-white truncate">{user?.name || user?.username}</p>
                                 <p className="text-xs text-white/80 truncate">{user?.email || ''}</p>
                             </div>
                         </div>

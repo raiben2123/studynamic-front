@@ -1,11 +1,11 @@
-// src/pages/GroupDetailsPage.js - With Theme Support
+// src/pages/GroupDetailsPage.js - Con protección de URL
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
 import TaskCardGroup from '../components/dashboard/TaskCardGroup';
-import ModernCalendar from '../components/ModernCalendar'; // Cambiado a ModernCalendar
+import ModernCalendar from '../components/ModernCalendar';
 import TaskModalGroup from '../components/modals/TaskModalGroup';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import EventModal from '../components/modals/EventModal';
@@ -30,12 +30,14 @@ import {
     FaVideo,
     FaUserMinus,
     FaEye,
-    FaLink
+    FaLink,
+    FaLock,
+    FaExclamationTriangle
 } from 'react-icons/fa';
 import { formatDateForDisplay } from '../utils/dateUtils';
 
 // API imports
-import { deleteGroup, getGroupById, getGroupMembers, leaveGroup } from '../api/groups';
+import { deleteGroup, getGroupById, getGroupMembers, leaveGroup, getGroupsByUserId, joinGroup } from '../api/groups';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
 import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
 import { getSubjects } from '../api/subjects';
@@ -43,7 +45,7 @@ import { getSubjects } from '../api/subjects';
 const GroupDetailsPage = () => {
     const { groupId } = useParams();
     const navigate = useNavigate();
-    const { token, userId, user, userTheme } = useAuth(); // Added userTheme
+    const { token, userId, user, userTheme } = useAuth();
 
     // Estado
     const [group, setGroup] = useState(null);
@@ -54,6 +56,12 @@ const GroupDetailsPage = () => {
     const [notes, setNotes] = useState({});
     const [studySessions, setStudySessions] = useState([]);
     const [activeTab, setActiveTab] = useState('members');
+
+    // Estado para autorización de acceso
+    const [hasAccess, setHasAccess] = useState(false);
+    const [checkingAccess, setCheckingAccess] = useState(true);
+    const [joinPassword, setJoinPassword] = useState('');
+    const [showJoinModal, setShowJoinModal] = useState(false);
 
     // Modal states
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -103,59 +111,108 @@ const GroupDetailsPage = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Fetch data
+    // Verificar acceso al grupo
     useEffect(() => {
-        const fetchGroupData = async () => {
-            setLoading(true);
+        const checkGroupAccess = async () => {
+            setCheckingAccess(true);
             try {
-                // Fetch group details
-                const groupData = await getGroupById(groupId);
-                setGroup(groupData);
+                // Obtener lista de grupos del usuario
+                const userGroups = await getGroupsByUserId();
 
-                // Fetch members, tasks, events in parallel
-                // Importante: usamos los endpoints específicos para el grupo
-                const [membersData, tasksData, eventsData, subjectsData] = await Promise.all([
-                    getGroupMembers(groupId),
-                    getTasks(true, groupId), // Este ya usa el endpoint api/usertasks/group/{groupId}
-                    getEvents(true, groupId), // Este ya usa el endpoint api/events/group/{groupId}
-                    getSubjects(),
-                ]);
+                // Verificar si el usuario es miembro del grupo
+                const isMember = userGroups.some(group => group.id === parseInt(groupId));
 
-                setMembers(membersData || []);
-                setTasks(tasksData || []);
-                setEvents(eventsData || []);
-                setSubjects(subjectsData || []);
-
-                // Initialize notes structure with default folders
-                setNotes({
-                });
-
-                // Initialize study sessions with sample data
-                // Esto es temporal hasta que tengamos el endpoint real
-                setStudySessions([
-                    {
-                        id: 1,
-                        title: 'Sesión de repaso para el grupo',
-                        start: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0], // En 3 días
-                        zoomLink: 'https://zoom.us/j/123456789',
-                        allDay: true,
-                        groupId: parseInt(groupId) // Añadimos el groupId para filtrar
-                    }
-                ]);
-
-                setError(null);
-            } catch (err) {
-                console.error('Error fetching group data:', err);
-                setError('Error al cargar los datos del grupo. Por favor, inténtalo de nuevo.');
+                if (isMember) {
+                    // El usuario tiene acceso al grupo
+                    setHasAccess(true);
+                    // Continuar cargando datos del grupo
+                    fetchGroupData();
+                } else {
+                    // El usuario no tiene acceso al grupo
+                    setHasAccess(false);
+                    setGroup(await getGroupById(groupId)); // Solo obtener info básica para mostrar en modal de unirse
+                }
+            } catch (error) {
+                console.error('Error verificando acceso al grupo:', error);
+                setError('No tienes acceso a este grupo o el grupo no existe');
+                setHasAccess(false);
             } finally {
+                setCheckingAccess(false);
                 setLoading(false);
             }
         };
 
         if (token && userId && groupId) {
-            fetchGroupData();
+            checkGroupAccess();
         }
     }, [groupId, token, userId]);
+
+    // Fetch grupo data solo si tiene acceso
+    const fetchGroupData = async () => {
+        setLoading(true);
+        try {
+            // Fetch group details
+            const groupData = await getGroupById(groupId);
+            setGroup(groupData);
+
+            // Fetch members, tasks, events in parallel
+            const [membersData, tasksData, eventsData, subjectsData] = await Promise.all([
+                getGroupMembers(groupId),
+                getTasks(true, groupId),
+                getEvents(true, groupId),
+                getSubjects(),
+            ]);
+
+            setMembers(membersData || []);
+            setTasks(tasksData || []);
+            setEvents(eventsData || []);
+            setSubjects(subjectsData || []);
+
+            // Initialize notes structure with default folders
+            setNotes({});
+
+            // Initialize study sessions with sample data
+            setStudySessions([
+                {
+                    id: 1,
+                    title: 'Sesión de repaso para el grupo',
+                    start: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
+                    zoomLink: 'https://zoom.us/j/123456789',
+                    allDay: true,
+                    groupId: parseInt(groupId)
+                }
+            ]);
+
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching group data:', err);
+            setError('Error al cargar los datos del grupo. Por favor, inténtalo de nuevo.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Manejar unirse al grupo
+    const handleJoinGroup = async () => {
+        if (!joinPassword) {
+            showToast('Por favor, introduce la contraseña del grupo', 'error');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await joinGroup(groupId, joinPassword);
+            showToast('¡Te has unido al grupo correctamente!', 'success');
+            setHasAccess(true);
+            fetchGroupData();
+            setShowJoinModal(false);
+        } catch (error) {
+            console.error('Error al unirse al grupo:', error);
+            showToast('Contraseña incorrecta o no tienes permisos', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Check if current user is admin
     const isAdmin = React.useMemo(() => {
@@ -295,11 +352,8 @@ const GroupDetailsPage = () => {
             },
             type: 'danger',
             confirmText: 'Eliminar Permanentemente'
-
         });
     };
-
-
 
     const handleKickMember = async (memberId) => {
         if (!isAdmin) return;
@@ -324,17 +378,28 @@ const GroupDetailsPage = () => {
         });
     };
 
+    // Función simplificada para compartir enlace a grupo
     const handleShareLink = () => {
-        const link = `${window.location.origin}/groups/join/${groupId}?groupId=${groupId}`;
-        setShareLink(link);
-        setIsShareModalOpen(true);
+        // Crear la URL de invitación
+        const inviteUrl = `${window.location.origin}/#/groups/join/${groupId}`;
+
+        // Copiar al portapapeles
+        navigator.clipboard.writeText(inviteUrl)
+            .then(() => {
+                showToast('Enlace copiado al portapapeles', 'success');
+            })
+            .catch(err => {
+                console.error('Error al copiar el enlace:', err);
+                // Mostrar el modal con el enlace para que el usuario pueda copiarlo manualmente
+                setShareLink(inviteUrl);
+                setIsShareModalOpen(true);
+            });
     };
 
     const handleAddTask = async (newTask) => {
         try {
             const taskToAdd = {
                 ...newTask,
-                subjectId: newTask.subjectId,
                 // Especificamos explícitamente que esta tarea pertenece al grupo
                 groupId: parseInt(groupId)
             };
@@ -437,6 +502,8 @@ const GroupDetailsPage = () => {
 
     // Transformar eventos para el ModernCalendar
     useEffect(() => {
+        if (!hasAccess) return; // No procesar si no tiene acceso
+
         const currentGroupId = parseInt(groupId);
 
         const updatedEvents = [
@@ -481,7 +548,7 @@ const GroupDetailsPage = () => {
         ];
 
         setModernCalendarEvents(updatedEvents);
-    }, [tasks, events, studySessions, groupId]);
+    }, [tasks, events, studySessions, groupId, hasAccess]);
 
     // Obtener un color para el avatar del miembro basado en su nombre
     const getMemberColor = (memberName) => {
@@ -506,6 +573,101 @@ const GroupDetailsPage = () => {
         visible: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: -10 }
     };
+
+    // Si estamos verificando acceso, mostrar cargando
+    if (checkingAccess) {
+        return (
+            <div className="flex flex-col min-h-screen md:flex-row">
+                <Sidebar />
+                <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex justify-center items-center">
+                    <div className="flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+                        <p className="text-lg text-gray-600">Verificando acceso al grupo...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Si no tiene acceso, mostrar pantalla de acceso denegado
+    if (!hasAccess) {
+        return (
+            <div className="flex flex-col min-h-screen md:flex-row">
+                <Sidebar />
+                <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex justify-center items-center">
+                    <div className="bg-white p-8 rounded-xl shadow-md max-w-md text-center">
+                        <FaLock className="mx-auto text-4xl text-primary mb-4" />
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Acceso Restringido</h2>
+                        <p className="text-gray-600 mb-6">
+                            No tienes acceso a este grupo. Debes ser miembro para ver su contenido.
+                        </p>
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => setShowJoinModal(true)}
+                                className="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+                            >
+                                Unirme al Grupo
+                            </button>
+                            <button
+                                onClick={() => navigate('/groups')}
+                                className="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                            >
+                                Volver a Grupos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modal para unirse al grupo */}
+                {showJoinModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
+                            <h3 className="text-xl font-semibold mb-4 text-primary border-b pb-2">
+                                Unirse a {group?.name || 'Grupo'}
+                            </h3>
+                            <p className="text-gray-600 mb-4">
+                                Introduce la contraseña del grupo para unirte.
+                            </p>
+                            <div className="mb-4">
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                        <FaLock className="text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="password"
+                                        value={joinPassword}
+                                        onChange={(e) => setJoinPassword(e.target.value)}
+                                        placeholder="Contraseña del grupo"
+                                        className="w-full pl-10 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-2">
+                                <button
+                                    onClick={() => setShowJoinModal(false)}
+                                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleJoinGroup}
+                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-accent transition-colors"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <div className="flex items-center">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            <span>Uniendo...</span>
+                                        </div>
+                                    ) : 'Unirme'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     if (loading) {
         return (
@@ -1317,6 +1479,37 @@ const GroupDetailsPage = () => {
                 type={confirmationModal.type}
                 confirmText={confirmationModal.confirmText || 'Confirmar'}
             />
+
+            {/* Modal para compartir enlace - Versión simplificada */}
+            <Modal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                title="Compartir Grupo"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        Comparte este enlace para que otros usuarios puedan unirse al grupo:
+                    </p>
+                    <div className="flex">
+                        <input
+                            type="text"
+                            value={shareLink}
+                            readOnly
+                            className="flex-1 p-2 border border-gray-300 rounded-l focus:outline-none"
+                        />
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(shareLink);
+                                showToast('Enlace copiado al portapapeles', 'success');
+                            }}
+                            className="bg-primary text-white px-4 py-2 rounded-r hover:bg-accent transition-colors"
+                        >
+                            Copiar
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
 
     );

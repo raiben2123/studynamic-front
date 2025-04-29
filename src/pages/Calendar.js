@@ -1,13 +1,14 @@
-// src/pages/Calendar.js - Actualizado con ModernCalendar mejorado
+// src/pages/Calendar.js - Con manejo de fechas corregido
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks } from '../api/tasks';
 import { getEvents } from '../api/events';
+import { getSubjectsByUser } from '../api/subjects'; // Importamos la función para obtener las asignaturas
 import Sidebar from '../components/Sidebar';
 import ModernCalendar from '../components/ModernCalendar';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
-import { FaCalendarAlt, FaChartBar, FaPlus } from 'react-icons/fa';
+import { FaCalendarAlt, FaChartBar, FaPlus, FaBook } from 'react-icons/fa';
 import Logo from '../assets/Logo_opacidad33.png';
 import { addTask, updateTask } from '../api/tasks';
 import { addEvent, updateEvent } from '../api/events';
@@ -33,13 +34,15 @@ const CalendarPage = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [tasksData, eventsData] = await Promise.all([
+                const [tasksData, eventsData, subjectsData] = await Promise.all([
                     getTasks(),
-                    getEvents()
+                    getEvents(),
+                    getSubjectsByUser()
                 ]);
 
                 setTasks(tasksData);
                 setEvents(eventsData);
+                setSubjects(subjectsData);
                 setError(null);
             } catch (error) {
                 console.error('Error al cargar datos:', error);
@@ -147,8 +150,103 @@ const CalendarPage = () => {
         }
     };
 
-    // Combinar tareas y eventos para usar en el calendario
+    // Combinar tareas, eventos y horarios de asignaturas para el calendario
     useEffect(() => {
+        // Convertir horarios de asignaturas a eventos del calendario
+        const scheduleEvents = [];
+        
+        // Recorrer todas las asignaturas y sus horarios
+        subjects.forEach(subject => {
+            if (subject.schedules && subject.schedules.length > 0) {
+                subject.schedules.forEach(schedule => {
+                    try {
+                        // Obtener el día de la semana (0-6, donde 0 es domingo)
+                        const dayOfWeek = schedule.dayOfWeek;
+                        
+                        // Calcular fechas para las próximas 4 semanas
+                        const today = new Date();
+                        const daysUntilNext = (dayOfWeek - today.getDay() + 7) % 7; // Días hasta el próximo día de la semana
+                        
+                        // Generar eventos para las próximas 4 semanas
+                        for (let i = 0; i < 4; i++) {
+                            const nextDate = new Date(today);
+                            nextDate.setDate(today.getDate() + daysUntilNext + (i * 7));
+                            
+                            // Aplicar filtro de semanas pares/impares si es necesario
+                            const weekNumber = Math.ceil((nextDate.getDate() - nextDate.getDay()) / 7);
+                            if (
+                                (schedule.weekType === 1 && weekNumber % 2 !== 0) || // Solo semanas pares
+                                (schedule.weekType === 2 && weekNumber % 2 === 0)    // Solo semanas impares
+                            ) {
+                                continue; // Saltar esta semana si no cumple el criterio
+                            }
+                            
+                            // Crear evento para el calendario
+                            // Asegurarse de que startTime sea una cadena con formato correcto
+                            let startTime;
+                            if (typeof schedule.startTime === 'string') {
+                                // Si tiene formato HH:MM:SS (como en la respuesta JSON), extraer solo HH:MM
+                                if (schedule.startTime.length === 8 && schedule.startTime.split(':').length === 3) {
+                                    startTime = schedule.startTime.substring(0, 5);
+                                } else if (schedule.startTime.includes(':')) { 
+                                    startTime = schedule.startTime;
+                                } else {
+                                    startTime = '00:00';
+                                }
+                            } else if (typeof schedule.startTime === 'object' && schedule.startTime !== null) {
+                                // Si es un objeto con horas y minutos
+                                startTime = `${String(schedule.startTime.hours || 0).padStart(2, '0')}:${String(schedule.startTime.minutes || 0).padStart(2, '0')}`;
+                            } else {
+                                // Valor por defecto si no hay dato válido
+                                startTime = '00:00';
+                            }
+                            
+                            // Calcular la hora de finalización
+                            const [hours, minutes] = startTime.split(':').map(Number);
+                            const durationHours = Math.floor(schedule.durationMinutes / 60);
+                            const durationMinutes = schedule.durationMinutes % 60;
+                            
+                            // Crear horas finales (con posible desbordamiento a día siguiente)
+                            let endHours = hours + durationHours;
+                            let endMinutes = minutes + durationMinutes;
+                            
+                            if (endMinutes >= 60) {
+                                endHours += 1;
+                                endMinutes -= 60;
+                            }
+                            
+                            endHours = endHours % 24; // Por si pasa de medianoche
+                            
+                            const endTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+                            
+                            // Formatear fechas para el evento - formato ISO correcto
+                            const year = nextDate.getFullYear();
+                            const month = String(nextDate.getMonth() + 1).padStart(2, '0');
+                            const day = String(nextDate.getDate()).padStart(2, '0');
+                            const dateString = `${year}-${month}-${day}`;
+                            
+                            const startDateTime = `${dateString}T${startTime}:00`;
+                            const endDateTime = `${dateString}T${endTime}:00`;
+                            
+                            scheduleEvents.push({
+                                id: `schedule-${subject.id}-${schedule.id}-${i}`,
+                                title: subject.title,
+                                startDateTime: startDateTime,
+                                endDateTime: endDateTime,
+                                type: 'schedule', // Tipo especial para horarios de asignaturas
+                                color: '#467BAA', // Color para los horarios
+                                subjectId: subject.id,
+                                scheduleId: schedule.id
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error al procesar horario de asignatura:", error);
+                    }
+                });
+            }
+        });
+        
+        // Combinar con tareas y eventos
         const calendarItems = [
             ...tasks.map(task => ({
                 ...task,
@@ -157,17 +255,23 @@ const CalendarPage = () => {
             ...events.map(event => ({
                 ...event,
                 type: 'event'
-            }))
+            })),
+            ...scheduleEvents
         ];
 
         setCombinedCalendarItems(calendarItems);
-    }, [tasks, events]);
+    }, [tasks, events, subjects]);
 
     // Función para manejar el botón de añadir desde el calendario
     const handleAddFromCalendar = (date) => {
         // Convertir la fecha a formato ISO string YYYY-MM-DD
-        setSelectedDate(date.toISOString().split('T')[0]);
-        setIsAddModalOpen(true);
+        if (date instanceof Date && !isNaN(date)) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            setSelectedDate(`${year}-${month}-${day}`);
+            setIsAddModalOpen(true);
+        }
     };
 
     // Estadísticas para el panel lateral
@@ -181,8 +285,13 @@ const CalendarPage = () => {
     combinedCalendarItems.forEach(item => {
         const date = item.dueDate || item.startDateTime;
         if (date) {
-            const day = new Date(date).toISOString().split('T')[0];
-            busyDays.add(day);
+            try {
+                const day = new Date(date).toISOString().split('T')[0];
+                busyDays.add(day);
+            } catch (error) {
+                // Ignorar fechas inválidas
+                console.warn(`Fecha inválida encontrada: ${date}`, error);
+            }
         }
     });
 
@@ -202,7 +311,7 @@ const CalendarPage = () => {
             >
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-error text-error p-3 rounded mb-4">
+                        <div className="bg-error/10 text-error p-3 rounded mb-4">
                             {error}
                         </div>
                     )}
@@ -247,6 +356,11 @@ const CalendarPage = () => {
                                     </div>
 
                                     <div className="bg-gray-50 p-3 rounded-lg">
+                                        <div className="text-sm text-gray-600">Asignaturas</div>
+                                        <div className="text-2xl font-bold text-primary">{subjects.length}</div>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-3 rounded-lg">
                                         <div className="text-sm text-gray-600">Días ocupados en {currentMonth}</div>
                                         <div className="text-2xl font-bold text-primary">{busyDays.size}</div>
                                     </div>
@@ -263,6 +377,38 @@ const CalendarPage = () => {
                                 </div>
                             </div>
 
+                            {/* Asignaturas */}
+                            <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
+                                <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
+                                    <FaBook className="mr-2" /> Mis Asignaturas
+                                </h3>
+
+                                {subjects.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {subjects.slice(0, 5).map((subject) => (
+                                            <div key={subject.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                                                <div>
+                                                    <div className="font-medium text-gray-800">{subject.title}</div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {subject.schedules?.length || 0} {subject.schedules?.length === 1 ? 'sesión' : 'sesiones'} programadas
+                                                    </div>
+                                                </div>
+                                                <div className={`w-3 h-3 rounded-full bg-primary`}></div>
+                                            </div>
+                                        ))}
+                                        {subjects.length > 5 && (
+                                            <div className="text-center mt-2">
+                                                <span className="text-xs text-primary">
+                                                    +{subjects.length - 5} asignaturas más
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-sm">No tienes asignaturas registradas</p>
+                                )}
+                            </div>
+
                             {/* Recordatorios recientes */}
                             <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
                                 <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
@@ -270,25 +416,51 @@ const CalendarPage = () => {
                                 </h3>
 
                                 {combinedCalendarItems.length > 0 ? (
+                                    // Filtramos elementos válidos y ordenamos por fecha
                                     combinedCalendarItems
+                                        .filter(item => {
+                                            // Verificar que la fecha sea válida
+                                            const dateStr = item.dueDate || item.startDateTime;
+                                            if (!dateStr) return false;
+                                            
+                                            try {
+                                                const date = new Date(dateStr);
+                                                return !isNaN(date.getTime());
+                                            } catch {
+                                                return false;
+                                            }
+                                        })
                                         .sort((a, b) => {
                                             const dateA = new Date(a.dueDate || a.startDateTime);
                                             const dateB = new Date(b.dueDate || b.startDateTime);
                                             return dateA - dateB;
                                         })
                                         .slice(0, 3)
-                                        .map((item, index) => (
-                                            <div
-                                                key={index}
-                                                className={`mb-3 border-l-4 pl-3 py-1 ${item.type === 'task' ? 'border-task' : 'border-event'
+                                        .map((item, index) => {
+                                            let dateString;
+                                            try {
+                                                const date = new Date(item.dueDate || item.startDateTime);
+                                                dateString = date.toLocaleDateString('es-ES');
+                                            } catch {
+                                                dateString = "Fecha desconocida";
+                                            }
+                                            
+                                            return (
+                                                <div
+                                                    key={`${item.id || index}`}
+                                                    className={`mb-3 border-l-4 pl-3 py-1 ${
+                                                        item.type === 'task' ? 'border-task' : 
+                                                        item.type === 'schedule' ? 'border-primary' : 'border-event'
                                                     }`}
-                                            >
-                                                <div className="font-medium text-gray-800 text-sm">{item.title}</div>
-                                                <div className="text-xs text-gray-500">
-                                                    {new Date(item.dueDate || item.startDateTime).toLocaleDateString('es-ES')}
+                                                >
+                                                    <div className="font-medium text-gray-800 text-sm">{item.title}</div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {dateString}
+                                                        {item.type === 'schedule' && ' (Clase)'}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                 ) : (
                                     <p className="text-gray-500 text-sm">No hay eventos próximos</p>
                                 )}

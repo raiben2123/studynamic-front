@@ -10,6 +10,7 @@ import ResourcesPage from './pages/ResourcesPage';
 import GroupsPage from './pages/GroupsPage';
 import GroupDetailsPage from './pages/GroupDetailsPage';
 import SettingsPage from './pages/SettingsPage';
+import JoinGroupRedirect from './components/JoinGroupRedirect';
 import { loadSavedTheme } from './services/themeService';
 
 // Componente de tema que aplica el tema guardado
@@ -97,6 +98,11 @@ function App() {
                   <GroupDetailsPage />
                 </PrivateRoute>
               }
+            />
+            {/* Ruta para manejar enlaces de invitación a grupos */}
+            <Route
+              path="/groups/join/:groupId"
+              element={<JoinGroupRedirect />}
             />
             <Route 
               path="/settings" 

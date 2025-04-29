@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO, getDay, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight, FaCalendarDay } from 'react-icons/fa';
 import EventPanel from './EventPanel';
@@ -45,7 +45,36 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
     const monthEnd = endOfMonth(currentDate);
     const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
+    // Esta función ahora devuelve correctamente los días en orden de lunes a domingo
     const getWeekDays = () => ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+    // Esta función ajusta el índice para que coincida con el día correcto
+    const adjustDayOfWeek = (day) => {
+        // En JavaScript, getDay() devuelve 0 para domingo, 1 para lunes...
+        // Necesitamos convertirlo a nuestro formato donde 0 es lunes, 1 es martes...
+        const jsDay = getDay(day); // 0 = domingo, 1 = lunes, ..., 6 = sábado
+        return jsDay === 0 ? 6 : jsDay - 1; // Convertir a 0 = lunes, ..., 6 = domingo
+    };
+
+    // Función para obtener los días organizados por semanas, comenzando el lunes
+    const getCalendarDays = () => {
+        const firstDayOfMonth = startOfMonth(currentDate);
+        const firstDayOfCalendar = addDays(firstDayOfMonth, -adjustDayOfWeek(firstDayOfMonth));
+        
+        // Crear un array de 42 días (6 semanas) a partir del primer día del calendario
+        const calendarDays = [];
+        for (let i = 0; i < 42; i++) {
+            calendarDays.push(addDays(firstDayOfCalendar, i));
+        }
+        
+        // Organizamos los días en semanas
+        const weeks = [];
+        for (let i = 0; i < 6; i++) {
+            weeks.push(calendarDays.slice(i * 7, (i + 1) * 7));
+        }
+        
+        return weeks;
+    };
 
     const renderDay = (day) => {
         const dayNumber = day.getDate();
@@ -112,16 +141,20 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
 
                 {/* Días de la semana */}
                 <div className="grid grid-cols-7 gap-2 px-3 pb-2">
-                    {getWeekDays().map((day) => (
+                    {getWeekDays().map((day, index) => (
                         <div key={day} className="text-center py-3 text-gray-500 font-medium">
                             {day}
                         </div>
                     ))}
                 </div>
 
-                {/* Días del mes */}
-                <div className="grid grid-cols-7 gap-2 px-3 pb-6">
-                    {monthDays.map((day) => renderDay(day))}
+                {/* Días del mes organizados por semanas */}
+                <div className="px-3 pb-6">
+                    {getCalendarDays().map((week, weekIndex) => (
+                        <div key={weekIndex} className="grid grid-cols-7 gap-2 mb-2">
+                            {week.map(day => renderDay(day))}
+                        </div>
+                    ))}
                 </div>
             </div>
 

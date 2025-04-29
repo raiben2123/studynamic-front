@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSubjectsByUser } from '../api/subjects';
+import { uploadFile, downloadFile, getFilesBySubject, deleteFile } from '../api/files';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
@@ -7,34 +8,71 @@ import { FaBook, FaFolderPlus, FaPlus, FaDownload, FaEye, FaTrash, FaSearch } fr
 
 const ResourcesPage = () => {
     const [subjects, setSubjects] = useState([]);
-    const [resources, setResources] = useState({}); // { subject: { folderName: [{ name, file }] } }
+    const [resources, setResources] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
     const [currentSubject, setCurrentSubject] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [notification, setNotification] = useState(null); // Para notificaciones
+    const [notification, setNotification] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSubject, setSelectedSubject] = useState(null);
     const { token, userId } = useAuth();
 
-    // Load subjects from API
     useEffect(() => {
-        const fetchSubjects = async () => {
+        const fetchSubjectsAndResources = async () => {
             setLoading(true);
             try {
-                const subjectsData = await getSubjectsByUser();
+                const subjectsData = await getSubjectsByUser(token);
                 setSubjects(subjectsData || []);
 
-                // Initialize resources structure with actual subjects
+                // Inicializar estructura de recursos
                 const initialResources = {};
-                subjectsData.forEach(subject => {
-                    initialResources[subject.id] = {
-                        'Apuntes': [],
-                        'Exámenes': [],
-                        'Trabajos': []
-                    };
-                });
+                for (const subject of subjectsData) {
+                    try {
+                        const files = await getFilesBySubject(subject.id, token);
+                        console.log(`Files for subject ${subject.id}:`, files);
+                        initialResources[subject.id] = {
+                            Apuntes: files
+                                .filter(file => file.resourceType === 'Apuntes' || file.resourceType == null)
+                                .map(file => ({
+                                    id: file.id,
+                                    name: file.fileName,
+                                    url: file.fileUrl,
+                                    date: file.uploadDate,
+                                    size: (file.fileSize / 1024).toFixed(2) + ' KB',
+                                    type: 'Apuntes'
+                                })),
+                            Exámenes: files
+                                .filter(file => file.resourceType === 'Exámenes')
+                                .map(file => ({
+                                    id: file.id,
+                                    name: file.fileName,
+                                    url: file.fileUrl,
+                                    date: file.uploadDate,
+                                    size: (file.fileSize / 1024).toFixed(2) + ' KB',
+                                    type: 'Exámenes'
+                                })),
+                            Trabajos: files
+                                .filter(file => file.resourceType === 'Trabajos')
+                                .map(file => ({
+                                    id: file.id,
+                                    name: file.fileName,
+                                    url: file.fileUrl,
+                                    date: file.uploadDate,
+                                    size: (file.fileSize / 1024).toFixed(2) + ' KB',
+                                    type: 'Trabajos'
+                                }))
+                        };
+                    } catch (err) {
+                        console.error(`Error fetching files for subject ${subject.id}:`, err);
+                        initialResources[subject.id] = {
+                            Apuntes: [],
+                            Exámenes: [],
+                            Trabajos: []
+                        };
+                    }
+                }
 
                 setResources(initialResources);
                 if (subjectsData.length > 0) {
@@ -50,7 +88,7 @@ const ResourcesPage = () => {
         };
 
         if (token && userId) {
-            fetchSubjects();
+            fetchSubjectsAndResources();
         }
     }, [token, userId]);
 
@@ -59,7 +97,30 @@ const ResourcesPage = () => {
         setTimeout(() => setNotification(null), 3000);
     };
 
-    const handleFileUpload = (subjectId, folder, event) => {
+    const handleFileDelete = async (subjectId, folder, fileId) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar este archivo?')) {
+            return;
+        }
+
+        try {
+            await deleteFile(fileId, token);
+            setResources(prevResources => {
+                const updatedResources = { ...prevResources };
+                if (updatedResources[subjectId] && updatedResources[subjectId][folder]) {
+                    updatedResources[subjectId][folder] = updatedResources[subjectId][folder].filter(
+                        file => file.id !== fileId
+                    );
+                }
+                return updatedResources;
+            });
+            showNotification('Archivo eliminado con éxito', 'success');
+        } catch (err) {
+            console.error('Error en handleFileDelete:', err.message);
+            showNotification(`Error al eliminar el archivo: ${err.message}`, 'error');
+        }
+    };
+
+    const handleFileUpload = async (subjectId, folder, event) => {
         const file = event.target.files[0];
         if (
             file &&
@@ -67,30 +128,53 @@ const ResourcesPage = () => {
                 file.type === 'application/msword' ||
                 file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         ) {
-            setResources(prevResources => {
-                const updatedResources = { ...prevResources };
-                if (!updatedResources[subjectId]) {
-                    updatedResources[subjectId] = {};
-                }
-                if (!updatedResources[subjectId][folder]) {
-                    updatedResources[subjectId][folder] = [];
+            try {
+                const validFileTypes = ['Apuntes', 'Exámenes', 'Trabajos'];
+                if (!validFileTypes.includes(folder)) {
+                    throw new Error(`Tipo de archivo inválido: ${folder}`);
                 }
 
-                updatedResources[subjectId][folder] = [
-                    ...updatedResources[subjectId][folder],
-                    {
-                        name: file.name,
-                        file,
-                        date: new Date().toISOString(),
-                        size: (file.size / 1024).toFixed(2) + ' KB'
+                console.log('Subiendo archivo:', { fileName: file.name, fileType: folder, subjectId });
+
+                const uploadedFile = await uploadFile(file, folder, userId, subjectId, null, null, token);
+                setResources(prevResources => {
+                    const updatedResources = { ...prevResources };
+                    if (!updatedResources[subjectId]) {
+                        updatedResources[subjectId] = { Apuntes: [], Exámenes: [], Trabajos: [] };
                     }
-                ];
-
-                return updatedResources;
-            });
-            showNotification(`Archivo ${file.name} subido con éxito`, 'success');
+                    updatedResources[subjectId][folder].push({
+                        id: uploadedFile.id,
+                        name: uploadedFile.fileName,
+                        url: uploadedFile.fileUrl,
+                        date: uploadedFile.uploadDate,
+                        size: (uploadedFile.fileSize / 1024).toFixed(2) + ' KB',
+                        type: uploadedFile.resourceType
+                    });
+                    return updatedResources;
+                });
+                showNotification(`Archivo ${file.name} subido con éxito`, 'success');
+            } catch (err) {
+                console.error('Error en handleFileUpload:', err.message);
+                showNotification(`Error al subir el archivo: ${err.message}`, 'error');
+            }
         } else {
             showNotification('Por favor, sube un archivo PDF o Word válido.', 'error');
+        }
+    };
+
+    const handleDownloadFile = async (fileId, fileName) => {
+        try {
+            const response = await downloadFile(fileId, token);
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showNotification(`Descargando ${fileName}`, 'success');
+        } catch (err) {
+            showNotification('Error al descargar el archivo.', 'error');
         }
     };
 
@@ -140,28 +224,23 @@ const ResourcesPage = () => {
         showNotification('Recurso eliminado con éxito', 'success');
     };
 
-    // Filtrar recursos por término de búsqueda
     const filterResources = () => {
         if (!searchTerm || !selectedSubject || !resources[selectedSubject]) return resources[selectedSubject] || {};
 
         const filteredResources = {};
-
         Object.keys(resources[selectedSubject]).forEach(folder => {
             const filteredFiles = resources[selectedSubject][folder].filter(
                 resource => resource.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
-
             if (filteredFiles.length > 0) {
                 filteredResources[folder] = filteredFiles;
             }
         });
-
         return filteredResources;
     };
 
     const filteredSubjectResources = filterResources();
 
-    // Formatear fecha para mostrar
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('es-ES', {
@@ -169,7 +248,7 @@ const ResourcesPage = () => {
             month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         }).format(date);
     };
 
@@ -189,7 +268,9 @@ const ResourcesPage = () => {
             >
                 <div className="relative z-10">
                     {notification && (
-                        <div className={`fixed top-4 right-4 p-3 rounded-lg shadow-md transition-opacity duration-300 ${notification.type === 'success' ? 'bg-task-finalizada-bg text-task-finalizada' : 'bg-error/10 text-error'}`}>
+                        <div
+                            className={`fixed top-4 right-4 p-3 rounded-lg shadow-md transition-opacity duration-300 ${notification.type === 'success' ? 'bg-task-finalizada-bg text-task-finalizada' : 'bg-error/10 text-error'}`}
+                        >
                             {notification.message}
                         </div>
                     )}
@@ -203,9 +284,8 @@ const ResourcesPage = () => {
                     <div className="bg-white p-4 md:p-6 rounded-xl shadow-md mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
-                                <FaBook className="mr-2" /> Recursos y Apuntes
+                                <FaBook className="mr-2" /> Apuntes
                             </h1>
-
                             <div className="relative w-full md:w-64 mt-3 md:mt-0">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                     <FaSearch className="text-primary" />
@@ -219,16 +299,15 @@ const ResourcesPage = () => {
                                 />
                             </div>
                         </div>
-
                         {subjects.length > 0 && (
                             <div className="flex flex-wrap gap-2 pb-2 overflow-x-auto hide-scrollbar">
-                                {subjects.map((subject) => (
+                                {subjects.map(subject => (
                                     <button
                                         key={subject.id}
                                         onClick={() => setSelectedSubject(subject.id)}
                                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedSubject === subject.id
-                                                ? 'bg-primary text-white'
-                                                : 'bg-gray-200 text-gray-800 hover:bg-primary-light'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-200 text-gray-800 hover:bg-primary-light'
                                             }`}
                                     >
                                         {subject.title}
@@ -248,23 +327,20 @@ const ResourcesPage = () => {
                         </div>
                     ) : (
                         <div className="bg-white p-4 md:p-6 rounded-xl shadow-md">
-                            {/* Mostrar contenido de la asignatura seleccionada */}
                             {selectedSubject && (
                                 <div>
                                     <div className="flex justify-between items-center mb-4">
                                         <h2 className="text-xl font-semibold text-gray-800">
                                             {subjects.find(s => s.id === selectedSubject)?.title}
                                         </h2>
-                                        <button
+                                        {/* <button
                                             onClick={() => openModal(selectedSubject)}
                                             className="flex items-center text-primary hover:text-accent font-medium"
                                         >
                                             <FaFolderPlus className="mr-1" />
                                             <span>Nueva Carpeta</span>
-                                        </button>
+                                        </button> */}
                                     </div>
-
-                                    {/* Mostrar carpetas y recursos */}
                                     {Object.keys(filteredSubjectResources).length === 0 ? (
                                         searchTerm ? (
                                             <div className="text-center py-8 bg-primary-light rounded-lg">
@@ -283,7 +359,7 @@ const ResourcesPage = () => {
                                         )
                                     ) : (
                                         <div className="space-y-6">
-                                            {Object.keys(filteredSubjectResources).map((folder) => (
+                                            {Object.keys(filteredSubjectResources).map(folder => (
                                                 <div key={folder} className="border border-gray-200 rounded-lg overflow-hidden">
                                                     <div className="flex justify-between items-center bg-primary-light p-3 border-b">
                                                         <h3 className="font-medium text-primary flex items-center">
@@ -295,12 +371,11 @@ const ResourcesPage = () => {
                                                             <input
                                                                 type="file"
                                                                 accept=".pdf,.doc,.docx"
-                                                                onChange={(e) => handleFileUpload(selectedSubject, folder, e)}
+                                                                onChange={e => handleFileUpload(selectedSubject, folder, e)}
                                                                 className="hidden"
                                                             />
                                                         </label>
                                                     </div>
-
                                                     {filteredSubjectResources[folder].length === 0 ? (
                                                         <div className="p-4 text-center text-gray-500">
                                                             No hay recursos en esta carpeta
@@ -310,7 +385,7 @@ const ResourcesPage = () => {
                                                             {filteredSubjectResources[folder].map((resource, index) => (
                                                                 <div
                                                                     key={index}
-                                                                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 hover:bg-primary-light/50"
+                                                                    className="flex flex-col sm:flex-row belo-justify-between items-start sm:items-center p-3 hover:bg-primary-light/50"
                                                                 >
                                                                     <div className="flex-1 pr-4">
                                                                         <div className="font-medium text-gray-800">{resource.name}</div>
@@ -323,21 +398,21 @@ const ResourcesPage = () => {
                                                                     </div>
                                                                     <div className="flex space-x-2 mt-2 sm:mt-0">
                                                                         <button
-                                                                            onClick={() => showNotification(`Ver ${resource.name}`, 'success')}
+                                                                            onClick={() => window.open(resource.url, '_blank')}
                                                                             className="p-2 text-accent hover:text-accent/80 rounded-full hover:bg-accent/10"
                                                                             title="Ver"
                                                                         >
                                                                             <FaEye />
                                                                         </button>
                                                                         <button
-                                                                            onClick={() => showNotification(`Descargar ${resource.name}`, 'success')}
+                                                                            onClick={() => handleDownloadFile(resource.id, resource.name)}
                                                                             className="p-2 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada-bg"
                                                                             title="Descargar"
                                                                         >
                                                                             <FaDownload />
                                                                         </button>
                                                                         <button
-                                                                            onClick={() => handleDeleteResource(selectedSubject, folder, index)}
+                                                                            onClick={() => handleFileDelete(selectedSubject, folder, resource.id)}
                                                                             className="p-2 text-error hover:text-error/80 rounded-full hover:bg-error/10"
                                                                             title="Eliminar"
                                                                         >
@@ -358,8 +433,6 @@ const ResourcesPage = () => {
                     )}
                 </div>
             </div>
-
-            {/* Modal para crear carpeta */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
@@ -369,7 +442,7 @@ const ResourcesPage = () => {
                         <input
                             type="text"
                             value={newFolderName}
-                            onChange={(e) => setNewFolderName(e.target.value)}
+                            onChange={e => setNewFolderName(e.target.value)}
                             placeholder="Nombre de la carpeta"
                             className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                         />

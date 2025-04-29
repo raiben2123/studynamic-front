@@ -1,5 +1,5 @@
-// src/pages/Dashboard.js modificado con modales de confirmación
-import React, { useState, useEffect } from 'react';
+// src/pages/Dashboard.js - Actualizado para resolver el problema con SubjectCard
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
@@ -15,7 +15,7 @@ import GroupCard from '../components/dashboard/GroupCard';
 import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
-import ConfirmationModal from '../components/modals/ConfirmationModal'; // Importar el modal de confirmación
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 import Carousel from '../components/Carousel'; 
 import { FaChartPie, FaCalendarAlt, FaBook, FaUsers, FaTasks, FaPlus } from 'react-icons/fa';
 
@@ -54,41 +54,44 @@ const Dashboard = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Función para cargar datos (se declara con useCallback para poder reutilizarla)
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const [tasksData, subjectsData, eventsData, groupsData] = await Promise.all([
+                getTasks(),
+                getSubjectsByUser(),
+                getEvents(),
+                getGroupsByUserId(),
+            ]);
+            
+            // Ordenamos las tareas por fecha
+            const sortedTasks = [...tasksData].sort((a, b) => {
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            });
+            
+            // Ordenamos los eventos por fecha
+            const sortedEvents = [...eventsData].sort((a, b) => {
+                return new Date(a.startDateTime) - new Date(b.startDateTime);
+            });
+            
+            setTasks(sortedTasks);
+            setSubjects(subjectsData);
+            setEvents(sortedEvents);
+            setGroups(groupsData);
+            setError(null);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError('Error al cargar datos');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Cargar datos al montar el componente
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const [tasksData, subjectsData, eventsData, groupsData] = await Promise.all([
-                    getTasks(),
-                    getSubjectsByUser(),
-                    getEvents(),
-                    getGroupsByUserId(),
-                ]);
-                
-                // Ordenamos las tareas por fecha
-                const sortedTasks = [...tasksData].sort((a, b) => {
-                    return new Date(a.dueDate) - new Date(b.dueDate);
-                });
-                
-                // Ordenamos los eventos por fecha
-                const sortedEvents = [...eventsData].sort((a, b) => {
-                    return new Date(a.startDateTime) - new Date(b.startDateTime);
-                });
-                
-                setTasks(sortedTasks);
-                setSubjects(subjectsData);
-                setEvents(sortedEvents);
-                setGroups(groupsData);
-                setError(null);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setError('Error al cargar datos');
-            } finally {
-                setLoading(false);
-            }
-        };
         if (token && userId) fetchData();
-    }, [token, userId]);
+    }, [token, userId, fetchData]);
 
     const handleAddTask = async (newTask) => {
         setLoading(true);
@@ -187,11 +190,15 @@ const Dashboard = () => {
         });
     };
 
-    const handleAddSubject = async (subjectName) => {
+    const handleAddSubject = async (subjectName, schedules = []) => {
         setLoading(true);
         try {
-            const newSubject = await addSubject({ title: subjectName });
-            setSubjects([...subjects, newSubject]);
+            const newSubject = await addSubject({ title: subjectName }, schedules);
+            
+            // Actualizamos todos los datos después de añadir una asignatura
+            // para asegurar que tenemos los horarios correctos
+            await fetchData();
+            
             setIsSubjectModalOpen(false);
             setEditingSubject(null);
             setError(null);
@@ -209,16 +216,16 @@ const Dashboard = () => {
         setIsSubjectModalOpen(true);
     };
 
-    const handleSubjectUpdate = async (subjectName) => {
+    const handleSubjectUpdate = async (subjectName, schedules = []) => {
         if (!editingSubject) return;
         setLoading(true);
         try {
-            const updatedSubject = await updateSubject(editingSubject.id, { title: subjectName });
-            setSubjects(
-                subjects.map((subject) =>
-                    subject.id === editingSubject.id ? updatedSubject : subject
-                )
-            );
+            await updateSubject(editingSubject.id, { title: subjectName }, schedules);
+            
+            // Actualizamos todos los datos después de actualizar una asignatura
+            // para asegurar que tenemos los horarios correctos
+            await fetchData();
+            
             setIsSubjectModalOpen(false);
             setEditingSubject(null);
             setError(null);
@@ -393,6 +400,12 @@ const Dashboard = () => {
         null, 
         { onNavigate: handleNavigateToGroup }
     );
+
+    // Función para notificar actualizaciones
+    const showNotification = (message, type) => {
+        // Aquí iría la lógica de notificaciones (podrías usar un toast o similar)
+        console.log(`${type}: ${message}`);
+    };
 
     return (
         <div className="flex flex-col min-h-screen md:flex-row">

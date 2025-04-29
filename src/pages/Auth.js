@@ -17,12 +17,23 @@ const Auth = () => {
     const { login, register } = useAuth(); // Usamos el login del contexto
     const navigate = useNavigate();
 
+    // Actualización de la función handleLogin en Auth.js
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         const success = await login(username, password);
         if (success) {
-            navigate('/home'); // Cambié a /home como en tu App.js
+            // Verificar si hay una redirección pendiente después de iniciar sesión
+            const redirectPath = localStorage.getItem('redirectAfterLogin');
+            if (redirectPath) {
+                // Limpiar la redirección pendiente
+                localStorage.removeItem('redirectAfterLogin');
+                // Redirigir a la URL guardada
+                navigate(redirectPath);
+            } else {
+                // Comportamiento normal - ir al dashboard
+                navigate('/home');
+            }
         } else {
             setError('Usuario o contraseña incorrectos');
         }
@@ -33,7 +44,17 @@ const Auth = () => {
         setError('');
         const success = await register(username, email, password);
         if (success) {
-            navigate('/home'); // Cambié a /home como en tu App.js
+            // Verificar si hay una redirección pendiente después de registrarse
+            const redirectPath = localStorage.getItem('redirectAfterLogin');
+            if (redirectPath) {
+                // Limpiar la redirección pendiente
+                localStorage.removeItem('redirectAfterLogin');
+                // Redirigir a la URL guardada
+                navigate(redirectPath);
+            } else {
+                // Comportamiento normal - ir al dashboard
+                navigate('/home');
+            }
         } else {
             setError('Error al registrarse. Intenta de nuevo.');
         }

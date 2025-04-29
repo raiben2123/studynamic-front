@@ -1,4 +1,4 @@
-// src/components/modals/SubjectModal.js - Implementación usando el Modal base
+// src/components/modals/SubjectModal.js - Versión actualizada para mostrar horarios de inmediato
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
@@ -73,18 +73,20 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                 if (subject?.id) {
                     // Si estamos editando una asignatura existente, podemos guardar directamente
                     updatedSchedule = await addSchedule(scheduleData);
-                    setSchedules([...schedules, updatedSchedule]);
+                    setSchedules(prevSchedules => [...prevSchedules, updatedSchedule]); // Actualización inmediata del estado
                 } else {
                     // Si es una nueva asignatura, añadimos a la lista temporal
-                    setSchedules([...schedules, { 
+                    const newTempSchedule = { 
                         ...scheduleData, 
                         id: `temp-${Date.now()}`, 
                         isTemporary: true 
-                    }]);
+                    };
+                    setSchedules(prevSchedules => [...prevSchedules, newTempSchedule]); // Actualización inmediata del estado
                 }
             }
             
             setEditingSchedule(null);
+            setIsScheduleModalOpen(false); // Cerrar modal después de guardar
         } catch (error) {
             console.error("Error al guardar horario:", error);
             setError("No se pudo guardar el horario.");
@@ -104,11 +106,11 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
             
             if (scheduleId.toString().startsWith('temp-')) {
                 // Si es un horario temporal (nuevo), solo lo eliminamos del array
-                setSchedules(schedules.filter(s => s.id !== scheduleId));
+                setSchedules(prevSchedules => prevSchedules.filter(s => s.id !== scheduleId));
             } else {
                 // Si es un horario existente, lo eliminamos en el backend
                 await deleteSchedule(scheduleId);
-                setSchedules(schedules.filter(s => s.id !== scheduleId));
+                setSchedules(prevSchedules => prevSchedules.filter(s => s.id !== scheduleId));
             }
         } catch (error) {
             console.error("Error al eliminar horario:", error);

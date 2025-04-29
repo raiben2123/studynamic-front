@@ -1,4 +1,4 @@
-// src/api/groups.js
+// src/api/groups.js - Actualizado con funciones para invitaciones
 import { getToken, getUserId } from './auth';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
@@ -466,11 +466,44 @@ export const deleteGroup = async (groupId) => {
 };
 
 /**
- * Une a un usuario a un grupo usando la contraseña
+ * Genera un enlace de invitación para unirse a un grupo
  * @param {number} groupId - ID del grupo
- * @param {string} password - Contraseña del grupo
- * @returns {Promise<Object>} Información del miembro añadido
+ * @returns {Promise<Object>} Objeto con el enlace de invitación
  */
+export const generateInviteLink = async (groupId) => {
+    const token = await getToken();
+    
+    if (!token) {
+        throw new Error('No autenticado');
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/groups/invite/${groupId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al generar el enlace de invitación');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error generando enlace de invitación:', error);
+        
+        // Para desarrollo, generamos un enlace local
+        if (process.env.NODE_ENV === 'development') {
+            const inviteLink = `${window.location.origin}/#/groups/join/${groupId}`;
+            return { inviteLink };
+        }
+        
+        throw error;
+    }
+};
+
 /**
  * Une a un usuario a un grupo usando la contraseña
  * @param {number} groupId - ID del grupo
@@ -521,6 +554,52 @@ export const joinGroup = async (groupId, password) => {
                 Username: 'Tú',
                 RoleName: 'Miembro'
             };
+        }
+        
+        throw error;
+    }
+};
+
+/**
+ * Unirse a un grupo a través de un enlace de invitación
+ * @param {number} groupId - ID del grupo
+ * @returns {Promise<Object>} Resultado de la operación
+ */
+export const joinGroupWithLink = async (groupId) => {
+    const token = await getToken();
+    
+    if (!token) {
+        throw new Error('No autenticado');
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/groups/join/${groupId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            // Si el grupo requiere contraseña, devolvemos un objeto con esa información
+            if (response.status === 302 || response.status === 307) {
+                const locationHeader = response.headers.get('Location');
+                if (locationHeader && locationHeader.includes('invite=true')) {
+                    return { requiresPassword: true, groupId };
+                }
+            }
+            throw new Error('Error al unirse al grupo a través del enlace');
+        }
+
+        // Si se ha unido exitosamente, devolvemos los datos del grupo
+        return { success: true, groupId };
+    } catch (error) {
+        console.error('Error al unirse al grupo con enlace:', error);
+        
+        // Para desarrollo
+        if (process.env.NODE_ENV === 'development') {
+            return { success: true, groupId };
         }
         
         throw error;
@@ -580,5 +659,7 @@ export default {
     deleteGroup,
     joinGroup,
     leaveGroup,
-    getAllGroups
+    getAllGroups,
+    generateInviteLink,
+    joinGroupWithLink
 };

@@ -1,13 +1,28 @@
-// src/components/dashboard/SubjectCard.js - Modified to use confirmation modal
-import React, { useState } from 'react';
+// src/components/dashboard/SubjectCard.js - Actualizado para mostrar horarios inmediatamente
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaBook, FaClock, FaCalendarAlt, FaAngleDown, FaAngleUp } from 'react-icons/fa';
 
 const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     const [showSchedules, setShowSchedules] = useState(false);
+    const [schedules, setSchedules] = useState([]);
+
+    // Este useEffect asegura que los schedules se actualicen cuando cambia el subject
+    useEffect(() => {
+        if (subject && subject.schedules) {
+            setSchedules(subject.schedules);
+        } else {
+            setSchedules([]);
+        }
+    }, [subject]);
 
     const formatTimeSpan = (timeSpan) => {
         if (!timeSpan) return '';
+        
+        // Si tiene formato HH:MM:SS (como en la respuesta JSON), extraer solo HH:MM
+        if (typeof timeSpan === 'string' && timeSpan.length === 8 && timeSpan.split(':').length === 3) {
+            return timeSpan.substring(0, 5);
+        }
         
         if (typeof timeSpan === 'string' && timeSpan.includes(':')) {
             return timeSpan;
@@ -55,7 +70,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
         }
     };
 
-    const hasSchedules = subject.schedules && subject.schedules.length > 0;
+    const hasSchedules = schedules && schedules.length > 0;
     
     // Generate a "random" subject color from the subject name
     const getSubjectColor = () => {
@@ -121,7 +136,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                         onClick={() => setShowSchedules(!showSchedules)}
                         className="text-xs flex items-center text-primary hover:text-accent font-medium"
                     >
-                        <span>Horarios ({subject.schedules.length})</span>
+                        <span>Horarios ({schedules.length})</span>
                         {showSchedules ? 
                             <FaAngleUp className="ml-1" /> : 
                             <FaAngleDown className="ml-1" />
@@ -130,7 +145,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                     
                     {showSchedules && (
                         <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
-                            {subject.schedules.map((schedule) => (
+                            {schedules.map((schedule) => (
                                 <div 
                                     key={schedule.id} 
                                     className="bg-gray-50 p-2 rounded-lg border border-gray-100 flex justify-between items-center"
@@ -160,7 +175,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
             {/* Stats or progress indicators could go here */}
             <div className="mt-3 pt-2 border-t">
                 <div className="flex justify-between text-xs text-gray-600">
-                    <span>Clases por semana: {hasSchedules ? subject.schedules.length : 0}</span>
+                    <span>Clases por semana: {hasSchedules ? schedules.length : 0}</span>
                     <span>{hasSchedules ? 'Configurado' : 'No configurado'}</span>
                 </div>
             </div>
