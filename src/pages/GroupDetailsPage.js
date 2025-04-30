@@ -32,9 +32,11 @@ import {
     FaEye,
     FaLink,
     FaLock,
-    FaExclamationTriangle
+    FaExclamationTriangle,
+    FaFile
 } from 'react-icons/fa';
 import { formatDateForDisplay } from '../utils/dateUtils';
+import FilesTab from '../components/files/FilesTab';
 
 // API imports
 import { deleteGroup, getGroupById, getGroupMembers, leaveGroup, getGroupsByUserId, joinGroup } from '../api/groups';
@@ -55,7 +57,7 @@ const GroupDetailsPage = () => {
     const [subjects, setSubjects] = useState([]);
     const [notes, setNotes] = useState({});
     const [studySessions, setStudySessions] = useState([]);
-    const [activeTab, setActiveTab] = useState('members');
+    const [activeTab, setActiveTab] = useState('members'); // 'members', 'tasks', 'calendar', 'notes', 'files', 'sessions', 'settings'
 
     // Estado para autorización de acceso
     const [hasAccess, setHasAccess] = useState(false);
@@ -322,23 +324,6 @@ const GroupDetailsPage = () => {
         });
     };
 
-    // Reemplazar la llamada a window.confirm para eliminar un archivo/nota
-    const handleFileDelete = (folder, index) => {
-        setConfirmationModal({
-            isOpen: true,
-            title: 'Eliminar Archivo',
-            message: `¿Estás seguro de eliminar "${notes[folder][index].name}"? Esta acción no se puede deshacer.`,
-            onConfirm: () => {
-                const updatedNotes = { ...notes };
-                updatedNotes[folder].splice(index, 1);
-                setNotes(updatedNotes);
-                showToast('Archivo eliminado correctamente', 'success');
-            },
-            type: 'danger',
-            confirmText: 'Eliminar'
-        });
-    };
-
     // Reemplazar la llamada a window.confirm para eliminar el grupo
     const handleDeleteGroup = () => {
         setConfirmationModal({
@@ -477,29 +462,6 @@ const GroupDetailsPage = () => {
         showToast('Sesión de estudio programada correctamente', 'success');
     };
 
-    const handleAddFolder = () => {
-        if (!newFolderName || notes[newFolderName]) {
-            alert('El nombre de la carpeta ya existe o está vacío.');
-            return;
-        }
-        setNotes({ ...notes, [newFolderName]: [] });
-        setNewFolderName('');
-        showToast('Carpeta creada correctamente', 'success');
-    };
-
-    const handleFileUpload = (folder, event) => {
-        const file = event.target.files[0];
-        if (file && (file.type === 'application/pdf' || file.type.includes('word'))) {
-            setNotes({
-                ...notes,
-                [folder]: [...notes[folder], { id: Date.now(), name: file.name, file, uploadDate: new Date().toISOString() }]
-            });
-            showToast('Archivo subido correctamente', 'success');
-        } else {
-            alert('Por favor, sube un archivo PDF o Word válido.');
-        }
-    };
-
     // Transformar eventos para el ModernCalendar
     useEffect(() => {
         if (!hasAccess) return; // No procesar si no tiene acceso
@@ -595,10 +557,10 @@ const GroupDetailsPage = () => {
             <div className="flex flex-col min-h-screen md:flex-row">
                 <Sidebar />
                 <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex justify-center items-center">
-                    <div className="bg-white p-8 rounded-xl shadow-md max-w-md text-center">
+                    <div className="bg-card-bg p-8 rounded-xl shadow-md max-w-md text-center">
                         <FaLock className="mx-auto text-4xl text-primary mb-4" />
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Acceso Restringido</h2>
-                        <p className="text-gray-600 mb-6">
+                        <h2 className="text-2xl font-bold text-text mb-4">Acceso Restringido</h2>
+                        <p className="text-text-secondary mb-6">
                             No tienes acceso a este grupo. Debes ser miembro para ver su contenido.
                         </p>
                         <div className="space-y-4">
@@ -610,7 +572,7 @@ const GroupDetailsPage = () => {
                             </button>
                             <button
                                 onClick={() => navigate('/groups')}
-                                className="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                className="w-full bg-border text-text px-4 py-2 rounded-lg hover:bg-border/80 transition-colors"
                             >
                                 Volver a Grupos
                             </button>
@@ -621,31 +583,31 @@ const GroupDetailsPage = () => {
                 {/* Modal para unirse al grupo */}
                 {showJoinModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
+                        <div className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
                             <h3 className="text-xl font-semibold mb-4 text-primary border-b pb-2">
                                 Unirse a {group?.name || 'Grupo'}
                             </h3>
-                            <p className="text-gray-600 mb-4">
+                            <p className="text-text-secondary mb-4">
                                 Introduce la contraseña del grupo para unirte.
                             </p>
                             <div className="mb-4">
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                                        <FaLock className="text-gray-400" />
+                                        <FaLock className="text-text-secondary" />
                                     </div>
                                     <input
                                         type="password"
                                         value={joinPassword}
                                         onChange={(e) => setJoinPassword(e.target.value)}
                                         placeholder="Contraseña del grupo"
-                                        className="w-full pl-10 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                        className="w-full pl-10 p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                     />
                                 </div>
                             </div>
                             <div className="flex justify-end space-x-2">
                                 <button
                                     onClick={() => setShowJoinModal(false)}
-                                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                                    className="px-4 py-2 bg-border text-text rounded-lg hover:bg-border/80 transition-colors"
                                 >
                                     Cancelar
                                 </button>
@@ -676,7 +638,7 @@ const GroupDetailsPage = () => {
                 <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex justify-center items-center">
                     <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-                        <p className="text-lg text-gray-600">Cargando datos del grupo...</p>
+                        <p className="text-lg text-text-secondary">Cargando datos del grupo...</p>
                     </div>
                 </div>
             </div>
@@ -688,7 +650,7 @@ const GroupDetailsPage = () => {
             <div className="flex flex-col min-h-screen md:flex-row">
                 <Sidebar />
                 <div className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8 flex flex-col justify-center items-center">
-                    <div className="bg-error/10 text-error p-6 rounded-lg mb-6 max-w-md text-center">
+                    <div className="bg-task-vencida/10 text-task-vencida p-6 rounded-lg mb-6 max-w-md text-center">
                         <p className="text-lg mb-4">{error}</p>
                         <p className="text-sm mb-6">No se pudo cargar la información del grupo. Por favor, intenta de nuevo más tarde.</p>
                         <button
@@ -724,10 +686,10 @@ const GroupDetailsPage = () => {
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${toast.type === 'success' ? 'bg-task-finalizada-bg border-l-4 border-task-finalizada text-task-finalizada' :
-                                toast.type === 'error' ? 'bg-error/10 border-l-4 border-error text-error' :
-                                    'bg-primary-light border-l-4 border-primary text-primary'
-                                }`}
+                            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${toast.type === 'success' ? 'bg-task-finalizada text-task-finalizada' : 
+                            toast.type === 'error' ? 'bg-task-vencida text-task-vencida' : 
+                            'bg-primary-light text-primary'
+                            }`}
                         >
                             {toast.message}
                         </motion.div>
@@ -736,16 +698,16 @@ const GroupDetailsPage = () => {
 
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-error/10 text-error p-3 rounded mb-4 animate-fade-in">
+                        <div className="bg-task-vencida text-task-vencida p-3 rounded mb-4 animate-fade-in">
                             {error}
                         </div>
                     )}
 
-                    <div className="bg-white p-6 rounded-xl shadow-md mb-6 opacity-95">
+                    <div className="bg-card-bg p-6 rounded-xl shadow-md mb-6 opacity-95">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h1 className="text-2xl md:text-3xl text-primary font-bold">{group?.name || 'Grupo'}</h1>
-                                <p className="text-gray-600 mt-1">
+                                <p className="text-text-secondary mt-1">
                                     <span className="flex items-center">
                                         <FaUsers className="mr-2 text-primary" />
                                         {members.length} {members.length === 1 ? 'miembro' : 'miembros'}
@@ -761,7 +723,7 @@ const GroupDetailsPage = () => {
                                 </button>
                                 <Link
                                     to="/groups"
-                                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                    className="bg-border text-text px-4 py-2 rounded-lg hover:bg-border/80 transition-colors"
                                 >
                                     Volver
                                 </Link>
@@ -770,12 +732,12 @@ const GroupDetailsPage = () => {
                     </div>
 
                     <div className="mb-6">
-                        <div className="flex border-b-2 border-gray-200 overflow-x-auto hide-scrollbar">
+                        <div className="flex border-b-2 border-border overflow-x-auto hide-scrollbar">
                             <button
                                 onClick={() => setActiveTab('members')}
                                 className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'members'
                                     ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                    : 'text-gray-500 hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
                                 <FaUsers className="mr-1.5" /> {!isMobile && 'Miembros'}
@@ -784,7 +746,7 @@ const GroupDetailsPage = () => {
                                 onClick={() => setActiveTab('tasks')}
                                 className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'tasks'
                                     ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                    : 'text-gray-500 hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
                                 <FaTasks className="mr-1.5" /> {!isMobile && 'Tareas'}
@@ -793,25 +755,25 @@ const GroupDetailsPage = () => {
                                 onClick={() => setActiveTab('calendar')}
                                 className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'calendar'
                                     ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                    : 'text-gray-500 hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
                                 <FaCalendarAlt className="mr-1.5" /> {!isMobile && 'Calendario'}
                             </button>
                             <button
-                                onClick={() => setActiveTab('notes')}
-                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'notes'
+                                onClick={() => setActiveTab('files')}
+                                className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'files'
                                     ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                    : 'text-gray-500 hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
-                                <FaBook className="mr-1.5" /> {!isMobile && 'Apuntes'}
+                                <FaFile className="mr-1.5" /> {!isMobile && 'Archivos'}
                             </button>
                             <button
                                 onClick={() => setActiveTab('sessions')}
                                 className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'sessions'
                                     ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                    : 'text-gray-500 hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
                                 <FaComments className="mr-1.5" /> {!isMobile && 'Sesiones'}
@@ -821,7 +783,7 @@ const GroupDetailsPage = () => {
                                     onClick={() => setActiveTab('settings')}
                                     className={`py-2 px-4 font-medium whitespace-nowrap flex items-center ${activeTab === 'settings'
                                         ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                        : 'text-gray-500 hover:text-primary'
+                                        : 'text-text-secondary hover:text-primary'
                                         }`}
                                 >
                                     <FaCog className="mr-1.5" /> {!isMobile && 'Ajustes'}
@@ -830,7 +792,7 @@ const GroupDetailsPage = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-md opacity-95 min-h-[60vh]">
+                    <div className="bg-card-bg p-6 rounded-xl shadow-md opacity-95 min-h-[60vh]">
                         <AnimatePresence mode="wait">
                             {activeTab === 'members' && (
                                 <motion.div
@@ -846,49 +808,49 @@ const GroupDetailsPage = () => {
                                     </div>
 
                                     {members.length === 0 ? (
-                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
-                                            <FaUsers className="mx-auto text-gray-400 text-4xl mb-4" />
-                                            <p className="text-gray-600 mb-2">No hay miembros en este grupo.</p>
+                                        <div className="text-center py-10 bg-primary-light rounded-lg">
+                                            <FaUsers className="mx-auto text-text-secondary text-4xl mb-4" />
+                                            <p className="text-text mb-2">No hay miembros en este grupo.</p>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {members.map((member) => (
                                                 <div
                                                     key={member.userId}
-                                                    className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-center relative"
+                                                    className="bg-input-bg rounded-lg p-4 border border-border flex items-center relative"
                                                 >
                                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xl ${getMemberColor(member.username)}`}>
                                                         {member.username ? member.username.charAt(0).toUpperCase() : 'U'}
                                                     </div>
                                                     <div className="ml-3 flex-1">
                                                         <div className="flex items-center">
-                                                            <span className="font-medium text-gray-800">{member.username}</span>
+                                                            <span className="font-medium text-text">{member.username}</span>
                                                             {member.roleId === 1 && (
                                                                 <span className="ml-2 text-yellow-500" title="Administrador">
                                                                     <FaCrown />
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <span className="text-sm text-gray-500">{member.roleId === 1 ? 'Administrador' : 'Miembro'}</span>
+                                                        <span className="text-sm text-text-secondary">{member.roleId === 1 ? 'Administrador' : 'Miembro'}</span>
                                                     </div>
 
                                                     {isAdmin && member.userId !== parseInt(userId) && (
                                                         <div className="relative ml-2">
                                                             <button
                                                                 onClick={() => setMemberTooltip(memberTooltip === member.userId ? null : member.userId)}
-                                                                className="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200"
+                                                                className="text-text-secondary hover:text-text p-2 rounded-full hover:bg-border"
                                                             >
                                                                 <FaEllipsisV size={16} />
                                                             </button>
 
                                                             {memberTooltip === member.userId && (
-                                                                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                                                                <div className="absolute right-0 mt-1 w-48 bg-card-bg rounded-md shadow-lg z-10 border border-border">
                                                                     <button
                                                                         onClick={() => {
                                                                             handleKickMember(member.userId);
                                                                             setMemberTooltip(null);
                                                                         }}
-                                                                        className="flex items-center w-full px-4 py-3 text-sm text-left hover:bg-error/10 text-error"
+                                                                        className="flex items-center w-full px-4 py-3 text-sm text-left hover:bg-task-vencida/10 text-task-vencida"
                                                                     >
                                                                         <FaUserMinus className="mr-2" /> Expulsar del grupo
                                                                     </button>
@@ -926,9 +888,9 @@ const GroupDetailsPage = () => {
                                     </div>
 
                                     {tasks.length === 0 ? (
-                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
-                                            <FaTasks className="mx-auto text-gray-400 text-4xl mb-4" />
-                                            <p className="text-gray-600 mb-2">No hay tareas asignadas a este grupo.</p>
+                                        <div className="text-center py-10 bg-primary-light rounded-lg">
+                                            <FaTasks className="mx-auto text-text-secondary text-4xl mb-4" />
+                                            <p className="text-text mb-2">No hay tareas asignadas a este grupo.</p>
                                             <button
                                                 onClick={() => {
                                                     setEditingTask(null);
@@ -972,9 +934,9 @@ const GroupDetailsPage = () => {
                                     </div>
 
                                     {modernCalendarEvents.length === 0 ? (
-                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
-                                            <FaCalendarAlt className="mx-auto text-gray-400 text-4xl mb-4" />
-                                            <p className="text-gray-600 mb-2">No hay eventos en el calendario.</p>
+                                        <div className="text-center py-10 bg-primary-light rounded-lg">
+                                            <FaCalendarAlt className="mx-auto text-text-secondary text-4xl mb-4" />
+                                            <p className="text-text mb-2">No hay eventos en el calendario.</p>
                                             <button
                                                 onClick={() => setIsAddModalOpen(true)}
                                                 className="mt-2 text-primary hover:text-accent"
@@ -983,7 +945,8 @@ const GroupDetailsPage = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="h-[60vh]">
+                                        // Contenedor con altura adecuada para dispositivos móviles y escritorio
+                                        <div className="h-[60vh] md:h-[70vh]">
                                             <ModernCalendar
                                                 layout='side'
                                                 events={modernCalendarEvents}
@@ -997,122 +960,19 @@ const GroupDetailsPage = () => {
                                     )}
                                 </motion.div>
                             )}
-
-                            {activeTab === 'notes' && (
+                            {activeTab === 'files' && (
                                 <motion.div
-                                    key="notes"
+                                    key="files"
                                     variants={tabVariants}
                                     initial="hidden"
                                     animate="visible"
                                     exit="exit"
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-xl font-semibold text-primary">Apuntes</h2>
-                                        <button
-                                            onClick={() => {
-                                                const folderName = prompt('Introduce el nombre de la nueva carpeta:');
-                                                if (folderName && !notes[folderName]) {
-                                                    setNotes({ ...notes, [folderName]: [] });
-                                                    showToast('Carpeta creada correctamente', 'success');
-                                                } else if (notes[folderName]) {
-                                                    alert('Ya existe una carpeta con ese nombre.');
-                                                }
-                                            }}
-                                            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors flex items-center"
-                                        >
-                                            <FaPlus className="mr-2" /> Nueva Carpeta
-                                        </button>
-                                    </div>
-
-                                    {Object.keys(notes).length === 0 ? (
-                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
-                                            <FaBook className="mx-auto text-gray-400 text-4xl mb-4" />
-                                            <p className="text-gray-600 mb-2">No hay carpetas de apuntes.</p>
-                                            <button
-                                                onClick={() => {
-                                                    const folderName = prompt('Introduce el nombre de la nueva carpeta:');
-                                                    if (folderName) {
-                                                        setNotes({ ...notes, [folderName]: [] });
-                                                        showToast('Carpeta creada correctamente', 'success');
-                                                    }
-                                                }}
-                                                className="mt-2 text-primary hover:text-accent"
-                                            >
-                                                Crear la primera carpeta
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-6">
-                                            {Object.keys(notes).map((folder) => (
-                                                <div key={folder} className="border border-gray-200 rounded-lg overflow-hidden">
-                                                    <div className="flex justify-between items-center bg-primary-light p-4 border-b">
-                                                        <h3 className="font-medium text-primary flex items-center">
-                                                            <FaBook className="mr-2 text-primary" />
-                                                            {folder}
-                                                        </h3>
-                                                        <label className="flex items-center bg-primary text-white px-3 py-2 rounded-lg hover:bg-accent cursor-pointer text-sm">
-                                                            <FaFileUpload className="mr-2" /> Subir Archivo
-                                                            <input
-                                                                type="file"
-                                                                accept=".pdf,.doc,.docx"
-                                                                onChange={(e) => handleFileUpload(folder, e)}
-                                                                className="hidden"
-                                                            />
-                                                        </label>
-                                                    </div>
-
-                                                    {notes[folder].length === 0 ? (
-                                                        <div className="p-6 text-center text-gray-500">
-                                                            No hay archivos en esta carpeta
-                                                        </div>
-                                                    ) : (
-                                                        <div className="divide-y divide-gray-100">
-                                                            {notes[folder].map((note, index) => (
-                                                                <div
-                                                                    key={note.id}
-                                                                    className="p-4 hover:bg-gray-50 flex items-center justify-between"
-                                                                >
-                                                                    <div className="flex-1">
-                                                                        <div className="font-medium text-gray-800">{note.name}</div>
-                                                                        <div className="text-xs text-gray-500">
-                                                                            Subido {note.uploadDate ? new Date(note.uploadDate).toLocaleDateString() : 'Fecha desconocida'}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex space-x-2">
-                                                                        <button
-                                                                            onClick={() => alert(`Ver ${note.name}`)}
-                                                                            className="p-2 text-primary hover:text-accent rounded-full hover:bg-primary-light"
-                                                                            title="Ver"
-                                                                        >
-                                                                            <FaEye />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => alert(`Descargar ${note.name}`)}
-                                                                            className="p-2 text-task-finalizada hover:text-task-finalizada rounded-full hover:bg-task-finalizada-bg"
-                                                                            title="Descargar"
-                                                                        >
-                                                                            <FaDownload />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleFileDelete(folder, index)}
-                                                                            className="p-2 text-error hover:text-error rounded-full hover:bg-error/10"
-                                                                            title="Eliminar"
-                                                                        >
-                                                                            <FaTimes />
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <FilesTab groupId={groupId} />
                                 </motion.div>
                             )}
-
+                            
                             {activeTab === 'sessions' && (
                                 <motion.div
                                     key="sessions"
@@ -1133,9 +993,9 @@ const GroupDetailsPage = () => {
                                     </div>
 
                                     {studySessions.length === 0 ? (
-                                        <div className="text-center py-10 bg-gray-50 rounded-lg">
-                                            <FaVideo className="mx-auto text-gray-400 text-4xl mb-4" />
-                                            <p className="text-gray-600 mb-2">No hay sesiones de estudio programadas.</p>
+                                        <div className="text-center py-10 bg-primary-light rounded-lg">
+                                            <FaVideo className="mx-auto text-text-secondary text-4xl mb-4" />
+                                            <p className="text-text mb-2">No hay sesiones de estudio programadas.</p>
                                             <button
                                                 onClick={() => setIsSessionModalOpen(true)}
                                                 className="mt-2 text-primary hover:text-accent"
@@ -1146,10 +1006,10 @@ const GroupDetailsPage = () => {
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {studySessions.map((session) => (
-                                                <div key={session.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                                <div key={session.id} className="bg-input-bg p-4 rounded-lg border border-border">
                                                     <div className="font-medium text-primary text-lg mb-1">{session.title}</div>
-                                                    <div className="text-gray-600 flex items-center mb-2">
-                                                        <FaCalendarAlt className="mr-2 text-gray-400" />
+                                                    <div className="text-text-secondary flex items-center mb-2">
+                                                        <FaCalendarAlt className="mr-2 text-text-secondary" />
                                                         {formatDateForDisplay(session.start)}
                                                     </div>
                                                     <a
@@ -1164,7 +1024,7 @@ const GroupDetailsPage = () => {
                                                     <div className="flex justify-end">
                                                         <button
                                                             onClick={() => handleSessionDelete(session.id)}
-                                                            className="text-error hover:text-error text-sm"
+                                                            className="text-task-vencida hover:text-task-vencida/80 text-sm"
                                                         >
                                                             Eliminar
                                                         </button>
@@ -1190,28 +1050,28 @@ const GroupDetailsPage = () => {
                                     </div>
 
                                     <div className="space-y-6">
-                                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                                            <h3 className="text-lg font-medium text-gray-800 mb-4">Información General</h3>
+                                        <div className="bg-input-bg p-6 rounded-lg border border-border">
+                                        <h3 className="text-lg font-medium text-text mb-4">Información General</h3>
                                             <div className="space-y-4">
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                                                    <label className="block text-sm font-medium mb-1 text-text">
                                                         Nombre del grupo
                                                     </label>
                                                     <input
                                                         type="text"
                                                         value={group.name}
                                                         onChange={(e) => setGroup({ ...group, name: e.target.value })}
-                                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        className="w-full p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                                                    <label className="block text-sm font-medium mb-1 text-text">
                                                         Descripción del grupo
                                                     </label>
                                                     <textarea
                                                         value={group.description || ''}
                                                         onChange={(e) => setGroup({ ...group, description: e.target.value })}
-                                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        className="w-full p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary"
                                                         rows="3"
                                                     />
                                                 </div>
@@ -1229,13 +1089,13 @@ const GroupDetailsPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                                            <h3 className="text-lg font-medium text-gray-800 mb-4">Zona de Peligro</h3>
-                                            <p className="text-gray-600 mb-4">Estas acciones no se pueden deshacer. Ten cuidado.</p>
+                                        <div className="bg-input-bg p-6 rounded-lg border border-border">
+                                            <h3 className="text-lg font-medium text-text mb-4">Zona de Peligro</h3>
+                                            <p className="text-text-secondary mb-4">Estas acciones no se pueden deshacer. Ten cuidado.</p>
                                             <div className="flex flex-col space-y-3">
                                                 <button
                                                     onClick={handleDeleteGroup}
-                                                    className="bg-error text-white px-4 py-2 rounded-lg hover:bg-error/80 transition-colors flex items-center justify-center"
+                                                    className="bg-task-vencida text-white px-4 py-2 rounded-lg hover:bg-task-vencida/80 transition-colors flex items-center justify-center"
                                                 >
                                                     <FaTimes className="mr-2" /> Eliminar Grupo
                                                 </button>
@@ -1283,7 +1143,7 @@ const GroupDetailsPage = () => {
                 {/* Modal de selección para calendario */}
                 {isAddModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
+                        <div className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
                             <h3 className="text-lg font-semibold mb-4 text-primary">
                                 Añadir en {formatDateForDisplay(selectedDate)}
                             </h3>
@@ -1317,7 +1177,7 @@ const GroupDetailsPage = () => {
                                 </button>
                                 <button
                                     onClick={() => setIsAddModalOpen(false)}
-                                    className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
+                                    className="w-full bg-border text-text px-4 py-2 rounded-lg hover:bg-border/80"
                                 >
                                     Cancelar
                                 </button>

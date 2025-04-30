@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getSubjectsByUser } from '../api/subjects';
-import { uploadFile, downloadFile, getFilesBySubject, deleteFile } from '../api/files';
+import { uploadFile, downloadFile, getFilesBySubject, getFilesByFolder, deleteFile, renameFile, updateFileContent } from '../api/files';
+import { getFoldersBySubject, createStandardFoldersForSubject, addFileToFolder, createFolder } from '../api/folders';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
-import { FaBook, FaFolderPlus, FaPlus, FaDownload, FaEye, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaBook, FaFolderPlus, FaPlus, FaDownload, FaEye, FaTrash, FaSearch, FaEdit, FaCheck, FaTimes, FaPencilAlt } from 'react-icons/fa';
 
 const ResourcesPage = () => {
     const [subjects, setSubjects] = useState([]);
@@ -17,6 +18,10 @@ const ResourcesPage = () => {
     const [notification, setNotification] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSubject, setSelectedSubject] = useState(null);
+    const [editingFile, setEditingFile] = useState(null);
+    const [newFileName, setNewFileName] = useState('');
+    const [previewFile, setPreviewFile] = useState(null);
+    const [editFile, setEditFile] = useState(null);
     const { token, userId } = useAuth();
 
     useEffect(() => {
@@ -30,46 +35,45 @@ const ResourcesPage = () => {
                 const initialResources = {};
                 for (const subject of subjectsData) {
                     try {
-                        const files = await getFilesBySubject(subject.id, token);
-                        console.log(`Files for subject ${subject.id}:`, files);
-                        initialResources[subject.id] = {
-                            Apuntes: files
-                                .filter(file => file.resourceType === 'Apuntes' || file.resourceType == null)
-                                .map(file => ({
-                                    id: file.id,
-                                    name: file.fileName,
-                                    url: file.fileUrl,
-                                    date: file.uploadDate,
-                                    size: (file.fileSize / 1024).toFixed(2) + ' KB',
-                                    type: 'Apuntes'
-                                })),
-                            Exámenes: files
-                                .filter(file => file.resourceType === 'Exámenes')
-                                .map(file => ({
-                                    id: file.id,
-                                    name: file.fileName,
-                                    url: file.fileUrl,
-                                    date: file.uploadDate,
-                                    size: (file.fileSize / 1024).toFixed(2) + ' KB',
-                                    type: 'Exámenes'
-                                })),
-                            Trabajos: files
-                                .filter(file => file.resourceType === 'Trabajos')
-                                .map(file => ({
-                                    id: file.id,
-                                    name: file.fileName,
-                                    url: file.fileUrl,
-                                    date: file.uploadDate,
-                                    size: (file.fileSize / 1024).toFixed(2) + ' KB',
-                                    type: 'Trabajos'
-                                }))
+                        // Verificar y crear carpetas estándar si no existen
+                        const { folders, folderMap } = await createStandardFoldersForSubject(subject.id, userId);
+                        
+                        // Inicializar estructura de recursos por carpeta
+                        const subjectResources = {
+                            Apuntes: [],
+                            Exámenes: [],
+                            Trabajos: [],
+                            folderIds: folderMap
                         };
+
+                        // Para cada carpeta, obtener sus archivos
+                        for (const [folderName, folderId] of Object.entries(folderMap)) {
+                            if (folderId) {
+                                try {
+                                    const folderFiles = await getFilesByFolder(folderId);
+                                    subjectResources[folderName] = folderFiles.map(file => ({
+                                        id: file.id,
+                                        name: file.fileName,
+                                        url: file.fileUrl,
+                                        date: file.uploadDate,
+                                        size: (file.fileSize / 1024).toFixed(2) + ' KB',
+                                        type: folderName,
+                                        folderId: folderId
+                                    }));
+                                } catch (err) {
+                                    console.error(`Error fetching files for folder ${folderName} (${folderId}):`, err);
+                                }
+                            }
+                        }
+                        
+                        initialResources[subject.id] = subjectResources;
                     } catch (err) {
-                        console.error(`Error fetching files for subject ${subject.id}:`, err);
+                        console.error(`Error fetching folders/files for subject ${subject.id}:`, err);
                         initialResources[subject.id] = {
                             Apuntes: [],
                             Exámenes: [],
-                            Trabajos: []
+                            Trabajos: [],
+                            folderIds: {}
                         };
                     }
                 }
@@ -103,7 +107,10 @@ const ResourcesPage = () => {
         }
 
         try {
-            await deleteFile(fileId, token);
+            // Eliminar el archivo del backend
+            await deleteFile(fileId);
+            
+            // Actualizar el estado local
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
                 if (updatedResources[subjectId] && updatedResources[subjectId][folder]) {
@@ -126,7 +133,18 @@ const ResourcesPage = () => {
             file &&
             (file.type === 'application/pdf' ||
                 file.type === 'application/msword' ||
-                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                file.type === 'text/plain' ||
+                file.type === 'text/csv' ||
+                file.type === 'text/html' ||
+                file.type === 'text/markdown' ||
+                file.type === 'application/json' ||
+                file.type === 'image/jpeg' ||
+                file.type === 'image/png' ||
+                file.type === 'image/gif' ||
+                file.type === 'audio/mpeg' ||
+                file.type === 'audio/wav' ||
+                file.type === 'video/mp4')
         ) {
             try {
                 const validFileTypes = ['Apuntes', 'Exámenes', 'Trabajos'];
@@ -134,13 +152,36 @@ const ResourcesPage = () => {
                     throw new Error(`Tipo de archivo inválido: ${folder}`);
                 }
 
-                console.log('Subiendo archivo:', { fileName: file.name, fileType: folder, subjectId });
+                // Verificar que tenemos los IDs de carpetas
+                if (!resources[subjectId]?.folderIds || !resources[subjectId].folderIds[folder]) {
+                    // Si no tenemos las carpetas, intentamos crearlas
+                    const result = await createStandardFoldersForSubject(subjectId, userId);
+                    
+                    // Actualizar el estado con los IDs de carpeta
+                    setResources(prev => ({
+                        ...prev,
+                        [subjectId]: {
+                            ...prev[subjectId],
+                            folderIds: result.folderMap
+                        }
+                    }));
+                    
+                    if (!result.folderMap[folder]) {
+                        throw new Error(`No se pudo encontrar la carpeta para ${folder}`);
+                    }
+                }
 
-                const uploadedFile = await uploadFile(file, folder, userId, subjectId, null, null, token);
+                const folderId = resources[subjectId].folderIds[folder];
+                console.log('Subiendo archivo:', { fileName: file.name, folder, subjectId, folderId });
+
+                // Subimos el archivo directamente a la carpeta correcta
+                const uploadedFile = await uploadFile(file, 0, userId, subjectId, null, null, folderId);
+                
+                // Actualizamos la UI
                 setResources(prevResources => {
                     const updatedResources = { ...prevResources };
                     if (!updatedResources[subjectId]) {
-                        updatedResources[subjectId] = { Apuntes: [], Exámenes: [], Trabajos: [] };
+                        updatedResources[subjectId] = { Apuntes: [], Exámenes: [], Trabajos: [], folderIds: {} };
                     }
                     updatedResources[subjectId][folder].push({
                         id: uploadedFile.id,
@@ -148,7 +189,8 @@ const ResourcesPage = () => {
                         url: uploadedFile.fileUrl,
                         date: uploadedFile.uploadDate,
                         size: (uploadedFile.fileSize / 1024).toFixed(2) + ' KB',
-                        type: uploadedFile.resourceType
+                        type: folder,
+                        folderId
                     });
                     return updatedResources;
                 });
@@ -158,22 +200,26 @@ const ResourcesPage = () => {
                 showNotification(`Error al subir el archivo: ${err.message}`, 'error');
             }
         } else {
-            showNotification('Por favor, sube un archivo PDF o Word válido.', 'error');
+            showNotification('Formato de archivo no soportado. Por favor, sube un archivo en un formato compatible (PDF, Word, texto, imagen, audio, video).', 'error');
         }
     };
 
     const handleDownloadFile = async (fileId, fileName) => {
         try {
-            const response = await downloadFile(fileId, token);
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            // Obtener URL de descarga
+            const downloadUrl = downloadFile(fileId);
+            
+            // Crear enlace de descarga
             const link = document.createElement('a');
-            link.href = url;
+            link.href = downloadUrl;
             link.setAttribute('download', fileName);
             document.body.appendChild(link);
             link.click();
             link.remove();
+            
             showNotification(`Descargando ${fileName}`, 'success');
         } catch (err) {
+            console.error('Error en handleDownloadFile:', err.message);
             showNotification('Error al descargar el archivo.', 'error');
         }
     };
@@ -197,22 +243,47 @@ const ResourcesPage = () => {
             return;
         }
 
-        if (resources[currentSubject] && resources[currentSubject][folderName]) {
+        // Comprobamos si ya existe esta carpeta en el estado actual
+        if (resources[currentSubject] && Object.keys(resources[currentSubject]).includes(folderName)) {
             showNotification('Ya existe una carpeta con ese nombre para esta asignatura.', 'error');
             return;
         }
 
-        setResources(prevResources => {
-            const updatedResources = { ...prevResources };
-            if (!updatedResources[currentSubject]) {
-                updatedResources[currentSubject] = {};
-            }
-            updatedResources[currentSubject][folderName] = [];
-            return updatedResources;
-        });
+        // Crear la carpeta en el backend
+        createFolder(
+            folderName, // Ya no necesitamos el prefijo [SubjectID:X]
+            `Carpeta personalizada para la asignatura ${subjects.find(s => s.id === currentSubject)?.title}`,
+            userId,
+            null, // No groupId
+            currentSubject, // Asociar con la asignatura
+            4 // FolderType.Custom
+        )
+            .then(newFolder => {
+                // Actualizar el estado con la nueva carpeta
+                setResources(prevResources => {
+                    const updatedResources = { ...prevResources };
+                    if (!updatedResources[currentSubject]) {
+                        updatedResources[currentSubject] = { 
+                            Apuntes: [], 
+                            Exámenes: [], 
+                            Trabajos: [],
+                            folderIds: { ...prevResources[currentSubject]?.folderIds || {} }
+                        };
+                    }
+                    // Añadir la nueva carpeta
+                    updatedResources[currentSubject][folderName] = [];
+                    // Guardar el ID de la carpeta
+                    updatedResources[currentSubject].folderIds[folderName] = newFolder.id;
+                    return updatedResources;
+                });
 
-        showNotification(`Carpeta ${folderName} creada con éxito`, 'success');
-        closeModal();
+                showNotification(`Carpeta ${folderName} creada con éxito`, 'success');
+                closeModal();
+            })
+            .catch(err => {
+                console.error('Error creando carpeta:', err);
+                showNotification(`Error al crear la carpeta: ${err.message}`, 'error');
+            });
     };
 
     const handleDeleteResource = (subjectId, folder, resourceIndex) => {
@@ -223,17 +294,86 @@ const ResourcesPage = () => {
         });
         showNotification('Recurso eliminado con éxito', 'success');
     };
+    
+    // Función para abrir el editor de archivos
+    const handleEditFile = (file) => {
+        setEditFile(file);
+    };
+    
+    // Función para cerrar el editor
+    const handleCloseEditor = () => {
+        setEditFile(null);
+    };
+    
+    // Función para guardar cambios en un archivo
+    const handleSaveFile = async (fileId, updatedFile) => {
+        try {
+            // Actualizar el archivo en el backend
+            const updatedFileData = await updateFileContent(fileId, updatedFile);
+            
+            // Buscar el archivo en los recursos y actualizarlo
+            setResources(prevResources => {
+                const updatedResources = { ...prevResources };
+                // Recorrer todas las asignaturas
+                Object.keys(updatedResources).forEach(subjectId => {
+                    // Recorrer todas las carpetas de cada asignatura
+                    Object.keys(updatedResources[subjectId]).forEach(folder => {
+                        // Ignorar la propiedad folderIds
+                        if (folder === 'folderIds') return;
+                        
+                        // Si la carpeta tiene archivos, buscar el archivo por su ID
+                        if (Array.isArray(updatedResources[subjectId][folder])) {
+                            const fileIndex = updatedResources[subjectId][folder].findIndex(
+                                file => file.id === fileId
+                            );
+                            
+                            // Si se encuentra el archivo, actualizarlo
+                            if (fileIndex !== -1) {
+                                updatedResources[subjectId][folder][fileIndex] = {
+                                    ...updatedResources[subjectId][folder][fileIndex],
+                                    // Actualizar propiedades relevantes
+                                    name: updatedFileData.fileName || updatedFile.name,
+                                    url: updatedFileData.fileUrl || updatedResources[subjectId][folder][fileIndex].url,
+                                    date: updatedFileData.uploadDate || new Date().toISOString(),
+                                    size: updatedFileData.fileSize 
+                                        ? `${(updatedFileData.fileSize / 1024).toFixed(2)} KB` 
+                                        : updatedResources[subjectId][folder][fileIndex].size
+                                };
+                            }
+                        }
+                    });
+                });
+                return updatedResources;
+            });
+            
+            showNotification('Archivo actualizado con éxito', 'success');
+            return updatedFileData;
+        } catch (err) {
+            console.error('Error al guardar el archivo:', err);
+            showNotification('Error al guardar el archivo', 'error');
+            throw err;
+        }
+    };
 
     const filterResources = () => {
         if (!searchTerm || !selectedSubject || !resources[selectedSubject]) return resources[selectedSubject] || {};
 
         const filteredResources = {};
         Object.keys(resources[selectedSubject]).forEach(folder => {
-            const filteredFiles = resources[selectedSubject][folder].filter(
-                resource => resource.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            if (filteredFiles.length > 0) {
-                filteredResources[folder] = filteredFiles;
+            // Ignorar la propiedad folderIds que no es un array
+            if (folder === 'folderIds') {
+                filteredResources.folderIds = resources[selectedSubject].folderIds;
+                return;
+            }
+            
+            // Procesar solo arrays (carpetas con archivos)
+            if (Array.isArray(resources[selectedSubject][folder])) {
+                const filteredFiles = resources[selectedSubject][folder].filter(
+                    resource => resource.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                if (filteredFiles.length > 0) {
+                    filteredResources[folder] = filteredFiles;
+                }
             }
         });
         return filteredResources;
@@ -269,19 +409,19 @@ const ResourcesPage = () => {
                 <div className="relative z-10">
                     {notification && (
                         <div
-                            className={`fixed top-4 right-4 p-3 rounded-lg shadow-md transition-opacity duration-300 ${notification.type === 'success' ? 'bg-task-finalizada-bg text-task-finalizada' : 'bg-error/10 text-error'}`}
+                            className={`fixed top-4 right-4 p-3 rounded-lg shadow-md transition-opacity duration-300 ${notification.type === 'success' ? 'bg-task-finalizada text-task-finalizada' : 'bg-error/10 text-error'}`}
                         >
                             {notification.message}
                         </div>
                     )}
                     {error && (
-                        <div className="bg-error/10 text-error p-3 rounded-lg mb-4">
+                        <div className="bg-task-vencida text-task-vencida p-3 rounded-lg mb-4">
                             {error}
                         </div>
                     )}
 
                     {/* Header con título y búsqueda */}
-                    <div className="bg-white p-4 md:p-6 rounded-xl shadow-md mb-6">
+                    <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
                                 <FaBook className="mr-2" /> Apuntes
@@ -295,7 +435,7 @@ const ResourcesPage = () => {
                                     placeholder="Buscar recursos..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                    className="w-full pl-10 pr-4 py-2 border border-border bg-input-bg text-text rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                 />
                             </div>
                         </div>
@@ -307,7 +447,7 @@ const ResourcesPage = () => {
                                         onClick={() => setSelectedSubject(subject.id)}
                                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedSubject === subject.id
                                             ? 'bg-primary text-white'
-                                            : 'bg-gray-200 text-gray-800 hover:bg-primary-light'
+                                            : 'bg-border text-text hover:bg-primary-light'
                                             }`}
                                     >
                                         {subject.title}
@@ -318,37 +458,30 @@ const ResourcesPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="bg-white p-6 rounded-xl shadow-md flex justify-center items-center">
+                        <div className="bg-card-bg p-6 rounded-xl shadow-md flex justify-center items-center">
                             <p className="text-primary font-medium">Cargando recursos...</p>
                         </div>
                     ) : subjects.length === 0 ? (
-                        <div className="bg-white p-6 rounded-xl shadow-md text-center">
-                            <p className="text-gray-600 mb-4">No tienes asignaturas registradas. Añade asignaturas en el dashboard.</p>
+                        <div className="bg-card-bg p-6 rounded-xl shadow-md text-center">
+                            <p className="text-text-secondary mb-4">No tienes asignaturas registradas. Añade asignaturas en el dashboard.</p>
                         </div>
                     ) : (
-                        <div className="bg-white p-4 md:p-6 rounded-xl shadow-md">
+                        <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md">
                             {selectedSubject && (
                                 <div>
                                     <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-xl font-semibold text-gray-800">
+                                        <h2 className="text-xl font-semibold text-text">
                                             {subjects.find(s => s.id === selectedSubject)?.title}
                                         </h2>
-                                        {/* <button
-                                            onClick={() => openModal(selectedSubject)}
-                                            className="flex items-center text-primary hover:text-accent font-medium"
-                                        >
-                                            <FaFolderPlus className="mr-1" />
-                                            <span>Nueva Carpeta</span>
-                                        </button> */}
                                     </div>
-                                    {Object.keys(filteredSubjectResources).length === 0 ? (
+                                    {Object.keys(filteredSubjectResources).filter(key => key !== 'folderIds').length === 0 ? (
                                         searchTerm ? (
                                             <div className="text-center py-8 bg-primary-light rounded-lg">
-                                                <p className="text-gray-500">No se encontraron recursos para "{searchTerm}"</p>
+                                                <p className="text-text-secondary">No se encontraron recursos para "{searchTerm}"</p>
                                             </div>
                                         ) : (
                                             <div className="text-center py-8 bg-primary-light rounded-lg">
-                                                <p className="text-gray-500">No hay carpetas creadas para esta asignatura</p>
+                                                <p className="text-text-secondary">No hay carpetas creadas para esta asignatura</p>
                                                 <button
                                                     onClick={() => openModal(selectedSubject)}
                                                     className="mt-2 text-primary hover:text-accent font-medium"
@@ -359,8 +492,11 @@ const ResourcesPage = () => {
                                         )
                                     ) : (
                                         <div className="space-y-6">
-                                            {Object.keys(filteredSubjectResources).map(folder => (
-                                                <div key={folder} className="border border-gray-200 rounded-lg overflow-hidden">
+                                            {Object.keys(filteredSubjectResources)
+                                                // Filtrar propiedades que no son carpetas de archivos
+                                                .filter(key => key !== 'folderIds')
+                                                .map(folder => (
+                                                <div key={folder} className="border border-border rounded-lg overflow-hidden">
                                                     <div className="flex justify-between items-center bg-primary-light p-3 border-b">
                                                         <h3 className="font-medium text-primary flex items-center">
                                                             <FaBook className="mr-2 text-primary" />
@@ -369,27 +505,27 @@ const ResourcesPage = () => {
                                                         <label className="flex items-center bg-primary text-white px-3 py-1 rounded-full hover:bg-accent cursor-pointer text-sm">
                                                             <FaPlus className="mr-1" /> Subir
                                                             <input
-                                                                type="file"
-                                                                accept=".pdf,.doc,.docx"
-                                                                onChange={e => handleFileUpload(selectedSubject, folder, e)}
-                                                                className="hidden"
+                                                            type="file"
+                                                            accept=".pdf,.doc,.docx,.txt,.md,.csv,.json,.html,.css,.js,.jpg,.jpeg,.png,.gif,.mp3,.wav,.mp4"
+                                                            onChange={e => handleFileUpload(selectedSubject, folder, e)}
+                                                            className="hidden"
                                                             />
                                                         </label>
                                                     </div>
                                                     {filteredSubjectResources[folder].length === 0 ? (
-                                                        <div className="p-4 text-center text-gray-500">
+                                                        <div className="p-4 text-center text-text-secondary">
                                                             No hay recursos en esta carpeta
                                                         </div>
                                                     ) : (
-                                                        <div className="divide-y divide-gray-100">
+                                                        <div className="divide-y divide-border">
                                                             {filteredSubjectResources[folder].map((resource, index) => (
                                                                 <div
                                                                     key={index}
-                                                                    className="flex flex-col sm:flex-row belo-justify-between items-start sm:items-center p-3 hover:bg-primary-light/50"
+                                                                    className="flex flex-col sm:flex-row belo-justify-between items-start sm:items-center p-3 hover:bg-primary-light"
                                                                 >
                                                                     <div className="flex-1 pr-4">
-                                                                        <div className="font-medium text-gray-800">{resource.name}</div>
-                                                                        <div className="flex flex-col sm:flex-row text-xs text-gray-500 mt-1">
+                                                                        <div className="font-medium text-text">{resource.name}</div>
+                                                                        <div className="flex flex-col sm:flex-row text-xs text-text-secondary mt-1">
                                                                             <span className="mr-4">
                                                                                 {resource.date ? formatDate(resource.date) : 'Sin fecha'}
                                                                             </span>
@@ -398,22 +534,22 @@ const ResourcesPage = () => {
                                                                     </div>
                                                                     <div className="flex space-x-2 mt-2 sm:mt-0">
                                                                         <button
-                                                                            onClick={() => window.open(resource.url, '_blank')}
-                                                                            className="p-2 text-accent hover:text-accent/80 rounded-full hover:bg-accent/10"
-                                                                            title="Ver"
+                                                                            onClick={() => handleEditFile(resource)}
+                                                                            className="p-2 text-primary hover:text-primary/80 rounded-full hover:bg-primary-light"
+                                                                            title="Editar"
                                                                         >
-                                                                            <FaEye />
+                                                                            <FaPencilAlt />
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleDownloadFile(resource.id, resource.name)}
-                                                                            className="p-2 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada-bg"
+                                                                            className="p-2 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada"
                                                                             title="Descargar"
                                                                         >
                                                                             <FaDownload />
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleFileDelete(selectedSubject, folder, resource.id)}
-                                                                            className="p-2 text-error hover:text-error/80 rounded-full hover:bg-error/10"
+                                                                            className="p-2 text-task-vencida hover:text-task-vencida/80 rounded-full hover:bg-task-vencida"
                                                                             title="Eliminar"
                                                                         >
                                                                             <FaTrash />
@@ -435,7 +571,7 @@ const ResourcesPage = () => {
             </div>
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
+                    <div className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
                         <h3 className="text-lg font-semibold mb-4 text-primary">
                             Nueva Carpeta en {subjects.find(s => s.id === currentSubject)?.title || ''}
                         </h3>
@@ -444,12 +580,12 @@ const ResourcesPage = () => {
                             value={newFolderName}
                             onChange={e => setNewFolderName(e.target.value)}
                             placeholder="Nombre de la carpeta"
-                            className="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                            className="w-full p-2 border border-border bg-input-bg text-text rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                         />
                         <div className="flex justify-end space-x-2">
                             <button
                                 onClick={closeModal}
-                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                                className="px-4 py-2 bg-border text-text rounded-lg hover:bg-border/80 transition-colors"
                             >
                                 Cancelar
                             </button>

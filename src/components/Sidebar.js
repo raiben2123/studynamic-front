@@ -78,7 +78,7 @@ const Sidebar = () => {
         <>
             {/* Mobile Bottom Tab Bar */}
             {isMobile && (
-                <div className="w-full h-14 bg-primary fixed bottom-0 left-0 z-50 flex items-center justify-around py-1 shadow-lg">
+                <div className="w-full h-14 bg-primary-sidebar fixed bottom-0 left-0 z-50 flex items-center justify-around py-1 shadow-lg">
                     <button onClick={toggleDrawer} className="p-2 text-white flex flex-col items-center justify-center">
                         <FaBars className="text-xl" />
                         <span className="text-xs">Menú</span>
@@ -120,7 +120,7 @@ const Sidebar = () => {
                             exit="hidden"
                             variants={drawerVariants}
                             transition={{ type: "tween", duration: 0.3 }}
-                            className="fixed inset-y-0 left-0 max-w-[280px] w-4/5 bg-white transform z-50 py-4 px-2 shadow-xl flex flex-col h-screen"
+                            className="fixed inset-y-0 left-0 max-w-[280px] w-4/5 bg-card-bg transform z-50 py-4 px-2 shadow-xl flex flex-col h-screen"
                         >
                             <div className="flex justify-between items-center px-4 mb-6">
                                 <div className="flex items-center space-x-3">
@@ -130,20 +130,20 @@ const Sidebar = () => {
                                             alt="Profile"
                                             className="w-12 h-12 rounded-full border-2 border-primary object-cover"
                                         />
-                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-task-finalizada rounded-full border-2 border-white"></div>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-gray-800 truncate max-w-[180px]">
+                                        <span className="font-medium text-text truncate max-w-[180px]">
                                             {user?.name || 'Usuario'}
                                         </span>
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-xs text-text-secondary">
                                             {user?.email || ''}
                                         </span>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setIsExpanded(false)}
-                                    className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
+                                    className="p-2 rounded-full text-text-secondary hover:bg-border"
                                 >
                                     <FaTimes />
                                 </button>
@@ -160,7 +160,7 @@ const Sidebar = () => {
                                             }}
                                             className={`w-full flex items-center space-x-3 p-3 rounded-lg ${getActiveStyle(item.path)
                                                     ? 'bg-primary text-white'
-                                                    : 'hover:bg-gray-100 text-gray-700'
+                                                    : 'hover:bg-border text-text'
                                                 }`}
                                         >
                                             <div>{item.icon}</div>
@@ -173,7 +173,7 @@ const Sidebar = () => {
                             <div className="mt-auto px-2">
                                 <button
                                     onClick={handleLogout}
-                                    className="w-full flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50"
+                                    className="w-full flex items-center space-x-3 p-3 rounded-lg text-task-vencida hover:bg-task-vencida/10"
                                 >
                                     <FaSignOutAlt />
                                     <span>Cerrar Sesión</span>
@@ -186,7 +186,7 @@ const Sidebar = () => {
 
             {/* Desktop Sidebar - ARREGLADO con z-index elevado y clases para mostrar texto */}
             {!isMobile && (
-                <div className="fixed left-0 top-0 h-full w-20 bg-primary flex flex-col items-center py-6 shadow-xl group hover:w-56 transition-all duration-300 ease-in-out z-50">
+                <div className="fixed left-0 top-0 h-full w-20 bg-primary-sidebar flex flex-col items-center py-6 shadow-xl group hover:w-56 transition-all duration-300 ease-in-out z-50">
                     <div className="overflow-hidden whitespace-nowrap flex-shrink-0 mb-6">
                         <div className="flex flex-col items-center">
                             <div className="relative">
@@ -198,7 +198,7 @@ const Sidebar = () => {
                                     style={{ cursor: 'pointer' }}
                                     title="Ver configuración de perfil"
                                 />
-                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-task-finalizada rounded-full border-2 border-white"></div>
                             </div>
                             
                             <div className="mt-2 invisible group-hover:visible w-40 text-center">
@@ -230,7 +230,7 @@ const Sidebar = () => {
 
                     <button
                         onClick={handleLogout}
-                        className="group relative w-12 h-12 rounded-full group-hover:w-48 group-hover:rounded-lg group-hover:justify-start group-hover:pl-4 transition-all duration-300 flex items-center justify-center text-white hover:bg-red-500 mt-auto"
+                        className="group relative w-12 h-12 rounded-full group-hover:w-48 group-hover:rounded-lg group-hover:justify-start group-hover:pl-4 transition-all duration-300 flex items-center justify-center text-white hover:bg-task-vencida mt-auto"
                         title="Cerrar Sesión"
                     >
                         <FaSignOutAlt className="text-xl" />

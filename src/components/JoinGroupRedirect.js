@@ -1,4 +1,4 @@
-// src/components/JoinGroupRedirect.js
+// src/components/JoinGroupRedirect.js - Corregido para asignar rol de miembro (no admin)
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -32,15 +32,22 @@ const JoinGroupRedirect = () => {
         const joinUserToGroup = async () => {
             setLoading(true);
             try {
-                // Intentamos unir al usuario al grupo sin contraseña primero
-                // (algunos grupos pueden no requerir contraseña)
-                await joinGroupWithLink(groupId, '');
+                // Intentamos unir al usuario al grupo a través del enlace de invitación
+                // NOTA: joinGroupWithLink debe asegurar que se asigne RoleId=2 (miembro)
+                const result = await joinGroupWithLink(groupId);
 
-                // Si no hay error, la unión fue exitosa
-                setSuccess(true);
-                setTimeout(() => {
-                    navigate(`/groups/${groupId}`);
-                }, 1500);
+                if (result.success) {
+                    // La unión fue exitosa
+                    setSuccess(true);
+                    setTimeout(() => {
+                        navigate(`/groups/${groupId}`);
+                    }, 1500);
+                } else if (result.requiresPassword) {
+                    // El grupo requiere contraseña para unirse
+                    setRequiresPassword(true);
+                } else {
+                    setError('Hubo un problema al unirse al grupo.');
+                }
             } catch (error) {
                 console.error("Error uniendo al grupo:", error);
 
@@ -73,7 +80,8 @@ const JoinGroupRedirect = () => {
         setError(null);
 
         try {
-            await joinGroupWithLink(groupId, password);
+            // IMPORTANTE: La función joinGroup debe asegurar que el rol asignado sea 2 (miembro)
+            await joinGroup(groupId, password);
             setSuccess(true);
             setTimeout(() => {
                 navigate(`/groups/${groupId}`);

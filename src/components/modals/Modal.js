@@ -1,4 +1,4 @@
-// src/components/modals/Modal.js - Componente base para modales responsivos
+// src/components/modals/Modal.js - Actualizado para usar variables de tema
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaTimes } from 'react-icons/fa';
@@ -31,15 +31,15 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 modal-overlay">
             <div 
-                className={`bg-white rounded-lg shadow-lg w-full mx-4 ${sizeClass} ${
+                className={`bg-card-bg text-text rounded-lg shadow-lg w-full mx-4 ${sizeClass} ${
                     isMobile ? 'max-h-[90vh] overflow-y-auto' : ''
-                }`}
+                } border border-border`}
             >
-                <div className="flex justify-between items-center p-4 border-b">
+                <div className="flex justify-between items-center p-4 border-b border-border">
                     <h2 className="text-lg font-semibold text-primary">{title}</h2>
                     <button 
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-text-secondary hover:text-text"
                         aria-label="Cerrar"
                     >
                         <FaTimes />

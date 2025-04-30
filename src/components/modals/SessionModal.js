@@ -1,5 +1,5 @@
-// src/components/modals/SessionModal.js - Implementación usando el Modal base
-import React, { useState } from 'react';
+// src/components/modals/SessionModal.js - Con corrección para limpiar el formulario al cerrar
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 
@@ -9,6 +9,29 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
     const [zoomLink, setZoomLink] = useState(''); // Opcional
     const [notificationDate, setNotificationDate] = useState(''); // Opcional
     const [errors, setErrors] = useState({});
+
+    // Reiniciar el formulario cuando cambie isOpen o defaultDate
+    useEffect(() => {
+        if (isOpen) {
+            // Si se abre el modal, establecemos la fecha predeterminada
+            setStart(defaultDate || '');
+        }
+    }, [isOpen, defaultDate]);
+
+    // Función para reiniciar el formulario
+    const resetForm = () => {
+        setTitle('');
+        setStart(defaultDate || '');
+        setZoomLink('');
+        setNotificationDate('');
+        setErrors({});
+    };
+
+    // Manejar el cierre del modal
+    const handleClose = () => {
+        resetForm();
+        onClose();
+    };
 
     const validateForm = () => {
         const newErrors = {};
@@ -36,16 +59,14 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
             notificationDate,
         });
         
-        setTitle('');
-        setStart('');
-        setZoomLink('');
-        setNotificationDate('');
+        // No reseteamos el formulario aquí, lo haremos después de cerrar el modal
+        // El formulario se reiniciará automáticamente gracias al useEffect y handleClose
     };
 
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={onClose} 
+            onClose={handleClose} // Usar handleClose en vez de onClose
             title="Añadir Sesión de Estudio"
             size="md"
         >
@@ -101,7 +122,7 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"
-                        onClick={onClose}
+                        onClick={handleClose} // Usar handleClose en vez de onClose
                         className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
                     >
                         Cancelar

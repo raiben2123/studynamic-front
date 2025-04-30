@@ -1,4 +1,4 @@
-// src/components/modals/SubjectScheduleModal.js
+// src/components/modals/SubjectScheduleModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
@@ -111,21 +111,21 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+            <div className="bg-card-bg text-text p-6 rounded-xl shadow-lg w-full max-w-md border border-border">
                 <h2 className="text-xl font-semibold mb-4 text-primary">
                     {editingSchedule ? 'Editar Horario' : 'Añadir Horario'}
                 </h2>
                 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                        <label className="block text-sm font-medium mb-1 text-text">
                             Día de la semana
                         </label>
                         <select
                             name="dayOfWeek"
                             value={scheduleData.dayOfWeek}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full p-2 border border-border rounded bg-input-bg text-text focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             {days.map(day => (
                                 <option key={day.value} value={day.value}>
@@ -136,7 +136,7 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                        <label className="block text-sm font-medium mb-1 text-text">
                             Hora de inicio
                         </label>
                         <input
@@ -144,20 +144,20 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
                             name="startTime"
                             value={scheduleData.startTime}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full p-2 border border-border rounded bg-input-bg text-text focus:outline-none focus:ring-2 focus:ring-primary"
                             required
                         />
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                        <label className="block text-sm font-medium mb-1 text-text">
                             Duración
                         </label>
                         <select
                             name="durationMinutes"
                             value={scheduleData.durationMinutes}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full p-2 border border-border rounded bg-input-bg text-text focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             {durationOptions.map(option => (
                                 <option key={option.value} value={option.value}>
@@ -168,14 +168,14 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                        <label className="block text-sm font-medium mb-1 text-text">
                             Recurrencia
                         </label>
                         <select
                             name="weekType"
                             value={scheduleData.weekType}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full p-2 border border-border rounded bg-input-bg text-text focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             {weekTypes.map(type => (
                                 <option key={type.value} value={type.value}>
@@ -186,14 +186,14 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
                     </div>
                     
                     {error && (
-                        <p className="text-red-500 text-sm">{error}</p>
+                        <p className="text-error text-sm">{error}</p>
                     )}
                 </div>
                 
                 <div className="flex justify-end space-x-2 mt-6">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                        className="px-4 py-2 bg-input-bg text-text rounded hover:bg-border"
                     >
                         Cancelar
                     </button>
@@ -214,11 +214,11 @@ SubjectScheduleModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     onSave: PropTypes.func.isRequired,
     subject: PropTypes.shape({
-        id: PropTypes.number,
+        id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         title: PropTypes.string
     }),
     editingSchedule: PropTypes.shape({
-        id: PropTypes.number,
+        id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         dayOfWeek: PropTypes.number,
         startTime: PropTypes.oneOfType([
             PropTypes.string,
@@ -226,7 +226,7 @@ SubjectScheduleModal.propTypes = {
         ]),
         durationMinutes: PropTypes.number,
         weekType: PropTypes.number,
-        subjectId: PropTypes.number
+        subjectId: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
     })
 };
 

@@ -73,7 +73,7 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
     };
 
     return (
-        <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
+        <div className="bg-card-bg rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1 border border-border">
             <div className="flex items-start mb-2">
                 <div className="mr-2 text-primary">{getImportanceIcon()}</div>
                 <div className="flex-1">
@@ -82,14 +82,14 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
                 <div className="flex space-x-1 ml-2">
                     <button
                         onClick={() => onUpdate(task)}
-                        className="p-1.5 text-gray-400 hover:text-primary rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-primary rounded-full hover:bg-input-bg transition"
                         aria-label="Editar tarea"
                     >
                         <FaEdit size={16} />
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-error rounded-full hover:bg-input-bg transition"
                         aria-label="Eliminar tarea"
                     >
                         <FaTrash size={16} />
@@ -100,7 +100,7 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
             <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center">
                     <div className="mr-2 w-2 h-2 rounded-full bg-primary"></div>
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-text-secondary">
                         {task.dueDate
                             ? dayjs.utc(task.dueDate).tz('Europe/Madrid').format('DD/MM/YYYY')
                             : 'Sin fecha'}

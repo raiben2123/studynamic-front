@@ -1,0 +1,223 @@
+/***************************************
+ * ESTILOS RESPONSIVOS (Primera parte)
+ ***************************************/
+
+/* Contenedores principales responsivos */
+.main-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .main-container {
+    flex-direction: row;
+  }
+}
+
+.content-container {
+  flex: 1;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: var(--mobile-padding);
+  padding-bottom: calc(var(--bottom-nav-height) + 1rem);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    padding: var(--desktop-padding);
+    padding-bottom: var(--desktop-padding);
+  }
+}
+
+/* Contenedores con logo de fondo */
+.background-logo-container {
+  background-image: var(--logo-image-url);
+  background-size: 50%;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  position: relative;
+}
+
+/* Tarjetas y secciones */
+.card {
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+@media (max-width: 767px) {
+  .card {
+    padding: var(--mobile-padding);
+  }
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--desktop-padding);
+  }
+}
+
+/* Grid responsivo con mayor control */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid.three-cols {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mejoras a componentes específicos */
+.dashboard-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+}
+
+.dashboard-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.dashboard-card-content {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 30vh;
+}
+
+@media (min-width: 768px) {
+  .dashboard-card-content {
+    max-height: 40vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-card-content {
+    max-height: 50vh;
+  }
+}
+
+/* Botones responsivos */
+.responsive-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .responsive-button {
+    padding: 0.5rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+.primary-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: var(--accent-color);
+}
+
+.secondary-button {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.secondary-button:hover {
+  opacity: 0.9;
+}
+
+.gray-button {
+  background-color: var(--menu-bg-color);
+  color: var(--text-color-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.gray-button:hover {
+  background-color: var(--input-bg-color);
+}
+
+/* Mejoras para modales en móvil */
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 90%;
+  max-height: 90vh;
+  width: 100%;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+  .modal-content {
+    max-width: 500px;
+  }
+
+  .modal-content.large {
+    max-width: 700px;
+  }
+}
+
+/* Menús y navegación */
+.menu-container, .nav-container, .sidebar {
+  background-color: var(--menu-bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.menu-item, .nav-item {
+  color: var(--text-color);
+}
+
+.menu-item:hover, .nav-item:hover {
+  background-color: var(--input-bg-color);
+}
+
+.menu-item.active, .nav-item.active {
+  background-color: var(--primary-color);
+  color: white;
+}

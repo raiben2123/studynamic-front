@@ -1,17 +1,38 @@
-// src/components/dashboard/TaskCard.js - Modified to use confirmation modal
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
-import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck, FaPaperclip } from 'react-icons/fa';
 import { dayjs } from '../../dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone';
+import { getFilesByTask } from '../../api/files';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 
 const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
+    const [hasAttachments, setHasAttachments] = useState(false);
+    const [attachmentsCount, setAttachmentsCount] = useState(0);
+
+    // Cargar archivos adjuntos cuando se monte el componente
+    useEffect(() => {
+        const fetchAttachments = async () => {
+            try {
+                if (task && task.id) {
+                    const files = await getFilesByTask(task.id);
+                    setHasAttachments(files && files.length > 0);
+                    setAttachmentsCount(files ? files.length : 0);
+                }
+            } catch (error) {
+                console.error('Error al cargar archivos adjuntos:', error);
+                setHasAttachments(false);
+                setAttachmentsCount(0);
+            }
+        };
+
+        fetchAttachments();
+    }, [task]);
 
     // Verifica si task existe
     if (!task) {
@@ -77,24 +98,24 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     };
 
     return (
-        <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
+        <div className="bg-card-bg rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1 border border-border">
             <div className="flex items-start mb-2">
                 <div className="mr-2 text-primary">{getImportanceIcon()}</div>
                 <div className="flex-1">
                     <h3 className="font-semibold text-primary truncate">{task.title || 'Sin título'}</h3>
-                    <p className="text-sm text-gray-600">{task.subject || 'Sin asignatura'}</p>
+                    <p className="text-sm text-text-secondary">{task.subject || 'Sin asignatura'}</p>
                 </div>
                 <div className="flex space-x-1 ml-2">
                     <button
                         onClick={() => onUpdate(task)}
-                        className="p-1.5 text-gray-400 hover:text-primary rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-primary rounded-full hover:bg-input-bg transition"
                         aria-label="Editar tarea"
                     >
                         <FaEdit size={16} />
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-error rounded-full hover:bg-input-bg transition"
                         aria-label="Eliminar tarea"
                     >
                         <FaTrash size={16} />
@@ -105,7 +126,7 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
             <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center">
                     <div className="mr-2 w-2 h-2 rounded-full bg-primary"></div>
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-text-secondary">
                         {task.dueDate
                             ? dayjs.utc(task.dueDate).tz('Europe/Madrid').format('DD/MM/YYYY')
                             : 'Sin fecha'}
@@ -124,8 +145,15 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
             )}
 
             {(task.markObtained || task.markMax) && (
-                <div className="mt-2 text-xs font-medium px-2 py-1 rounded-full bg-task-calificacion text-task-calificacion inline-block">
+                <div className="mt-2 text-xs font-medium px-2 py-1 rounded-full bg-task-calificacion-bg text-task-calificacion inline-block">
                     Calificación: {task.markObtained || '0'}/{task.markMax || '0'}
+                </div>
+            )}
+
+            {hasAttachments && (
+                <div className="mt-2 flex items-center text-primary text-xs">
+                    <FaPaperclip className="mr-1" />
+                    <span>{attachmentsCount} {attachmentsCount === 1 ? 'archivo adjunto' : 'archivos adjuntos'}</span>
                 </div>
             )}
         </div>

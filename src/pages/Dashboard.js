@@ -1,4 +1,4 @@
-// src/pages/Dashboard.js - Actualizado para resolver el problema con SubjectCard
+// src/pages/Dashboard.js - Actualizado para usar las variables de los temas correctamente
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -16,7 +16,7 @@ import TaskModal from '../components/modals/TaskModal';
 import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
-import Carousel from '../components/Carousel'; 
+import Carousel from '../components/Carousel';
 import { FaChartPie, FaCalendarAlt, FaBook, FaUsers, FaTasks, FaPlus } from 'react-icons/fa';
 
 const Dashboard = () => {
@@ -41,7 +41,7 @@ const Dashboard = () => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         type: 'warning'
     });
 
@@ -49,7 +49,7 @@ const Dashboard = () => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
         };
-        
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -64,17 +64,17 @@ const Dashboard = () => {
                 getEvents(),
                 getGroupsByUserId(),
             ]);
-            
+
             // Ordenamos las tareas por fecha
             const sortedTasks = [...tasksData].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
-            
+
             // Ordenamos los eventos por fecha
             const sortedEvents = [...eventsData].sort((a, b) => {
                 return new Date(a.startDateTime) - new Date(b.startDateTime);
             });
-            
+
             setTasks(sortedTasks);
             setSubjects(subjectsData);
             setEvents(sortedEvents);
@@ -98,10 +98,10 @@ const Dashboard = () => {
         try {
             // Añadir la tarea a través de la API
             const addedTask = await addTask(newTask);
-            
+
             // Asegurar que la tarea tenga la asignatura correcta
             let taskWithSubject = { ...addedTask };
-            
+
             // Buscar el nombre de la asignatura si tenemos el subjectId
             if (addedTask.subjectId) {
                 const subject = subjects.find(s => s.id === parseInt(addedTask.subjectId));
@@ -109,12 +109,12 @@ const Dashboard = () => {
                     taskWithSubject.subject = subject.title;
                 }
             }
-            
+
             // Ordenar las tareas por fecha
             const updatedTasks = [...tasks, taskWithSubject].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
-            
+
             setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setError(null);
@@ -136,10 +136,10 @@ const Dashboard = () => {
         try {
             // Actualizar la tarea a través de la API
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
-            
+
             // Asegurar que la tarea tenga la asignatura correcta
             let taskWithSubject = { ...updatedTaskFromBackend };
-            
+
             // Buscar el nombre de la asignatura si tenemos el subjectId
             if (updatedTaskFromBackend.subjectId) {
                 const subject = subjects.find(s => s.id === parseInt(updatedTaskFromBackend.subjectId));
@@ -147,12 +147,12 @@ const Dashboard = () => {
                     taskWithSubject.subject = subject.title;
                 }
             }
-            
+
             // Actualizar el estado con la tarea actualizada
             const updatedTasks = tasks
                 .map((task) => (task.id === updatedTask.id ? taskWithSubject : task))
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-            
+
             setTasks(updatedTasks);
             setIsTaskModalOpen(false);
             setEditingTask(null);
@@ -194,11 +194,11 @@ const Dashboard = () => {
         setLoading(true);
         try {
             const newSubject = await addSubject({ title: subjectName }, schedules);
-            
+
             // Actualizamos todos los datos después de añadir una asignatura
             // para asegurar que tenemos los horarios correctos
             await fetchData();
-            
+
             setIsSubjectModalOpen(false);
             setEditingSubject(null);
             setError(null);
@@ -221,11 +221,11 @@ const Dashboard = () => {
         setLoading(true);
         try {
             await updateSubject(editingSubject.id, { title: subjectName }, schedules);
-            
+
             // Actualizamos todos los datos después de actualizar una asignatura
             // para asegurar que tenemos los horarios correctos
             await fetchData();
-            
+
             setIsSubjectModalOpen(false);
             setEditingSubject(null);
             setError(null);
@@ -265,11 +265,11 @@ const Dashboard = () => {
         setLoading(true);
         try {
             const addedEvent = await addEvent(newEvent);
-            
+
             const updatedEvents = [...events, addedEvent].sort((a, b) => {
                 return new Date(a.startDateTime) - new Date(b.startDateTime);
             });
-            
+
             setEvents(updatedEvents);
             setIsEventModalOpen(false);
             setEditingEvent(null);
@@ -293,11 +293,11 @@ const Dashboard = () => {
         setLoading(true);
         try {
             const updatedEventFromBackend = await updateEvent(editingEvent.id, updatedEvent);
-            
+
             const updatedEvents = events
                 .map((event) => event.id === editingEvent.id ? updatedEventFromBackend : event)
                 .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
-                
+
             setEvents(updatedEvents);
             setIsEventModalOpen(false);
             setEditingEvent(null);
@@ -358,9 +358,34 @@ const Dashboard = () => {
 
     // Ordenamos los eventos próximos por fecha
     const upcomingEvents = events
-        .sort((a, b) => a.startDateTime && b.startDateTime 
-            ? new Date(a.startDateTime) - new Date(b.startDateTime) 
-            : 0);
+        .filter(event => {
+            // Si el evento no tiene fecha, lo incluimos por defecto
+            if (!event.startDateTime) return true;
+
+            // Comparamos la fecha del evento con la fecha actual
+            const eventDate = new Date(event.startDateTime);
+            const currentDate = new Date();
+
+            // Extraer solo la fecha (sin hora) para comparar días
+            const eventDateOnly = new Date(
+                eventDate.getFullYear(),
+                eventDate.getMonth(),
+                eventDate.getDate()
+            );
+
+            const currentDateOnly = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate()
+            );
+
+            // Solo incluimos eventos cuya fecha sea igual o posterior a la actual
+            return eventDateOnly >= currentDateOnly;
+        })
+        .sort((a, b) => {
+            // Ordenamos cronológicamente
+            return new Date(a.startDateTime) - new Date(b.startDateTime);
+        });
 
     const sortedGroups = groups.sort((a, b) => b.memberCount - a.memberCount);
 
@@ -368,9 +393,9 @@ const Dashboard = () => {
     const createCarouselItems = (items, Component, onUpdate, onDelete, props = {}) => {
         return items.map((item, index) => (
             <div key={item.id || index} className="min-w-full">
-                <Component 
+                <Component
                     {...props}
-                    {...{[Component.name.toLowerCase().replace('card', '')]: item}}
+                    {...{ [Component.name.toLowerCase().replace('card', '')]: item }}
                     onUpdate={onUpdate}
                     onDelete={onDelete}
                 />
@@ -379,33 +404,27 @@ const Dashboard = () => {
     };
 
     const taskItems = createCarouselItems(
-        pendingTasks.slice(0, 5), 
-        TaskCard, 
-        handleEditTask, 
-        handleTaskDelete, 
+        pendingTasks.slice(0, 5),
+        TaskCard,
+        handleEditTask,
+        handleTaskDelete,
         { subjects: subjects.map(s => s.title) }
     );
-    
+
     const eventItems = createCarouselItems(
-        upcomingEvents.slice(0, 5), 
-        EventCard, 
-        handleEditEvent, 
+        upcomingEvents.slice(0, 5),
+        EventCard,
+        handleEditEvent,
         handleEventDelete
     );
-    
+
     const groupItems = createCarouselItems(
-        sortedGroups.slice(0, 5), 
-        GroupCard, 
-        null, 
-        null, 
+        sortedGroups.slice(0, 5),
+        GroupCard,
+        null,
+        null,
         { onNavigate: handleNavigateToGroup }
     );
-
-    // Función para notificar actualizaciones
-    const showNotification = (message, type) => {
-        // Aquí iría la lógica de notificaciones (podrías usar un toast o similar)
-        console.log(`${type}: ${message}`);
-    };
 
     return (
         <div className="flex flex-col min-h-screen md:flex-row">
@@ -423,51 +442,51 @@ const Dashboard = () => {
             >
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        <div className="bg-error/10 text-error p-3 rounded mb-4">
                             {error}
                         </div>
                     )}
                     {loading && (
-                        <div className="text-center mb-4">Cargando...</div>
+                        <div className="text-center mb-4 text-text">Cargando...</div>
                     )}
-                    
-                    {/* Welcome Section - Simplified */}
-                    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-6 opacity-95">
+
+                    {/* Welcome Section - Using theme variables */}
+                    <div className="bg-card-bg p-4 sm:p-6 rounded-xl shadow-md mb-6 opacity-95 border border-border">
                         <h1 className="text-2xl md:text-3xl mb-2 text-primary font-bold">
                             ¡Bienvenido a StudyNamic!
                         </h1>
 
                         {/* Stats in a simplified row */}
                         <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-                            <div className="bg-white rounded">
+                            <div className="bg-card-bg rounded">
                                 <p className="text-sm text-primary font-medium">Tareas</p>
-                                <p className="text-lg font-bold text-primary">{tasks.length}</p>
+                                <p className="text-lg font-bold text-text">{tasks.length}</p>
                             </div>
-                            
-                            <div className="bg-white rounded">
+
+                            <div className="bg-card-bg rounded">
                                 <p className="text-sm text-primary font-medium">Eventos</p>
-                                <p className="text-lg font-bold text-primary">{events.length}</p>
+                                <p className="text-lg font-bold text-text">{events.length}</p>
                             </div>
-                            
-                            <div className="bg-white rounded">
+
+                            <div className="bg-card-bg rounded">
                                 <p className="text-sm text-primary font-medium">Asignaturas</p>
-                                <p className="text-lg font-bold text-primary">{subjects.length}</p>
+                                <p className="text-lg font-bold text-text">{subjects.length}</p>
                             </div>
-                            
-                            <div className="bg-white rounded">
+
+                            <div className="bg-card-bg rounded">
                                 <p className="text-sm text-primary font-medium">Grupos</p>
-                                <p className="text-lg font-bold text-primary">{groups.length}</p>
+                                <p className="text-lg font-bold text-text">{groups.length}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         {/* Tareas Pendientes con Carousel */}
-                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                        <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
                                     <h2 className="text-xl font-semibold text-primary">Tareas Pendientes</h2>
-                                    <span className="ml-2 text-xs text-gray-500">({pendingTasks.length})</span>
+                                    <span className="ml-2 text-xs text-text-secondary">({pendingTasks.length})</span>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -476,13 +495,13 @@ const Dashboard = () => {
                                     }}
                                     className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                                 >
-                                    <FaPlus className="mr-1" /> 
+                                    <FaPlus className="mr-1" />
                                     {!isMobile && "Añadir"}
                                 </button>
                             </div>
-                            
+
                             {pendingTasks.length === 0 ? (
-                                <p className="text-gray-600">No hay tareas pendientes.</p>
+                                <p className="text-text-secondary">No hay tareas pendientes.</p>
                             ) : (
                                 <div className="max-h-[300px] relative">
                                     <Carousel autoSlide={false} autoSlideInterval={5000} showArrows={true} showDots={true}>
@@ -490,7 +509,7 @@ const Dashboard = () => {
                                     </Carousel>
                                 </div>
                             )}
-                            
+
                             {pendingTasks.length > 0 && (
                                 <div className="text-center mt-4">
                                     <button
@@ -504,11 +523,11 @@ const Dashboard = () => {
                         </div>
 
                         {/* Próximos Eventos con Carousel */}
-                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                        <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
                                     <h2 className="text-xl font-semibold text-primary">Próximos Eventos</h2>
-                                    <span className="ml-2 text-xs text-gray-500">({upcomingEvents.length})</span>
+                                    <span className="ml-2 text-xs text-text-secondary">({upcomingEvents.length})</span>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -517,13 +536,13 @@ const Dashboard = () => {
                                     }}
                                     className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                                 >
-                                    <FaPlus className="mr-1" /> 
+                                    <FaPlus className="mr-1" />
                                     {!isMobile && "Añadir"}
                                 </button>
                             </div>
-                            
+
                             {upcomingEvents.length === 0 ? (
-                                <p className="text-gray-600">No hay eventos próximos.</p>
+                                <p className="text-text-secondary">No hay eventos próximos.</p>
                             ) : (
                                 <div className="max-h-[300px] relative">
                                     <Carousel autoSlide={false} autoSlideInterval={6000} showArrows={true} showDots={true}>
@@ -531,7 +550,7 @@ const Dashboard = () => {
                                     </Carousel>
                                 </div>
                             )}
-                            
+
                             {upcomingEvents.length > 0 && (
                                 <div className="text-center mt-4">
                                     <button
@@ -545,23 +564,23 @@ const Dashboard = () => {
                         </div>
 
                         {/* Mis Grupos con Carousel */}
-                        <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                        <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
                                     <h2 className="text-xl font-semibold text-primary">Mis Grupos</h2>
-                                    <span className="ml-2 text-xs text-gray-500">({sortedGroups.length})</span>
+                                    <span className="ml-2 text-xs text-text-secondary">({sortedGroups.length})</span>
                                 </div>
                                 <button
                                     onClick={handleAddGroup}
                                     className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                                 >
-                                    <FaPlus className="mr-1" /> 
+                                    <FaPlus className="mr-1" />
                                     {!isMobile && "Añadir"}
                                 </button>
                             </div>
-                            
+
                             {sortedGroups.length === 0 ? (
-                                <p className="text-gray-600">No estás en ningún grupo.</p>
+                                <p className="text-text-secondary">No estás en ningún grupo.</p>
                             ) : (
                                 <div className="max-h-[300px] relative">
                                     <Carousel autoSlide={false} autoSlideInterval={7000} showArrows={true} showDots={true}>
@@ -569,7 +588,7 @@ const Dashboard = () => {
                                     </Carousel>
                                 </div>
                             )}
-                            
+
                             {sortedGroups.length > 0 && (
                                 <div className="text-center mt-4">
                                     <button
@@ -584,11 +603,11 @@ const Dashboard = () => {
                     </div>
 
                     {/* Sección de Asignaturas */}
-                    <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                    <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center">
                                 <h2 className="text-xl font-semibold text-primary">Mis Asignaturas</h2>
-                                <span className="ml-2 text-xs text-gray-500">({subjects.length})</span>
+                                <span className="ml-2 text-xs text-text-secondary">({subjects.length})</span>
                             </div>
                             <button
                                 onClick={() => {
@@ -597,13 +616,13 @@ const Dashboard = () => {
                                 }}
                                 className="bg-primary text-white px-3 py-1 rounded-full hover:bg-accent flex items-center"
                             >
-                                <FaPlus className="mr-1" /> 
+                                <FaPlus className="mr-1" />
                                 {!isMobile && "Añadir Asignatura"}
                             </button>
                         </div>
-                        
+
                         {subjects.length === 0 ? (
-                            <p className="text-gray-600">No tienes asignaturas registradas.</p>
+                            <p className="text-text-secondary">No tienes asignaturas registradas.</p>
                         ) : (
                             <>
                                 {/* Desktop View - Grid */}
@@ -617,7 +636,7 @@ const Dashboard = () => {
                                         />
                                     ))}
                                 </div>
-                                
+
                                 {/* Mobile View - Carousel */}
                                 <div className="md:hidden relative">
                                     <Carousel autoSlide={false} autoSlideInterval={4000} showArrows={true} showDots={true}>
@@ -670,7 +689,7 @@ const Dashboard = () => {
                 onSave={editingSubject ? handleSubjectUpdate : handleAddSubject}
                 subject={editingSubject}
             />
-            
+
             {/* Modal de Confirmación */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}

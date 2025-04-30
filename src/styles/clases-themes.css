@@ -1,0 +1,166 @@
+/***************************************
+ * CLASES UTILITARIAS DE TEMAS
+ ***************************************/
+
+/* Clases utilitarias para componentes */
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-primary-sidebar {
+  background-color: var(--primary-color-sidebar);
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.border-primary {
+  border-color: var(--primary-color);
+}
+
+.bg-accent {
+  background-color: var(--accent-color);
+}
+
+.text-accent {
+  color: var(--accent-color);
+}
+
+.bg-secondary {
+  background-color: var(--secondary-color);
+}
+
+.text-secondary {
+  color: var(--secondary-color);
+}
+
+.bg-background {
+  background-color: var(--background-color);
+}
+
+.bg-primary-light {
+  background-color: var(--color-primary-light);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+.bg-error {
+  background-color: var(--color-error);
+}
+
+/* Clases para tareas */
+.bg-task-finalizada {
+  background-color: var(--color-task-finalizada-bg);
+}
+
+.text-task-finalizada {
+  color: var(--color-task-finalizada);
+}
+
+.bg-task-vencida {
+  background-color: var(--color-task-vencida-bg);
+}
+
+.text-task-vencida {
+  color: var(--color-task-vencida);
+}
+
+.bg-task-hoy {
+  background-color: var(--color-task-hoy-bg);
+}
+
+.text-task-hoy {
+  color: var(--color-task-hoy);
+}
+
+.bg-task-pronto {
+  background-color: var(--color-task-pronto-bg);
+}
+
+.text-task-pronto {
+  color: var(--color-task-pronto);
+}
+
+.bg-task-normal {
+  background-color: var(--color-task-normal-bg);
+}
+
+.text-task-normal {
+  color: var(--color-task-normal);
+}
+
+.bg-task-calificacion {
+  background-color: var(--color-task-calificacion-bg);
+}
+
+.text-task-calificacion {
+  color: var(--color-task-calificacion);
+}
+
+.text-task-alta {
+  color: var(--color-task-alta);
+}
+
+.text-task-media {
+  color: var(--color-task-media);
+}
+
+.text-task-baja {
+  color: var(--color-task-baja);
+}
+
+/* Clases para eventos */
+.bg-event-pasado {
+  background-color: var(--color-event-pasado-bg);
+}
+
+.text-event-pasado {
+  color: var(--color-event-pasado);
+}
+
+.bg-event-proximo {
+  background-color: var(--color-event-proximo-bg);
+}
+
+.text-event-proximo {
+  color: var(--color-event-proximo);
+}
+
+.bg-event-cercano {
+  background-color: var(--color-event-cercano-bg);
+}
+
+.text-event-cercano {
+  color: var(--color-event-cercano);
+}
+
+.bg-event-futuro {
+  background-color: var(--color-event-futuro-bg);
+}
+
+.text-event-futuro {
+  color: var(--color-event-futuro);
+}
+
+.bg-activity-progress {
+  background-color: var(--color-activity-progress);
+}
+
+.border-task {
+  border-color: var(--color-task-border);
+}
+
+.border-event {
+  border-color: var(--color-event-border);
+}
+
+.text-task {
+  color: var(--color-task-text);
+}
+
+.text-event {
+  color: var(--color-event-text);
+}

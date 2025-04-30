@@ -1,4 +1,4 @@
-// src/components/modals/EventModal.js - Implementación usando el Modal base
+// src/components/modals/EventModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
@@ -14,27 +14,49 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
     const [errors, setErrors] = useState({});
     const isMobile = window.innerWidth < 768;
 
-    useEffect(() => {
-        if (event) {
-            setFormData({
-                id: event.id,
-                title: event.title || '',
-                startDateTime: event.startDateTime ? event.startDateTime.replace('Z', '') : '',
-                endDateTime: event.endDateTime ? event.endDateTime.replace('Z', '') : '',
-                description: event.description || '',
-                notification: event.notification ? event.notification.replace('Z', '') : '',
-            });
-        } else {
-            setFormData({
-                title: '',
-                startDateTime: defaultDate ? `${defaultDate}T00:00` : '',
-                endDateTime: '',
-                description: '',
-                notification: '',
-            });
-        }
+    // Función para reiniciar el formulario
+    const resetForm = () => {
+        setFormData({
+            title: '',
+            startDateTime: defaultDate ? `${defaultDate}T00:00` : '',
+            endDateTime: '',
+            description: '',
+            notification: '',
+        });
         setErrors({});
-    }, [event, defaultDate]);
+    };
+
+    // Este efecto se ejecuta cuando cambia event, defaultDate o isOpen
+    useEffect(() => {
+        if (isOpen) {
+            if (event) {
+                setFormData({
+                    id: event.id,
+                    title: event.title || '',
+                    startDateTime: event.startDateTime ? event.startDateTime.replace('Z', '') : '',
+                    endDateTime: event.endDateTime ? event.endDateTime.replace('Z', '') : '',
+                    description: event.description || '',
+                    notification: event.notification ? event.notification.replace('Z', '') : '',
+                });
+            } else {
+                setFormData({
+                    title: '',
+                    startDateTime: defaultDate ? `${defaultDate}T00:00` : '',
+                    endDateTime: '',
+                    description: '',
+                    notification: '',
+                });
+            }
+            setErrors({});
+        }
+    }, [event, defaultDate, isOpen]);
+
+    // Función para manejar el cierre del modal
+    const handleClose = () => {
+        // Reiniciar el formulario explícitamente al cerrar
+        resetForm();
+        onClose();
+    };
 
     const validateForm = () => {
         const newErrors = {};
@@ -57,6 +79,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
             return;
         }
         onSave(formData);
+        // No reseteamos aquí porque onSave puede fallar
     };
 
     const handleChange = (e) => {
@@ -70,84 +93,84 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={onClose} 
+            onClose={handleClose} // Usamos handleClose en vez de onClose
             title={event ? 'Editar Evento' : 'Nuevo Evento'}
             size={isMobile ? 'md' : 'lg'}
         >
             <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Título *</label>
+                    <label className="block text-sm font-medium mb-1 text-text">Título *</label>
                     <input
                         type="text"
                         name="title"
                         value={formData.title}
                         onChange={handleChange}
-                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                            errors.title ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full p-2 bg-input-bg text-text border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.title ? 'border-error' : 'border-border'
                         }`}
                         required
                     />
                     {errors.title && (
-                        <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+                        <p className="text-error text-xs mt-1">{errors.title}</p>
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Inicio *</label>
+                    <label className="block text-sm font-medium mb-1 text-text">Fecha y Hora de Inicio *</label>
                     <input
                         type="datetime-local"
                         name="startDateTime"
                         value={formData.startDateTime}
                         onChange={handleChange}
-                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                            errors.startDateTime ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full p-2 bg-input-bg text-text border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.startDateTime ? 'border-error' : 'border-border'
                         }`}
                         required
                     />
                     {errors.startDateTime && (
-                        <p className="text-red-500 text-xs mt-1">{errors.startDateTime}</p>
+                        <p className="text-error text-xs mt-1">{errors.startDateTime}</p>
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Fecha y Hora de Fin *</label>
+                    <label className="block text-sm font-medium mb-1 text-text">Fecha y Hora de Fin *</label>
                     <input
                         type="datetime-local"
                         name="endDateTime"
                         value={formData.endDateTime}
                         onChange={handleChange}
-                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                            errors.endDateTime ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full p-2 bg-input-bg text-text border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
+                            errors.endDateTime ? 'border-error' : 'border-border'
                         }`}
                         required
                     />
                     {errors.endDateTime && (
-                        <p className="text-red-500 text-xs mt-1">{errors.endDateTime}</p>
+                        <p className="text-error text-xs mt-1">{errors.endDateTime}</p>
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Descripción</label>
+                    <label className="block text-sm font-medium mb-1 text-text">Descripción</label>
                     <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
-                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full p-2 bg-input-bg text-text border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         rows="3"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
+                    <label className="block text-sm font-medium mb-1 text-text">Notificación</label>
                     <input
                         type="datetime-local"
                         name="notification"
                         value={formData.notification}
                         onChange={handleChange}
-                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full p-2 bg-input-bg text-text border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                 </div>
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"
-                        onClick={onClose}
-                        className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                        onClick={handleClose} // Usamos handleClose también aquí
+                        className="px-3 py-2 bg-input-bg text-text rounded-lg hover:bg-border transition"
                     >
                         Cancelar
                     </button>

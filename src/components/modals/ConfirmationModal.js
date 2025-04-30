@@ -1,4 +1,4 @@
-// src/components/modals/ConfirmationModal.js
+// src/components/modals/ConfirmationModal.js - Actualizado para usar variables de tema
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
@@ -32,36 +32,36 @@ const ConfirmationModal = ({
         onClose();
     };
 
-    // Configurar colores según el tipo
+    // Configurar colores según el tipo - usando colores seguros conocidos en vez de task-media
     const getTypeConfig = () => {
         switch (type) {
             case 'danger':
                 return {
-                    icon: <FaExclamationTriangle className="text-error text-2xl" />,
+                    icon: <FaExclamationTriangle className="text-error text-3xl" />,
                     confirmClass: 'bg-error hover:bg-error/80',
                     titleClass: 'text-error'
                 };
             case 'warning':
                 return {
-                    icon: <FaExclamationTriangle className="text-task-media text-2xl" />,
-                    confirmClass: 'bg-task-media hover:bg-task-media/80',
-                    titleClass: 'text-task-media'
+                    icon: <FaExclamationTriangle className="text-orange-500 text-3xl" />,
+                    confirmClass: 'bg-orange-500 hover:bg-orange-600',
+                    titleClass: 'text-orange-500'
                 };
             case 'success':
                 return {
-                    icon: <FaCheckCircle className="text-task-finalizada text-2xl" />,
+                    icon: <FaCheckCircle className="text-task-finalizada text-3xl" />,
                     confirmClass: 'bg-task-finalizada hover:bg-task-finalizada/80',
                     titleClass: 'text-task-finalizada'
                 };
             case 'info':
                 return {
-                    icon: <FaInfoCircle className="text-primary text-2xl" />,
+                    icon: <FaInfoCircle className="text-primary text-3xl" />,
                     confirmClass: 'bg-primary hover:bg-accent',
                     titleClass: 'text-primary'
                 };
             default:
                 return {
-                    icon: <FaQuestionCircle className="text-primary text-2xl" />,
+                    icon: <FaQuestionCircle className="text-primary text-3xl" />,
                     confirmClass: 'bg-primary hover:bg-accent',
                     titleClass: 'text-primary'
                 };
@@ -74,23 +74,23 @@ const ConfirmationModal = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={title}
+            title=""
             size="sm"
         >
             <div className="flex flex-col items-center mb-4">
                 {typeConfig.icon}
-                <h3 className={`text-lg font-medium mt-2 ${typeConfig.titleClass}`}>{title}</h3>
+                <h3 className={`text-xl font-semibold mt-3 ${typeConfig.titleClass}`}>{title}</h3>
             </div>
 
             <div className="my-4 text-center">
-                <p className="text-gray-600">{message}</p>
+                <p className="text-text">{message}</p>
             </div>
 
             <div className="flex justify-center space-x-4 mt-6">
                 <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={onClose}
-                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="px-4 py-2 bg-input-bg text-text rounded-lg hover:bg-border transition-colors"
                 >
                     {cancelText}
                 </motion.button>

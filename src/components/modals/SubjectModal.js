@@ -1,4 +1,4 @@
-// src/components/modals/SubjectModal.js - Versión actualizada para mostrar horarios de inmediato
+// src/components/modals/SubjectModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
@@ -185,7 +185,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
         >
             {/* Nombre de la asignatura */}
             <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-gray-700">
+                <label className="block text-sm font-medium mb-1 text-text">
                     Nombre de la asignatura
                 </label>
                 <input
@@ -196,12 +196,12 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                         setError('');
                     }}
                     placeholder="Nombre de la asignatura"
-                    className={`w-full p-2 border rounded ${
-                        error ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full p-2 border rounded bg-input-bg text-text ${
+                        error ? 'border-error' : 'border-border'
                     } focus:outline-none focus:ring-2 focus:ring-primary`}
                 />
                 {error && (
-                    <p className="text-red-500 text-xs mt-1">{error}</p>
+                    <p className="text-error text-xs mt-1">{error}</p>
                 )}
             </div>
             
@@ -222,22 +222,22 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                 </div>
                 
                 {loading ? (
-                    <p className="text-gray-500 text-center py-2">Cargando...</p>
+                    <p className="text-text-secondary text-center py-2">Cargando...</p>
                 ) : schedules.length > 0 ? (
                     <div className="max-h-40 overflow-y-auto space-y-1">
                         {schedules.map((schedule) => (
                             <div 
                                 key={schedule.id} 
-                                className={`p-2 rounded-lg flex justify-between items-center ${
-                                    schedule.isTemporary ? 'bg-blue-50 border border-blue-200' : 'bg-gray-100'
+                                className={`p-2 rounded-lg flex justify-between items-center border ${
+                                    schedule.isTemporary ? 'bg-input-bg border-primary/30' : 'bg-input-bg border-border'
                                 }`}
                             >
                                 <div>
-                                    <p className="font-medium text-sm">{getDayName(schedule.dayOfWeek)}</p>
-                                    <p className="text-xs text-gray-600">
+                                    <p className="font-medium text-sm text-text">{getDayName(schedule.dayOfWeek)}</p>
+                                    <p className="text-xs text-text-secondary">
                                         {formatTime(schedule.startTime)} ({formatDuration(schedule.durationMinutes)})
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-text-secondary">
                                         {getWeekTypeName(schedule.weekType)}
                                     </p>
                                 </div>
@@ -256,7 +256,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                                                 handleDeleteSchedule(schedule.id);
                                             }
                                         }}
-                                        className="text-red-500 hover:text-red-700 p-1"
+                                        className="text-error hover:text-error/80 p-1"
                                         disabled={loading}
                                         aria-label="Eliminar horario"
                                     >
@@ -267,7 +267,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-500 text-center py-2">
+                    <p className="text-text-secondary text-center py-2">
                         No hay horarios configurados
                     </p>
                 )}
@@ -277,7 +277,7 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
             <div className="flex justify-end space-x-2 pt-2">
                 <button
                     onClick={onClose}
-                    className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                    className="px-3 py-2 bg-input-bg text-text rounded-lg hover:bg-border transition"
                     disabled={loading}
                 >
                     Cancelar

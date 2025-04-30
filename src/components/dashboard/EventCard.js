@@ -1,4 +1,4 @@
-// src/components/dashboard/EventCard.js - Modified to use confirmation modal
+// src/components/dashboard/EventCard.js - Modified to use theme variables
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
@@ -61,15 +61,15 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
 
     // Determine badge color based on time until event
     const getBadgeColor = () => {
-        if (timeUntil === 'Evento pasado') return 'bg-event-pasado text-event-pasado';
-        if (timeUntil === 'Sin fecha' || timeUntil === 'Fecha inválida') return 'bg-event-normal text-event-normal';
+        if (timeUntil === 'Evento pasado') return 'bg-event-pasado-bg text-event-pasado';
+        if (timeUntil === 'Sin fecha' || timeUntil === 'Fecha inválida') return 'bg-event-futuro-bg text-event-futuro';
         if (timeUntil.includes('minutos') || (timeUntil.includes('hora') && !timeUntil.includes('horas'))) {
-            return 'bg-event-proximo text-event-proximo';
+            return 'bg-event-proximo-bg text-event-proximo';
         }
         if (timeUntil.includes('horas') || timeUntil.includes('1 día')) {
-            return 'bg-event-cercano text-event-cercano';
+            return 'bg-event-cercano-bg text-event-cercano';
         }
-        return 'bg-event-futuro text-event-futuro';
+        return 'bg-event-futuro-bg text-event-futuro';
     };
 
     const handleDelete = () => {
@@ -78,7 +78,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     };
 
     return (
-        <div className="bg-white rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1">
+        <div className="bg-card-bg rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1 border border-border">
             <div className="flex items-start mb-3">
                 <div className="mr-3 p-2 rounded-full bg-primary-light">
                     <FaCalendarAlt className="text-primary" />
@@ -86,13 +86,13 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                 <div className="flex-1">
                     <h3 className="font-semibold text-primary truncate">{event.title || 'Sin título'}</h3>
                     {event.description && (
-                        <p className="text-sm text-gray-600 line-clamp-1">{event.description}</p>
+                        <p className="text-sm text-text-secondary line-clamp-1">{event.description}</p>
                     )}
                 </div>
                 <div className="flex space-x-1 ml-2">
                     <button
                         onClick={() => onUpdate(event)}
-                        className="p-1.5 text-gray-400 hover:text-primary rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-primary rounded-full hover:bg-input-bg transition"
                         title="Editar"
                         aria-label="Editar evento"
                     >
@@ -100,7 +100,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
                     </button>
                     <button
                         onClick={handleDelete}
-                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-error rounded-full hover:bg-input-bg transition"
                         title="Eliminar"
                         aria-label="Eliminar evento"
                     >
@@ -111,14 +111,14 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
 
             <div className="flex flex-wrap gap-y-2 text-xs">
                 <div className="flex items-center mr-3">
-                    <FaCalendarAlt className="text-gray-400 mr-1" size={12} />
-                    <span className="text-gray-600">{formatDateTime(event.startDateTime)}</span>
+                    <FaCalendarAlt className="text-text-secondary mr-1" size={12} />
+                    <span className="text-text-secondary">{formatDateTime(event.startDateTime)}</span>
                 </div>
 
                 {event.endDateTime && (
                     <div className="flex items-center">
-                        <FaClock className="text-gray-400 mr-1" size={12} />
-                        <span className="text-gray-600">{formatDateTime(event.endDateTime)}</span>
+                        <FaClock className="text-text-secondary mr-1" size={12} />
+                        <span className="text-text-secondary">{formatDateTime(event.endDateTime)}</span>
                     </div>
                 )}
             </div>

@@ -330,6 +330,7 @@ export const createGroup = async (groupData) => {
         const newGroup = await groupResponse.json();
 
         // Luego añadimos al creador como admin del grupo
+        // NOTA: Este es el único caso donde el roleId debe ser 1 (admin)
         const memberResponse = await fetch(`${BASE_URL}/groupmembers`, {
             method: 'POST',
             headers: {
@@ -339,7 +340,7 @@ export const createGroup = async (groupData) => {
             body: JSON.stringify({
                 groupId: newGroup.id,
                 userId: parseInt(userId),
-                roleId: 1, // Rol de admin
+                roleId: 1, // Rol de admin - CORRECTO, el creador es admin
                 password: groupData.password
             }),
         });
@@ -520,6 +521,7 @@ export const joinGroup = async (groupId, password) => {
 
     try {
         // Llamada directa al endpoint para unirse usando el nuevo formato
+        // CORRECCIÓN: Siempre usamos roleId: 2 (miembro) cuando un usuario se une a un grupo
         const memberResponse = await fetch(`${BASE_URL}/groupmembers/user/${userId}`, {
             method: 'POST',
             headers: {
@@ -573,6 +575,8 @@ export const joinGroupWithLink = async (groupId) => {
     }
 
     try {
+        // IMPORTANTE: el servidor debe asignar RoleId = 2 (miembro) cuando se une con enlace
+        // Esta implementación asume que el backend asigna correctamente el rol de miembro
         const response = await fetch(`${BASE_URL}/groups/join/${groupId}`, {
             method: 'GET',
             headers: {

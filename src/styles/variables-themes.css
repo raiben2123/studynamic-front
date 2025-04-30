@@ -1,24 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/***************************************
+ * VARIABLES Y TEMAS
+ ***************************************/
 
-@font-face {
-  font-family: 'ocr-a-extended';
-  src: url('./assets/fonts/ocr-a-extended.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-/* Colores base manejados por theme-swapper */
+/* Variables base del tema por defecto */
 :root {
+  /* Colores principales */
   --primary-color: #467BAA;
+  --primary-color-sidebar: #467BAA;
   --primary-color-rgb: 70, 123, 170;
   --secondary-color: #f5a623;
   --accent-color: #5aa0f2;
   --background-color: #e6f0fa;
-  /* Variables personalizadas para tareas y eventos */
   --color-primary-light: #bfdbfe; /* blue-200, claro de #467BAA */
   --color-error: #EF4444; /* red-500 */
+  
+  /* Variables para tareas */
   --color-task-finalizada-bg: #DCFCE7; /* green-100 */
   --color-task-finalizada: #15803D; /* green-700 */
   --color-task-vencida-bg: #FEE2E2; /* red-100 */
@@ -34,6 +30,8 @@
   --color-task-alta: #EF4444; /* red-500 */
   --color-task-media: #F59E0B; /* orange-500 */
   --color-task-baja: #3B82F6; /* blue-500 */
+  
+  /* Variables para eventos */
   --color-event-pasado-bg: #F3F4F6; /* gray-100 */
   --color-event-pasado: #1F2937; /* gray-800 */
   --color-event-proximo-bg: #FEE2E2; /* red-100 */
@@ -42,60 +40,106 @@
   --color-event-cercano: #C2410C; /* orange-700 */
   --color-event-futuro-bg: #DCFCE7; /* green-100 */
   --color-event-futuro: #15803D; /* green-700 */
-  --color-activity-progress: #467BAA; /* primary para default */
+  --color-activity-progress: #467BAA; /* primary */
+  
+  /* Variables para bordes y textos */
   --color-task-border: #E11D48; /* rose-600 */
   --color-event-border: #8B5CF6; /* violet-500 */
   --color-task-text: #E11D48; /* rose-600 */
   --color-event-text: #8B5CF6; /* violet-500 */
+  
+  /* Variables responsivas */
+  --mobile-padding: 0.75rem;
+  --desktop-padding: 1.5rem;
+  --bottom-nav-height: 3.5rem;
+  --sidebar-width-desktop: 5rem;
+  
+  /* Variables para colores de texto y fondos */
+  --text-color: #1f2937; /* Color de texto principal (casi negro) */
+  --text-color-secondary: #4b5563; /* Color de texto secundario */
+  --menu-bg-color: #ffffff; /* Fondo de menús - blanco */
+  --card-bg-color: #ffffff; /* Fondo de tarjetas - blanco */
+  --input-bg-color: #f9fafb; /* Fondo de inputs - gris muy claro */
+  --border-color: #e5e7eb; /* Color de bordes - gris claro */
 }
 
 /* Tema oscuro */
 .theme-dark {
-  --primary-color: #2c3e50;
-  --primary-color-rgb: 44, 62, 80;
+  /* Colores principales */
+  --primary-color: #a2cef1; /* Azul para elementos primarios */
+  --primary-color-sidebar: #111827;
+  --primary-color-rgb: 59, 130, 246;
   --secondary-color: #f39c12;
-  --accent-color: #3498db;
-  --background-color: #1a1a1a;
-  --color-primary-light: #4b5e71; /* azul grisáceo oscuro, claro de #2c3e50 */
-  --color-error: #F87171; /* red-400 */
+  --accent-color: #60A5FA; /* Azul accent más brillante */
+  --background-color: #121212; /* Fondo principal casi negro */
+  --color-primary-light: #1e3a8a; /* Azul oscuro para fondos de componentes */
+  
+  /* Colores para texto y fondos en tema oscuro */
+  --text-color: #0056a7; /* Texto blanco para máximo contraste */
+  --text-color-secondary: #d1d5db; /* Texto secundario en gris claro */
+  --menu-bg-color: #1f2937; /* Fondo de menús en gris muy oscuro */
+  --card-bg-color: #111827; /* Fondo de tarjetas en negro/gris muy oscuro */
+  --input-bg-color: #374151; /* Fondo de inputs en gris oscuro */
+  --border-color: #4b5563; /* Color de bordes en gris medio */
+  
+  /* Variables para errores y estados */
+  --color-error: #F87171; /* red-400 - más brillante para mejor visibilidad */
+  
+  /* Variables para tareas - ajustadas para mejor contraste en fondo oscuro */
   --color-task-finalizada-bg: #064E3B; /* green-900 */
-  --color-task-finalizada: #34D399; /* green-400 */
+  --color-task-finalizada: #34D399; /* green-400 - más brillante */
   --color-task-vencida-bg: #7F1D1D; /* red-900 */
-  --color-task-vencida: #FCA5A5; /* red-300 */
+  --color-task-vencida: #FCA5A5; /* red-300 - más brillante */
   --color-task-hoy-bg: #7C2D12; /* orange-900 */
-  --color-task-hoy: #FDBA74; /* orange-300 */
+  --color-task-hoy: #FDBA74; /* orange-300 - más brillante */
   --color-task-pronto-bg: #713F12; /* yellow-900 */
-  --color-task-pronto: #FBBF24; /* yellow-400 */
+  --color-task-pronto: #FBBF24; /* yellow-400 - más brillante */
   --color-task-normal-bg: #1E3A8A; /* blue-900 */
-  --color-task-normal: #93C5FD; /* blue-300 */
+  --color-task-normal: #93C5FD; /* blue-300 - más brillante */
   --color-task-calificacion-bg: #1E3A8A; /* blue-900 */
-  --color-task-calificacion: #93C5FD; /* blue-300 */
-  --color-task-alta: #F87171; /* red-400 */
-  --color-task-media: #FB923C; /* orange-400 */
-  --color-task-baja: #60A5FA; /* blue-400 */
-  --color-event-pasado-bg: #374151; /* gray-700 */
-  --color-event-pasado: #D1D5DB; /* gray-300 */
+  --color-task-calificacion: #93C5FD; /* blue-300 - más brillante */
+  
+  /* Prioridades de tareas */
+  --color-task-alta: #F87171; /* red-400 - más brillante */
+  --color-task-media: #FB923C; /* orange-400 - más brillante */
+  --color-task-baja: #60A5FA; /* blue-400 - más brillante */
+  
+  /* Variables para eventos - ajustadas para mejor contraste */
+  --color-event-pasado-bg: #1F2937; /* gray-800 */
+  --color-event-pasado: #D1D5DB; /* gray-300 - más brillante */
   --color-event-proximo-bg: #7F1D1D; /* red-900 */
-  --color-event-proximo: #FCA5A5; /* red-300 */
+  --color-event-proximo: #FCA5A5; /* red-300 - más brillante */
   --color-event-cercano-bg: #7C2D12; /* orange-900 */
-  --color-event-cercano: #FDBA74; /* orange-300 */
+  --color-event-cercano: #FDBA74; /* orange-300 - más brillante */
   --color-event-futuro-bg: #064E3B; /* green-900 */
-  --color-event-futuro: #34D399; /* green-400 */
-  --color-activity-progress: #2c3e50; /* primary para dark */
-  --color-task-border: #FCA5A5; /* red-300 */
-  --color-event-border: #A78BFA; /* violet-400 */
-  --color-task-text: #FCA5A5; /* red-300 */
-  --color-event-text: #A78BFA; /* violet-400 */
+  --color-event-futuro: #34D399; /* green-400 - más brillante */
+  
+  /* Progreso y bordes */
+  --color-activity-progress: #3B82F6; /* primary */
+  --color-task-border: #FCA5A5; /* red-300 - más brillante */
+  --color-event-border: #A78BFA; /* violet-400 - más brillante */
+  --color-task-text: #FCA5A5; /* red-300 - más brillante */
+  --color-event-text: #A78BFA; /* violet-400 - más brillante */
 }
 
 /* Tema verde */
 .theme-green {
   --primary-color: #27ae60;
+  --primary-color-sidebar: #27ae60;
   --primary-color-rgb: 39, 174, 96;
   --secondary-color: #f1c40f;
   --accent-color: #2ecc71;
   --background-color: #e8f5e9;
   --color-primary-light: #86efac; /* green-300, claro de #27ae60 */
+  
+  /* Variables para texto y fondos */
+  --text-color: #1f2937; /* Color de texto principal (casi negro) */
+  --text-color-secondary: #4b5563; /* Color de texto secundario */
+  --menu-bg-color: #ffffff; /* Fondo de menús - blanco */
+  --card-bg-color: #ffffff; /* Fondo de tarjetas - blanco */
+  --input-bg-color: #f9fafb; /* Fondo de inputs - gris muy claro */
+  --border-color: #e5e7eb; /* Color de bordes - gris claro */
+  
   --color-error: #EF4444; /* red-500 */
   --color-task-finalizada-bg: #DCFCE7; /* green-100 */
   --color-task-finalizada: #15803D; /* green-700 */
@@ -120,7 +164,7 @@
   --color-event-cercano: #C2410C; /* orange-700 */
   --color-event-futuro-bg: #DCFCE7; /* green-100 */
   --color-event-futuro: #15803D; /* green-700 */
-  --color-activity-progress: #27ae60; /* primary para green */
+  --color-activity-progress: #27ae60; /* primary */
   --color-task-border: #E11D48; /* rose-600 */
   --color-event-border: #8B5CF6; /* violet-500 */
   --color-task-text: #E11D48; /* rose-600 */
@@ -130,11 +174,21 @@
 /* Tema púrpura */
 .theme-purple {
   --primary-color: #8e44ad;
+  --primary-color-sidebar: #8e44ad;
   --primary-color-rgb: 142, 68, 173;
   --secondary-color: #e74c3c;
   --accent-color: #9b59b6;
   --background-color: #f3e5f5;
   --color-primary-light: #d8b4fe; /* purple-200, claro de #8e44ad */
+  
+  /* Variables para texto y fondos */
+  --text-color: #1f2937; /* Color de texto principal (casi negro) */
+  --text-color-secondary: #4b5563; /* Color de texto secundario */
+  --menu-bg-color: #ffffff; /* Fondo de menús - blanco */
+  --card-bg-color: #ffffff; /* Fondo de tarjetas - blanco */
+  --input-bg-color: #f9fafb; /* Fondo de inputs - gris muy claro */
+  --border-color: #e5e7eb; /* Color de bordes - gris claro */
+  
   --color-error: #EF4444; /* red-500 */
   --color-task-finalizada-bg: #DCFCE7; /* green-100 */
   --color-task-finalizada: #15803D; /* green-700 */
@@ -159,186 +213,9 @@
   --color-event-cercano: #C2410C; /* orange-700 */
   --color-event-futuro-bg: #DCFCE7; /* green-100 */
   --color-event-futuro: #15803D; /* green-700 */
-  --color-activity-progress: #8e44ad; /* primary para purple */
+  --color-activity-progress: #8e44ad; /* primary */
   --color-task-border: #E11D48; /* rose-600 */
   --color-event-border: #8B5CF6; /* violet-500 */
   --color-task-text: #E11D48; /* rose-600 */
   --color-event-text: #8B5CF6; /* violet-500 */
-}
-
-/* Clases utilitarias para componentes */
-.bg-primary {
-  background-color: var(--primary-color);
-}
-
-.text-primary {
-  color: var(--primary-color);
-}
-
-.border-primary {
-  border-color: var(--primary-color);
-}
-
-.bg-accent {
-  background-color: var(--accent-color);
-}
-
-.text-accent {
-  color: var(--accent-color);
-}
-
-.bg-secondary {
-  background-color: var(--secondary-color);
-}
-
-.text-secondary {
-  color: var(--secondary-color);
-}
-
-.bg-background {
-  background-color: var(--background-color);
-}
-
-.bg-primary-light {
-  background-color: var(--color-primary-light);
-}
-
-.text-error {
-  color: var(--color-error);
-}
-
-.bg-error {
-  background-color: var(--color-error);
-}
-
-.bg-task-finalizada {
-  background-color: var(--color-task-finalizada-bg);
-}
-
-.text-task-finalizada {
-  color: var(--color-task-finalizada);
-}
-
-.bg-task-vencida {
-  background-color: var(--color-task-vencida-bg);
-}
-
-.text-task-vencida {
-  color: var(--color-task-vencida);
-}
-
-.bg-task-hoy {
-  background-color: var(--color-task-hoy-bg);
-}
-
-.text-task-hoy {
-  color: var(--color-task-hoy);
-}
-
-.bg-task-pronto {
-  background-color: var(--color-task-pronto-bg);
-}
-
-.text-task-pronto {
-  color: var(--color-task-pronto);
-}
-
-.bg-task-normal {
-  background-color: var(--color-task-normal-bg);
-}
-
-.text-task-normal {
-  color: var(--color-task-normal);
-}
-
-.bg-task-calificacion {
-  background-color: var(--color-task-calificacion-bg);
-}
-
-.text-task-calificacion {
-  color: var(--color-task-calificacion);
-}
-
-.text-task-alta {
-  color: var(--color-task-alta);
-}
-
-.text-task-media {
-  color: var(--color-task-media);
-}
-
-.text-task-baja {
-  color: var(--color-task-baja);
-}
-
-.bg-event-pasado {
-  background-color: var(--color-event-pasado-bg);
-}
-
-.text-event-pasado {
-  color: var(--color-event-pasado);
-}
-
-.bg-event-proximo {
-  background-color: var(--color-event-proximo-bg);
-}
-
-.text-event-proximo {
-  color: var(--color-event-proximo);
-}
-
-.bg-event-cercano {
-  background-color: var(--color-event-cercano-bg);
-}
-
-.text-event-cercano {
-  color: var(--color-event-cercano);
-}
-
-.bg-event-futuro {
-  background-color: var(--color-event-futuro-bg);
-}
-
-.text-event-futuro {
-  color: var(--color-event-futuro);
-}
-
-.bg-activity-progress {
-  background-color: var(--color-activity-progress);
-}
-
-.border-task {
-  border-color: var(--color-task-border);
-}
-
-.border-event {
-  border-color: var(--color-event-border);
-}
-
-.text-task {
-  color: var(--color-task-text);
-}
-
-.text-event {
-  color: var(--color-event-text);
-}
-
-/* Estilos base */
-body {
-  margin: 0;
-  font-family: ocr-a-extended, 'Courier New', Courier, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-/* Transición suave al cambiar de tema */
-.theme-transition,
-body,
-button,
-a {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

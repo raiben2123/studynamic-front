@@ -1,0 +1,17 @@
+/* 
+ * Studynamic - Estilos unificados (Parte 1)
+ * Directivas de Tailwind y definición de fuentes
+ */
+
+/* Directivas de Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definición de fuentes */
+@font-face {
+  font-family: 'ocr-a-extended';
+  src: url('../assets/fonts/ocr-a-extended.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

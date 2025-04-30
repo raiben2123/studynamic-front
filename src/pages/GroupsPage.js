@@ -45,7 +45,7 @@ const GroupsPage = () => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         type: 'warning'
     });
 
@@ -137,7 +137,7 @@ const GroupsPage = () => {
 
         setLoading(true);
         try {
-            // Usar la función actualizada de joinGroup
+            // Usar la función joinGroup que ahora asegura que el rol sea 2 (miembro)
             await joinGroup(joinGroupId, joinPassword);
 
             // Actualizar la lista de grupos tras unirse exitosamente
@@ -164,23 +164,23 @@ const GroupsPage = () => {
             showNotification('Por favor, completa todos los campos.', 'error');
             return;
         }
-    
+
         setLoading(true);
         try {
             const createdGroup = await createGroup({
                 name: newGroupName,
                 password: newGroupPassword
             });
-    
+
             const updatedGroups = await getGroupsByUserId();
             setGroups(updatedGroups);
-    
+
             setNewGroupName('');
             setNewGroupPassword('');
             setIsAddModalOpen(false);
             setError(null);
             showNotification(`Grupo ${newGroupName} creado con éxito`, 'success');
-    
+
             navigate(`/groups/${createdGroup.id}`); // Redirige al grupo recién creado
         } catch (err) {
             console.error('Error creating group:', err);
@@ -258,7 +258,7 @@ const GroupsPage = () => {
                 <div className="relative z-10">
                     {notification && (
                         <motion.div
-                            className={`fixed top-4 right-4 p-3 rounded-lg shadow-md ${notification.type === 'success' ? 'bg-task-finalizada-bg text-task-finalizada' : 'bg-error/10 text-error'}`}
+                            className={`fixed top-4 right-4 p-3 rounded-lg shadow-md ${notification.type === 'success' ? 'bg-task-finalizada text-task-finalizada' : 'bg-task-vencida text-task-vencida'}`}
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
@@ -269,7 +269,7 @@ const GroupsPage = () => {
                     )}
                     {error && (
                         <motion.div
-                            className="bg-error/10 text-error p-3 rounded-lg mb-4"
+                            className="bg-task-vencida text-task-vencida p-3 rounded-lg mb-4"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.3 }}
@@ -293,12 +293,12 @@ const GroupsPage = () => {
 
                     {/* Tabs for navigation */}
                     <div className="mb-6">
-                        <div className="flex border-b-2 border-gray-200">
+                        <div className="flex border-b-2 border-border">
                             <button
                                 onClick={() => setActivePage('my-groups')}
                                 className={`py-2 px-4 font-medium ${activePage === 'my-groups'
-                                        ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                        : 'text-gray-500 hover:text-primary'
+                                    ? 'text-primary border-b-2 border-primary -mb-0.5'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
                                 Mis Grupos
@@ -306,8 +306,8 @@ const GroupsPage = () => {
                             <button
                                 onClick={() => setActivePage('join-groups')}
                                 className={`py-2 px-4 font-medium ${activePage === 'join-groups'
-                                        ? 'text-primary border-b-2 border-primary -mb-0.5'
-                                        : 'text-gray-500 hover:text-primary'
+                                    ? 'text-primary border-b-2 border-primary -mb-0.5'
+                                    : 'text-text-secondary hover:text-primary'
                                     }`}
                             >
                                 Unirme a Grupos
@@ -324,7 +324,7 @@ const GroupsPage = () => {
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <div className="bg-white p-6 rounded-xl shadow-md">
+                                <div className="bg-card-bg p-6 rounded-xl shadow-md">
                                     {loading && (
                                         <div className="flex justify-center items-center py-8">
                                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -333,9 +333,9 @@ const GroupsPage = () => {
 
                                     {!loading && sortedGroups.length === 0 && (
                                         <div className="text-center py-10 bg-primary-light rounded-lg">
-                                            <FaUsers className="mx-auto text-gray-400 text-4xl mb-4" />
-                                            <p className="text-gray-600 text-lg mb-3">No estás en ningún grupo.</p>
-                                            <p className="text-gray-500 mb-4">Crea un nuevo grupo o únete a alguno existente</p>
+                                            <FaUsers className="mx-auto text-text-secondary text-4xl mb-4" />
+                                            <p className="text-text mb-3">No estás en ningún grupo.</p>
+                                            <p className="text-text-secondary mb-4">Crea un nuevo grupo o únete a alguno existente</p>
                                             <div className="flex space-x-3 justify-center">
                                                 <button
                                                     onClick={() => setIsAddModalOpen(true)}
@@ -345,7 +345,7 @@ const GroupsPage = () => {
                                                 </button>
                                                 <button
                                                     onClick={() => setActivePage('join-groups')}
-                                                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-primary-light transition-colors"
+                                                    className="bg-border text-text px-4 py-2 rounded-lg hover:bg-primary-light transition-colors"
                                                 >
                                                     Buscar grupos
                                                 </button>
@@ -358,7 +358,7 @@ const GroupsPage = () => {
                                             {sortedGroups.map((group) => (
                                                 <motion.div
                                                     key={group.id}
-                                                    className="bg-gray-50 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100"
+                                                    className="bg-input-bg rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-border"
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     transition={{ duration: 0.2 }}
@@ -366,18 +366,18 @@ const GroupsPage = () => {
                                                     <div className={`h-8 ${getGroupColor(group.name)}`}></div>
                                                     <div className="p-4">
                                                         <div className="flex justify-between">
-                                                            <h3 className="font-semibold text-lg text-gray-800 mb-1">{group.name}</h3>
+                                                            <h3 className="font-semibold text-lg text-text mb-1">{group.name}</h3>
                                                             <div className="relative">
                                                                 <button
                                                                     onClick={() => setIsTooltipOpen(isTooltipOpen === group.id ? null : group.id)}
-                                                                    className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200"
+                                                                    className="text-text-secondary hover:text-text p-1 rounded-full hover:bg-border"
                                                                 >
                                                                     <FaEllipsisV size={16} />
                                                                 </button>
 
                                                                 {isTooltipOpen === group.id && (
                                                                     <motion.div
-                                                                        className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-primary/20"
+                                                                        className="absolute right-0 mt-1 w-40 bg-card-bg rounded-md shadow-lg z-10 border border-primary/20"
                                                                         initial={{ opacity: 0, y: 10 }}
                                                                         animate={{ opacity: 1, y: 0 }}
                                                                         exit={{ opacity: 0, y: 10 }}
@@ -390,7 +390,7 @@ const GroupsPage = () => {
                                                                                         setIsTooltipOpen(null);
                                                                                         handleLeaveGroup(group.id);
                                                                                     }}
-                                                                                    className="px-4 py-2 text-sm text-error hover:bg-error/10 w-full text-left flex items-center"
+                                                                                    className="px-4 py-2 text-sm text-task-vencida hover:bg-task-vencida/10 w-full text-left flex items-center"
                                                                                 >
                                                                                     <FaTimes className="mr-2" /> Abandonar
                                                                                 </button>
@@ -414,8 +414,8 @@ const GroupsPage = () => {
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex items-center text-gray-600 text-sm mb-3">
-                                                            <FaUsers className="mr-1 text-gray-400" />
+                                                        <div className="flex items-center text-text-secondary text-sm mb-3">
+                                                            <FaUsers className="mr-1 text-text-secondary" />
                                                             <span>{group.members?.length || group.memberCount || 0} miembros</span>
                                                         </div>
 
@@ -439,7 +439,7 @@ const GroupsPage = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white p-6 rounded-xl shadow-md"
+                                className="bg-card-bg p-6 rounded-xl shadow-md"
                             >
                                 <div className="mb-4">
                                     <div className="relative">
@@ -451,31 +451,31 @@ const GroupsPage = () => {
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             placeholder="Buscar grupos..."
-                                            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                            className="pl-10 pr-4 py-2 w-full border border-border bg-input-bg text-text rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                         />
                                     </div>
                                 </div>
 
                                 {searchResults.length === 0 ? (
                                     <div className="text-center py-10 bg-primary-light rounded-lg">
-                                        <FaSearch className="mx-auto text-gray-400 text-4xl mb-4" />
-                                        <p className="text-gray-600">No se encontraron grupos{searchQuery ? ` para "${searchQuery}"` : ''}.</p>
-                                        <p className="text-gray-500 mt-2">Intenta con otra búsqueda o crea un nuevo grupo</p>
+                                        <FaSearch className="mx-auto text-text-secondary text-4xl mb-4" />
+                                        <p className="text-text">No se encontraron grupos{searchQuery ? ` para "${searchQuery}"` : ''}.</p>
+                                        <p className="text-text-secondary mt-2">Intenta con otra búsqueda o crea un nuevo grupo</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-3">
                                         {searchResults.map((group) => (
                                             <motion.div
                                                 key={group.id}
-                                                className="bg-gray-50 rounded-lg p-4 border border-gray-100 hover:border-primary/50 hover:bg-primary-light/50 transition-colors"
+                                                className="bg-input-bg rounded-lg p-4 border border-border hover:border-primary/50 hover:bg-primary-light/50 transition-colors"
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.2 }}
                                             >
                                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                                                     <div className="mb-3 md:mb-0">
-                                                        <h3 className="font-semibold text-lg text-gray-800">{group.name}</h3>
-                                                        <p className="text-gray-600 text-sm">
+                                                        <h3 className="font-semibold text-lg text-text">{group.name}</h3>
+                                                        <p className="text-text-secondary text-sm">
                                                             {group.description || 'Sin descripción'} • {group.memberCount} miembros
                                                         </p>
                                                     </div>
@@ -485,14 +485,14 @@ const GroupsPage = () => {
                                                             <div className="flex w-full md:w-auto">
                                                                 <div className="relative flex-1 md:w-44">
                                                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                                                                        <FaLock className="text-gray-400" />
+                                                                        <FaLock className="text-text-secondary" />
                                                                     </div>
                                                                     <input
                                                                         type="password"
                                                                         value={joinPassword}
                                                                         onChange={(e) => setJoinPassword(e.target.value)}
                                                                         placeholder="Contraseña"
-                                                                        className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                                                                        className="pl-10 pr-4 py-2 w-full border border-border bg-input-bg text-text rounded-l-lg focus:outline-none focus:ring-1 focus:ring-primary"
                                                                     />
                                                                 </div>
                                                                 <button
@@ -504,7 +504,7 @@ const GroupsPage = () => {
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setJoinGroupId(null)}
-                                                                    className="ml-2 text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200"
+                                                                    className="ml-2 text-text-secondary hover:text-text p-2 rounded-full hover:bg-border"
                                                                 >
                                                                     <FaTimes />
                                                                 </button>
@@ -540,7 +540,7 @@ const GroupsPage = () => {
                     transition={{ duration: 0.3 }}
                 >
                     <motion.div
-                        className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4"
+                        className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4"
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.95, opacity: 0 }}
@@ -551,7 +551,7 @@ const GroupsPage = () => {
                         </h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                <label className="block text-sm font-medium mb-1 text-text">
                                     Nombre del grupo
                                 </label>
                                 <input
@@ -559,26 +559,26 @@ const GroupsPage = () => {
                                     value={newGroupName}
                                     onChange={(e) => setNewGroupName(e.target.value)}
                                     placeholder="Ej: Grupo de Matemáticas"
-                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                    className="w-full p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                <label className="block text-sm font-medium mb-1 text-text">
                                     Contraseña de acceso
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                                        <FaLock className="text-gray-400" />
+                                        <FaLock className="text-text-secondary" />
                                     </div>
                                     <input
                                         type="password"
                                         value={newGroupPassword}
                                         onChange={(e) => setNewGroupPassword(e.target.value)}
                                         placeholder="Contraseña para unirse al grupo"
-                                        className="w-full pl-10 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                        className="w-full pl-10 p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                     />
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-text-secondary mt-1">
                                     Esta contraseña será necesaria para que otros usuarios se unan al grupo.
                                 </p>
                             </div>
@@ -586,7 +586,7 @@ const GroupsPage = () => {
                         <div className="flex justify-end space-x-2 mt-6">
                             <button
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                                className="px-4 py-2 bg-border text-text rounded-lg hover:bg-border/80 transition-colors"
                             >
                                 Cancelar
                             </button>

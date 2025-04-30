@@ -1,4 +1,4 @@
-// src/components/dashboard/SubjectCard.js - Actualizado para mostrar horarios inmediatamente
+// src/components/dashboard/SubjectCard.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaBook, FaClock, FaCalendarAlt, FaAngleDown, FaAngleUp } from 'react-icons/fa';
@@ -102,7 +102,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     };
 
     return (
-        <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="bg-card-bg rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 border border-border">
             <div className="flex justify-between items-start">
                 <div className="flex items-center space-x-3">
                     <div className={`p-2.5 rounded-lg ${subjectColor}`}>
@@ -113,7 +113,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                 <div className="flex space-x-1">
                     <button
                         onClick={() => onUpdate(subject)}
-                        className="p-1.5 text-gray-400 hover:text-primary rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-primary rounded-full hover:bg-input-bg transition"
                         title="Editar"
                         aria-label="Editar asignatura"
                     >
@@ -121,7 +121,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                     </button>
                     <button
                         onClick={handleDeleteClick}
-                        className="p-1.5 text-gray-400 hover:text-error rounded-full hover:bg-gray-100 transition"
+                        className="p-1.5 text-text-secondary hover:text-error rounded-full hover:bg-input-bg transition"
                         title="Eliminar"
                         aria-label="Eliminar asignatura"
                     >
@@ -148,19 +148,19 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                             {schedules.map((schedule) => (
                                 <div 
                                     key={schedule.id} 
-                                    className="bg-gray-50 p-2 rounded-lg border border-gray-100 flex justify-between items-center"
+                                    className="bg-input-bg p-2 rounded-lg border border-border flex justify-between items-center"
                                 >
-                                    <div className="flex items-center text-gray-700 text-xs">
-                                        <FaCalendarAlt className="mr-1 text-gray-400" />
+                                    <div className="flex items-center text-text text-xs">
+                                        <FaCalendarAlt className="mr-1 text-text-secondary" />
                                         <span className="font-medium">{getDayName(schedule.dayOfWeek)}</span>
                                     </div>
-                                    <div className="flex items-center text-xs text-gray-700">
-                                        <FaClock className="mr-1 text-gray-400" />
+                                    <div className="flex items-center text-xs text-text">
+                                        <FaClock className="mr-1 text-text-secondary" />
                                         <span>{formatTimeSpan(schedule.startTime)}</span>
-                                        <span className="mx-1 text-gray-400">•</span>
+                                        <span className="mx-1 text-text-secondary">•</span>
                                         <span>{formatDuration(schedule.durationMinutes)}</span>
                                     </div>
-                                    <div className="text-gray-500 text-xs">
+                                    <div className="text-text-secondary text-xs">
                                         {getWeekTypeName(schedule.weekType)}
                                     </div>
                                 </div>
@@ -169,12 +169,12 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
                     )}
                 </div>
             ) : (
-                <p className="mt-3 text-xs text-gray-500">No hay horarios configurados</p>
+                <p className="mt-3 text-xs text-text-secondary">No hay horarios configurados</p>
             )}
             
             {/* Stats or progress indicators could go here */}
-            <div className="mt-3 pt-2 border-t">
-                <div className="flex justify-between text-xs text-gray-600">
+            <div className="mt-3 pt-2 border-t border-border">
+                <div className="flex justify-between text-xs text-text-secondary">
                     <span>Clases por semana: {hasSchedules ? schedules.length : 0}</span>
                     <span>{hasSchedules ? 'Configurado' : 'No configurado'}</span>
                 </div>

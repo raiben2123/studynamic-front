@@ -6,6 +6,7 @@ import Logo from '../assets/Logo_opacidad33.png';
 import defaultProfile1 from '../assets/default_profile_picture1.png';
 import { applyTheme, colorThemes } from '../services/themeService';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
+import ProfilePictureUploader from '../components/profile/ProfilePictureUploader';
 
 const SettingsPage = () => {
     const { user, userTheme, updateProfile, loading: authLoading } = useAuth();
@@ -227,13 +228,13 @@ const SettingsPage = () => {
             >
                 <div className="relative z-10">
                     {error && (
-                        <div className="bg-error/10 text-error p-3 rounded-lg mb-4">
+                        <div className="bg-task-vencida text-task-vencida p-3 rounded-lg mb-4">
                             {error}
                         </div>
                     )}
 
                     {savedMessage && (
-                        <div className="bg-task-finalizada-bg text-task-finalizada p-3 rounded-lg mb-4">
+                        <div className="bg-task-finalizada text-task-finalizada p-3 rounded-lg mb-4">
                             {savedMessage}
                         </div>
                     )}
@@ -241,70 +242,52 @@ const SettingsPage = () => {
                     <h1 className="text-2xl md:text-3xl mb-6 text-primary font-bold">Configuración</h1>
 
                     {authLoading || loading ? (
-                        <div className="bg-white p-6 rounded-xl shadow-md flex justify-center items-center">
-                            <p className="text-gray-500">Cargando...</p>
+                        <div className="bg-card-bg p-6 rounded-xl shadow-md flex justify-center items-center">
+                            <p className="text-text-secondary">Cargando...</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Perfil de Usuario */}
-                            <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                            <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95">
                                 <h2 className="text-xl font-semibold mb-4">Perfil de Usuario</h2>
 
                                 <div className="mb-6 flex flex-col items-center">
-                                    <div className="w-32 h-32 rounded-full overflow-hidden mb-4 border-2 border-primary">
-                                        <img
-                                            src={previewImage || defaultProfile1}
-                                            alt="Perfil"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <div className="flex space-x-2">
-                                        <label className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent cursor-pointer">
-                                            Cambiar Foto
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                                className="hidden"
-                                            />
-                                        </label>
-                                        {previewImage && (
-                                            <button
-                                                onClick={handleRemovePhoto}
-                                                className="px-4 py-2 bg-error text-white rounded-full hover:bg-error/80"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        )}
-                                    </div>
+                                    <ProfilePictureUploader 
+                                        onSuccess={(imageUrl) => {
+                                            setPreviewImage(imageUrl);
+                                            setSavedMessage('Foto de perfil actualizada correctamente');
+                                            setTimeout(() => setSavedMessage(''), 3000);
+                                        }}
+                                        size="lg"
+                                    />
                                 </div>
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                                        <label className="block text-sm font-medium mb-1 text-text">
                                             Nombre
                                         </label>
                                         <input
                                             type="text"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                                        <label className="block text-sm font-medium mb-1 text-text">
                                             Correo Electrónico
                                         </label>
                                         <input
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                                        <label className="block text-sm font-medium mb-1 text-text">
                                             Contraseña
                                         </label>
                                         <div className="relative">
@@ -312,12 +295,12 @@ const SettingsPage = () => {
                                                 type={showPassword ? "text" : "password"}
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
-                                                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+                                                className="w-full p-2 border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary pr-10"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 hover:text-gray-700"
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-text-secondary hover:text-text"
                                             >
                                                 {showPassword ? (
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -331,13 +314,13 @@ const SettingsPage = () => {
                                                 )}
                                             </button>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-1">Deja en blanco para mantener la contraseña actual</p>
+                                        <p className="text-xs text-text-secondary mt-1">Deja en blanco para mantener la contraseña actual</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Temas y Apariencia */}
-                            <div className="bg-white p-4 rounded-xl shadow-md md:p-6 opacity-95">
+                            <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95">
                                 <h2 className="text-xl font-semibold mb-4">Temas y Apariencia</h2>
 
                                 <div className="grid grid-cols-2 gap-4">
@@ -349,7 +332,7 @@ const SettingsPage = () => {
                                                 onClick={() => handleThemeChange(theme.id)}
                                                 className={`
                                                     p-4 rounded-lg cursor-pointer transition
-                                                    ${selectedTheme === theme.id ? 'ring-2 ring-primary shadow-md' : 'hover:bg-gray-100'}
+                                                    ${selectedTheme === theme.id ? 'ring-2 ring-primary shadow-md' : 'hover:bg-border'}
                                                 `}
                                                 style={{
                                                     backgroundColor: colors.background,
@@ -371,7 +354,7 @@ const SettingsPage = () => {
                                     })}
                                 </div>
 
-                                <div className="mt-4 text-sm text-gray-500 text-center">
+                                <div className="mt-4 text-sm text-text-secondary text-center">
                                     <p>Personaliza los colores de la aplicación según tus preferencias</p>
                                 </div>
                             </div>
@@ -382,7 +365,7 @@ const SettingsPage = () => {
                     <div className="mt-6 flex justify-end space-x-4">
                         <button
                             onClick={handleResetToDefault}
-                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition"
+                            className="px-4 py-2 bg-border text-text rounded-full hover:bg-border/80 transition"
                             disabled={loading}
                         >
                             Restaurar Predeterminados

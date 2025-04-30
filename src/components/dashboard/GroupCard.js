@@ -1,11 +1,11 @@
-// src/components/dashboard/GroupCard.js - Enhanced for carousel with Theme Support
+// src/components/dashboard/GroupCard.js - Updated to use theme variables
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaUsers, FaArrowRight } from 'react-icons/fa';
 
 const GroupCard = ({ group, onNavigate }) => {
     return (
-        <div className="p-3 sm:p-4 bg-white rounded-xl shadow-sm transition duration-300 h-full flex flex-col justify-between relative z-0 mx-1">
+        <div className="p-3 sm:p-4 bg-card-bg rounded-xl shadow-sm transition duration-300 h-full flex flex-col justify-between relative z-0 mx-1 border border-border">
             <div>
                 <div className="flex items-center mb-2">
                     <div className="mr-3 p-2 rounded-full bg-primary-light">
@@ -13,7 +13,7 @@ const GroupCard = ({ group, onNavigate }) => {
                     </div>
                     <div>
                         <h3 className="font-semibold text-primary truncate">{group.name}</h3>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-text-secondary">
                             {group.members ? group.members.length : group.memberCount || 0} miembros
                         </p>
                     </div>

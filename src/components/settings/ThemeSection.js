@@ -14,10 +14,10 @@ const colorThemes = [
     {
         id: 'dark',
         name: 'Modo Oscuro',
-        primary: '#2c3e50',
+        primary: '#3B82F6',
         secondary: '#f39c12',
-        accent: '#3498db',
-        background: '#1a1a1a'
+        accent: '#60A5FA',
+        background: '#121212'
     },
     {
         id: 'green',

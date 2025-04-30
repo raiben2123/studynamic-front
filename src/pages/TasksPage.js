@@ -258,7 +258,7 @@ const TasksPage = () => {
                     )}
 
                     {/* Panel superior con estadísticas */}
-                    <div className="bg-white p-4 md:p-6 rounded-xl shadow-md mb-6 opacity-95">
+                    <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md mb-6 opacity-95 border border-border">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
                                 <FaTasks className="mr-2" /> Mis Tareas
@@ -285,19 +285,19 @@ const TasksPage = () => {
                         {/* Estadísticas en tarjetas */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             <div className="bg-primary-light p-3 rounded-lg border border-primary/20">
-                                <div className="text-sm text-gray-600">Total de tareas</div>
+                                <div className="text-sm text-text-secondary">Total de tareas</div>
                                 <div className="text-lg font-bold text-primary">{totalTasks}</div>
                             </div>
                             <div className="bg-task-finalizada-bg p-3 rounded-lg border border-task-finalizada/20">
-                                <div className="text-sm text-gray-600">Completadas</div>
+                                <div className="text-sm text-text-secondary">Completadas</div>
                                 <div className="text-lg font-bold text-task-finalizada">{completedTasksCount}</div>
                             </div>
                             <div className="bg-task-vencida-bg p-3 rounded-lg border border-task-vencida/20">
-                                <div className="text-sm text-gray-600">Pendientes</div>
+                                <div className="text-sm text-text-secondary">Pendientes</div>
                                 <div className="text-lg font-bold text-task-vencida">{totalTasks - completedTasksCount}</div>
                             </div>
                             <div className="bg-primary-light p-3 rounded-lg border border-primary/20">
-                                <div className="text-sm text-gray-600">Tasa de completado</div>
+                                <div className="text-sm text-text-secondary">Tasa de completado</div>
                                 <div className="text-lg font-bold text-primary">{completionRate}%</div>
                             </div>
                         </div>
@@ -309,7 +309,7 @@ const TasksPage = () => {
                                     onClick={() => setView('all')}
                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${view === 'all'
                                         ? 'bg-primary text-white'
-                                        : 'bg-gray-200 text-gray-800 hover:bg-primary-light'
+                                        : 'bg-input-bg text-text hover:bg-primary-light'
                                         }`}
                                 >
                                     Todas
@@ -318,7 +318,7 @@ const TasksPage = () => {
                                     onClick={() => setView('pending')}
                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${view === 'pending'
                                         ? 'bg-task-vencida text-white'
-                                        : 'bg-gray-200 text-gray-800 hover:bg-task-vencida-bg'
+                                        : 'bg-input-bg text-text hover:bg-task-vencida-bg'
                                         }`}
                                 >
                                     Pendientes
@@ -327,7 +327,7 @@ const TasksPage = () => {
                                     onClick={() => setView('completed')}
                                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${view === 'completed'
                                         ? 'bg-task-finalizada text-white'
-                                        : 'bg-gray-200 text-gray-800 hover:bg-task-finalizada-bg'
+                                        : 'bg-input-bg text-text hover:bg-task-finalizada-bg'
                                         }`}
                                 >
                                     Completadas
@@ -342,7 +342,7 @@ const TasksPage = () => {
                                 <select
                                     value={selectedSubject}
                                     onChange={(e) => setSelectedSubject(e.target.value)}
-                                    className="block w-full pl-10 pr-4 py-2 text-sm bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                    className="block w-full pl-10 pr-4 py-2 text-sm bg-input-bg text-text border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                                 >
                                     <option value="">Todas las asignaturas</option>
                                     {subjects.map((subject) => (
@@ -359,19 +359,19 @@ const TasksPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Vista pendientes */}
                         {(view === 'all' || view === 'pending') && (
-                            <div className="bg-white p-4 md:p-6 rounded-xl shadow-md opacity-95">
+                            <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md opacity-95 border border-border">
                                 <div className="flex items-center mb-4">
                                     <FaTasks className="text-task-vencida mr-2" />
-                                    <h2 className="text-xl font-semibold text-gray-800">
+                                    <h2 className="text-xl font-semibold text-text">
                                         Tareas Pendientes
-                                        <span className="ml-2 text-xs text-gray-500">({pendingTasks.length})</span>
+                                        <span className="ml-2 text-xs text-text-secondary">({pendingTasks.length})</span>
                                     </h2>
                                 </div>
 
                                 <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
                                     {pendingTasks.length === 0 ? (
-                                        <div className="text-center py-8 bg-gray-50 rounded-lg">
-                                            <p className="text-gray-500">No hay tareas pendientes</p>
+                                        <div className="text-center py-8 bg-input-bg rounded-lg">
+                                            <p className="text-text-secondary">No hay tareas pendientes</p>
                                             <button
                                                 onClick={() => {
                                                     setEditingTask(null);
@@ -401,19 +401,19 @@ const TasksPage = () => {
 
                         {/* Vista completadas */}
                         {(view === 'all' || view === 'completed') && (
-                            <div className="bg-white p-4 md:p-6 rounded-xl shadow-md opacity-95">
+                            <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md opacity-95 border border-border">
                                 <div className="flex items-center mb-4">
                                     <FaCheckCircle className="text-task-finalizada mr-2" />
-                                    <h2 className="text-xl font-semibold text-gray-800">
+                                    <h2 className="text-xl font-semibold text-text">
                                         Tareas Completadas
-                                        <span className="ml-2 text-xs text-gray-500">({completedTasks.length})</span>
+                                        <span className="ml-2 text-xs text-text-secondary">({completedTasks.length})</span>
                                     </h2>
                                 </div>
 
                                 <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
                                     {completedTasks.length === 0 ? (
-                                        <div className="text-center py-8 bg-gray-50 rounded-lg">
-                                            <p className="text-gray-500">No hay tareas completadas</p>
+                                        <div className="text-center py-8 bg-input-bg rounded-lg">
+                                            <p className="text-text-secondary">No hay tareas completadas</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
@@ -434,10 +434,10 @@ const TasksPage = () => {
 
                         {/* Gráfico resumen (visible en todas las pantallas) */}
                         {view === 'all' && subjects.length > 0 && (
-                            <div className="md:col-span-2 bg-white p-4 md:p-6 rounded-xl shadow-md mt-4 opacity-95">
+                            <div className="md:col-span-2 bg-card-bg p-4 md:p-6 rounded-xl shadow-md mt-4 opacity-95 border border-border">
                                 <div className="flex items-center mb-4">
                                     <FaChartBar className="text-primary mr-2" />
-                                    <h2 className="text-xl font-semibold text-gray-800">Resumen por Asignatura</h2>
+                                    <h2 className="text-xl font-semibold text-text">Resumen por Asignatura</h2>
                                 </div>
 
                                 <div className="space-y-4">
@@ -450,11 +450,11 @@ const TasksPage = () => {
                                         return (
                                             <div key={subject.id} className="bg-primary-light p-3 rounded-lg">
                                                 <div className="font-medium text-primary">{subject.title}</div>
-                                                <div className="flex justify-between text-sm text-gray-600 mt-1">
+                                                <div className="flex justify-between text-sm text-text-secondary mt-1">
                                                     <span>{completed}/{total} completadas</span>
                                                     <span>{percentage}%</span>
                                                 </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                                <div className="w-full bg-input-bg rounded-full h-2 mt-2">
                                                     <div
                                                         className="bg-primary h-2 rounded-full transition-all duration-300"
                                                         style={{ width: `${percentage}%` }}

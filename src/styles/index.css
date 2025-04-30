@@ -1,0 +1,13 @@
+/* 
+ * Studynamic - Archivo principal de estilos
+ * Este archivo importa todos los archivos CSS parciales
+ */
+
+/* Importar todos los archivos CSS parciales */
+@import './import-tailwind.css'; /* Directivas de Tailwind y definición de fuentes */
+@import './variables-themes.css'; /* Variables y Temas */
+@import './clases-themes.css'; /* Clases Utilitarias de Temas */
+@import './base.css'; /* Estilos Básicos y App */
+@import './responsive1.css'; /* Estilos Responsivos (Primera parte) */
+@import './responsive2.css'; /* Estilos Responsivos (Calendario y eventos) */
+@import './responsive3.css'; /* Estilos Responsivos (Misceláneos y componentes adicionales) */

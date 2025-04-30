@@ -55,6 +55,7 @@ export const register = async (username, email, password, name = '') => {
 };
 
 export const saveAuthData = async (token, userId, email, name, theme, username, password) => {
+    // Guardar en Preferences (asíncrono)
     await Preferences.set({ key: 'token', value: token });
     await Preferences.set({ key: 'userId', value: userId.toString() });
 
@@ -64,11 +65,29 @@ export const saveAuthData = async (token, userId, email, name, theme, username, 
     if (username) await Preferences.set({ key: 'username', value: username });
     await Preferences.set({ key: 'password', value: password });
 
+    // También guardar en localStorage para acceso síncrono
+    localStorage.setItem('token', token);
+    localStorage.setItem('userId', userId.toString());
+    if (email) localStorage.setItem('userEmail', email);
+    if (name) localStorage.setItem('name', name);
+    if (theme) localStorage.setItem('userTheme', theme);
+    if (username) localStorage.setItem('username', username);
+    localStorage.setItem('password', password);
 };
 
 export const getToken = async () => {
     const { value } = await Preferences.get({ key: 'token' });
     return value;
+};
+
+// Método síncrono para obtener el token (para uso en API)
+export const getTokenSync = () => {
+    return localStorage.getItem('token');
+};
+
+// Método síncrono para obtener el ID de usuario
+export const getUserIdSync = () => {
+    return localStorage.getItem('userId');
 };
 
 export const getUserId = async () => {
@@ -102,6 +121,7 @@ export const getPassword = async () => {
 };
 
 export const removeAuthData = async () => {
+    // Eliminar de Preferences
     await Preferences.remove({ key: 'token' });
     await Preferences.remove({ key: 'userId' });
     await Preferences.remove({ key: 'loginDate' });
@@ -111,8 +131,16 @@ export const removeAuthData = async () => {
     await Preferences.remove({ key: 'theme' });
     await Preferences.remove({ key: 'password' });
 
-    // Eliminar tema del localStorage
+    // Eliminar datos de localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('loginDate');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('name');
+    localStorage.removeItem('username');
     localStorage.removeItem('theme');
+    localStorage.removeItem('password');
+    localStorage.removeItem('profilePicture');
 };
 
 export const updateUserProfile = async (userData) => {
@@ -145,11 +173,20 @@ export const updateUserProfile = async (userData) => {
             throw new Error('Error al actualizar perfil');
         }
 
+        // Actualizar en Preferences
         if (userData.email) await Preferences.set({ key: 'userEmail', value: userData.email });
         if (userData.name) await Preferences.set({ key: 'name', value: userData.name });
         if (userData.theme) await Preferences.set({ key: 'theme', value: userData.theme });
         if (userData.username) await Preferences.set({ key: 'username', value: userData.username });
         if (userData.password) await Preferences.set({ key: 'password', value: userData.password });
+
+        // Actualizar también en localStorage 
+        if (userData.email) localStorage.setItem('userEmail', userData.email);
+        if (userData.name) localStorage.setItem('name', userData.name);
+        if (userData.theme) localStorage.setItem('userTheme', userData.theme);
+        if (userData.username) localStorage.setItem('username', userData.username);
+        if (userData.password) localStorage.setItem('password', userData.password);
+        
         return true;
     } catch (error) {
         console.error('Error actualizando perfil:', error);

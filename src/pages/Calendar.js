@@ -1,4 +1,4 @@
-// src/pages/Calendar.js - Con manejo de fechas corregido
+// src/pages/Calendar.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTasks } from '../api/tasks';
@@ -316,15 +316,15 @@ const CalendarPage = () => {
                         </div>
                     )}
                     {loading && (
-                        <div className="text-center mb-4">Cargando...</div>
+                        <div className="text-center mb-4 text-text">Cargando...</div>
                     )}
 
                     <div className="flex flex-col lg:flex-row gap-6">
                         {/* Panel principal con calendario grande - AUMENTADO DE ALTURA */}
-                        <div className="lg:w-3/4 bg-white rounded-xl shadow-md md:p-0 opacity-95">
+                        <div className="lg:w-3/4 bg-card-bg rounded-xl shadow-md md:p-0 opacity-95 border border-border">
                             {loading ? (
                                 <div className="flex justify-center items-center h-64">
-                                    <p className="text-gray-500">Cargando calendario...</p>
+                                    <p className="text-text-secondary">Cargando calendario...</p>
                                 </div>
                             ) : (
                                 <div className="w-full">
@@ -339,29 +339,29 @@ const CalendarPage = () => {
 
                         {/* Panel lateral con estadísticas */}
                         <div className="lg:w-1/4 space-y-4">
-                            <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
+                            <div className="bg-card-bg p-5 rounded-xl shadow-md opacity-95 border border-border">
                                 <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
                                     <FaChartBar className="mr-2" /> Resumen
                                 </h3>
 
                                 <div className="space-y-3">
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <div className="text-sm text-gray-600">Tareas pendientes</div>
+                                    <div className="bg-input-bg p-3 rounded-lg">
+                                        <div className="text-sm text-text-secondary">Tareas pendientes</div>
                                         <div className="text-2xl font-bold text-primary">{pendingTasks}</div>
                                     </div>
 
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <div className="text-sm text-gray-600">Eventos próximos</div>
+                                    <div className="bg-input-bg p-3 rounded-lg">
+                                        <div className="text-sm text-text-secondary">Eventos próximos</div>
                                         <div className="text-2xl font-bold text-primary">{upcomingEvents}</div>
                                     </div>
 
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <div className="text-sm text-gray-600">Asignaturas</div>
+                                    <div className="bg-input-bg p-3 rounded-lg">
+                                        <div className="text-sm text-text-secondary">Asignaturas</div>
                                         <div className="text-2xl font-bold text-primary">{subjects.length}</div>
                                     </div>
 
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <div className="text-sm text-gray-600">Días ocupados en {currentMonth}</div>
+                                    <div className="bg-input-bg p-3 rounded-lg">
+                                        <div className="text-sm text-text-secondary">Días ocupados en {currentMonth}</div>
                                         <div className="text-2xl font-bold text-primary">{busyDays.size}</div>
                                     </div>
                                 </div>
@@ -378,7 +378,7 @@ const CalendarPage = () => {
                             </div>
 
                             {/* Asignaturas */}
-                            <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
+                            <div className="bg-card-bg p-5 rounded-xl shadow-md opacity-95 border border-border">
                                 <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
                                     <FaBook className="mr-2" /> Mis Asignaturas
                                 </h3>
@@ -386,10 +386,10 @@ const CalendarPage = () => {
                                 {subjects.length > 0 ? (
                                     <div className="space-y-2">
                                         {subjects.slice(0, 5).map((subject) => (
-                                            <div key={subject.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                                            <div key={subject.id} className="bg-input-bg p-3 rounded-lg flex justify-between items-center">
                                                 <div>
-                                                    <div className="font-medium text-gray-800">{subject.title}</div>
-                                                    <div className="text-xs text-gray-500">
+                                                    <div className="font-medium text-text">{subject.title}</div>
+                                                    <div className="text-xs text-text-secondary">
                                                         {subject.schedules?.length || 0} {subject.schedules?.length === 1 ? 'sesión' : 'sesiones'} programadas
                                                     </div>
                                                 </div>
@@ -405,12 +405,12 @@ const CalendarPage = () => {
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-sm">No tienes asignaturas registradas</p>
+                                    <p className="text-text-secondary text-sm">No tienes asignaturas registradas</p>
                                 )}
                             </div>
 
                             {/* Recordatorios recientes */}
-                            <div className="bg-white p-5 rounded-xl shadow-md opacity-95">
+                            <div className="bg-card-bg p-5 rounded-xl shadow-md opacity-95 border border-border">
                                 <h3 className="text-lg font-medium text-primary mb-4 flex items-center">
                                     <FaCalendarAlt className="mr-2" /> Próximos
                                 </h3>
@@ -453,8 +453,8 @@ const CalendarPage = () => {
                                                         item.type === 'schedule' ? 'border-primary' : 'border-event'
                                                     }`}
                                                 >
-                                                    <div className="font-medium text-gray-800 text-sm">{item.title}</div>
-                                                    <div className="text-xs text-gray-500">
+                                                    <div className="font-medium text-text text-sm">{item.title}</div>
+                                                    <div className="text-xs text-text-secondary">
                                                         {dateString}
                                                         {item.type === 'schedule' && ' (Clase)'}
                                                     </div>
@@ -462,7 +462,7 @@ const CalendarPage = () => {
                                             );
                                         })
                                 ) : (
-                                    <p className="text-gray-500 text-sm">No hay eventos próximos</p>
+                                    <p className="text-text-secondary text-sm">No hay eventos próximos</p>
                                 )}
                             </div>
                         </div>
@@ -473,7 +473,7 @@ const CalendarPage = () => {
             {/* Modal para seleccionar tipo de evento a añadir */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
+                    <div className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4 border border-border">
                         <h3 className="text-lg font-semibold mb-4 text-primary">
                             Añadir en {selectedDate ? new Date(selectedDate).toLocaleDateString('es-ES') : 'el calendario'}
                         </h3>
@@ -498,7 +498,7 @@ const CalendarPage = () => {
                             </button>
                             <button
                                 onClick={() => setIsAddModalOpen(false)}
-                                className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
+                                className="w-full bg-input-bg text-text px-4 py-2 rounded-lg hover:bg-border"
                             >
                                 Cancelar
                             </button>
