@@ -1,5 +1,5 @@
 // src/pages/Dashboard.js - Actualizado para usar las variables de los temas correctamente
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
@@ -17,6 +17,7 @@ import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import Carousel from '../components/Carousel';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { FaPlus } from 'react-icons/fa';
 
 const Dashboard = () => {
@@ -352,55 +353,63 @@ const Dashboard = () => {
     };
 
     // Filtramos las tareas pendientes y las ordenamos por fecha
-    const pendingTasks = tasks
-        .filter((task) => task.status !== 'Finalizada')
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-
+    const pendingTasks = useMemo(() => {
+        if (!Array.isArray(tasks)) return [];
+        return tasks
+            .filter(task => task && task.status !== 'Finalizada')
+            .sort((a, b) => new Date(a?.dueDate || 0) - new Date(b?.dueDate || 0));
+    }, [tasks]);
     // Ordenamos los eventos próximos por fecha
-    const upcomingEvents = events
-        .filter(event => {
-            // Si el evento no tiene fecha, lo incluimos por defecto
-            if (!event.startDateTime) return true;
+    const upcomingEvents = useMemo(() => {
+        if (!Array.isArray(events)) return [];
+        return events
+            .filter(event => {
+                if (!event) return false;
+                if (!event.startDateTime) return true;
 
-            // Comparamos la fecha del evento con la fecha actual
-            const eventDate = new Date(event.startDateTime);
-            const currentDate = new Date();
+                const eventDate = new Date(event.startDateTime);
+                if (isNaN(eventDate.getTime())) return false;
 
-            // Extraer solo la fecha (sin hora) para comparar días
-            const eventDateOnly = new Date(
-                eventDate.getFullYear(),
-                eventDate.getMonth(),
-                eventDate.getDate()
-            );
+                const currentDate = new Date();
+                const eventDateOnly = new Date(
+                    eventDate.getFullYear(),
+                    eventDate.getMonth(),
+                    eventDate.getDate()
+                );
+                const currentDateOnly = new Date(
+                    currentDate.getFullYear(),
+                    currentDate.getMonth(),
+                    currentDate.getDate()
+                );
 
-            const currentDateOnly = new Date(
-                currentDate.getFullYear(),
-                currentDate.getMonth(),
-                currentDate.getDate()
-            );
-
-            // Solo incluimos eventos cuya fecha sea igual o posterior a la actual
-            return eventDateOnly >= currentDateOnly;
-        })
-        .sort((a, b) => {
-            // Ordenamos cronológicamente
-            return new Date(a.startDateTime) - new Date(b.startDateTime);
-        });
+                return eventDateOnly >= currentDateOnly;
+            })
+            .sort((a, b) => new Date(a?.startDateTime || 0) - new Date(b?.startDateTime || 0));
+    }, [events]);
 
     const sortedGroups = groups.sort((a, b) => b.memberCount - a.memberCount);
 
     // Prepare items for carousel
     const createCarouselItems = (items, Component, onUpdate, onDelete, props = {}) => {
-        return items.map((item, index) => (
-            <div key={item.id || index} className="min-w-full">
-                <Component
-                    {...props}
-                    {...{ [Component.name.toLowerCase().replace('card', '')]: item }}
-                    onUpdate={onUpdate}
-                    onDelete={onDelete}
-                />
-            </div>
-        ));
+        if (!Array.isArray(items)) {
+            console.warn('Items no es un array:', items);
+            return [];
+        }
+
+        return items
+            .filter(item => item && typeof item === 'object') // Validación adicional
+            .map((item, index) => (
+                <div key={item?.id || index} className="min-w-full">
+                    {item ? (
+                        <Component
+                            {...props}
+                            {...{ [Component.name.toLowerCase().replace('card', '')]: item }}
+                            onUpdate={onUpdate}
+                            onDelete={onDelete}
+                        />
+                    ) : null}
+                </div>
+            ));
     };
 
     const taskItems = createCarouselItems(
@@ -487,7 +496,9 @@ const Dashboard = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
                                     <h2 className="text-xl font-semibold text-primary">Tareas Pendientes</h2>
-                                    <span className="ml-2 text-xs text-text-secondary">({pendingTasks.length})</span>
+                                    <span className="ml-2 text-xs text-text-secondary">
+                                        ({Array.isArray(pendingTasks) ? pendingTasks.length : 0})
+                                    </span>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -501,13 +512,15 @@ const Dashboard = () => {
                                 </button>
                             </div>
 
-                            {pendingTasks.length === 0 ? (
+                            {!Array.isArray(pendingTasks) || pendingTasks.length === 0 ? (
                                 <p className="text-text-secondary">No hay tareas pendientes.</p>
                             ) : (
                                 <div className="max-h-[300px] relative">
-                                    <Carousel autoSlide={false} autoSlideInterval={5000} showArrows={true} showDots={true}>
-                                        {taskItems}
-                                    </Carousel>
+                                    <ErrorBoundary>
+                                        <Carousel autoSlide={false} autoSlideInterval={5000} showArrows={true} showDots={true}>
+                                            {taskItems}
+                                        </Carousel>
+                                    </ErrorBoundary>
                                 </div>
                             )}
 
