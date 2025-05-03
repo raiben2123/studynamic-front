@@ -20,8 +20,9 @@ const ResourcesPage = () => {
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [editingFileId, setEditingFileId] = useState(null);
     const [editingFileName, setEditingFileName] = useState('');
-    const [ setEditFile ] = useState(null);
+    const [setEditFile] = useState(null);
     const { token, userId } = useAuth();
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
         const fetchSubjectsAndResources = async () => {
@@ -36,7 +37,7 @@ const ResourcesPage = () => {
                     try {
                         // Verificar y crear carpetas estándar si no existen
                         const { folderMap } = await createStandardFoldersForSubject(subject.id, userId);
-                        
+
                         // Inicializar estructura de recursos por carpeta
                         const subjectResources = {
                             Apuntes: [],
@@ -64,7 +65,7 @@ const ResourcesPage = () => {
                                 }
                             }
                         }
-                        
+
                         initialResources[subject.id] = subjectResources;
                     } catch (err) {
                         console.error(`Error fetching folders/files for subject ${subject.id}:`, err);
@@ -108,7 +109,7 @@ const ResourcesPage = () => {
         try {
             // Eliminar el archivo del backend
             await deleteFile(fileId);
-            
+
             // Actualizar el estado local
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
@@ -155,7 +156,7 @@ const ResourcesPage = () => {
                 if (!resources[subjectId]?.folderIds || !resources[subjectId].folderIds[folder]) {
                     // Si no tenemos las carpetas, intentamos crearlas
                     const result = await createStandardFoldersForSubject(subjectId, userId);
-                    
+
                     // Actualizar el estado con los IDs de carpeta
                     setResources(prev => ({
                         ...prev,
@@ -164,7 +165,7 @@ const ResourcesPage = () => {
                             folderIds: result.folderMap
                         }
                     }));
-                    
+
                     if (!result.folderMap[folder]) {
                         throw new Error(`No se pudo encontrar la carpeta para ${folder}`);
                     }
@@ -175,7 +176,7 @@ const ResourcesPage = () => {
 
                 // Subimos el archivo directamente a la carpeta correcta
                 const uploadedFile = await uploadFile(file, 0, userId, subjectId, null, null, folderId);
-                
+
                 // Actualizamos la UI
                 setResources(prevResources => {
                     const updatedResources = { ...prevResources };
@@ -207,7 +208,7 @@ const ResourcesPage = () => {
         try {
             // Obtener URL de descarga
             const downloadUrl = downloadFile(fileId);
-            
+
             // Crear enlace de descarga
             const link = document.createElement('a');
             link.href = downloadUrl;
@@ -215,7 +216,7 @@ const ResourcesPage = () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
-            
+
             showNotification(`Descargando ${fileName}`, 'success');
         } catch (err) {
             console.error('Error en handleDownloadFile:', err.message);
@@ -262,9 +263,9 @@ const ResourcesPage = () => {
                 setResources(prevResources => {
                     const updatedResources = { ...prevResources };
                     if (!updatedResources[currentSubject]) {
-                        updatedResources[currentSubject] = { 
-                            Apuntes: [], 
-                            Exámenes: [], 
+                        updatedResources[currentSubject] = {
+                            Apuntes: [],
+                            Exámenes: [],
                             Trabajos: [],
                             folderIds: { ...prevResources[currentSubject]?.folderIds || {} }
                         };
@@ -286,30 +287,30 @@ const ResourcesPage = () => {
     };
 
 
-    
+
     // Función para iniciar la edición del nombre de un archivo
     const handleStartEditFileName = (file) => {
         setEditingFileId(file.id);
         setEditingFileName(file.name);
     };
-    
+
     // Función para guardar el nuevo nombre del archivo
     const handleSaveFileName = async (subjectId, folder, fileId) => {
         if (!editingFileName.trim()) {
             showNotification('El nombre del archivo no puede estar vacío', 'error');
             return;
         }
-        
+
         try {
             // Llamar a la API para renombrar el archivo
             await renameFile(fileId, editingFileName);
-            
+
             // Actualizar el estado local
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
                 if (updatedResources[subjectId] && updatedResources[subjectId][folder]) {
                     const fileIndex = updatedResources[subjectId][folder].findIndex(file => file.id === fileId);
-                    
+
                     if (fileIndex !== -1) {
                         updatedResources[subjectId][folder][fileIndex] = {
                             ...updatedResources[subjectId][folder][fileIndex],
@@ -319,9 +320,9 @@ const ResourcesPage = () => {
                 }
                 return updatedResources;
             });
-            
+
             showNotification('Nombre del archivo actualizado con éxito', 'success');
-            
+
             // Limpiar el estado de edición
             setEditingFileId(null);
             setEditingFileName('');
@@ -330,29 +331,29 @@ const ResourcesPage = () => {
             showNotification(`Error al renombrar el archivo: ${err.message}`, 'error');
         }
     };
-    
+
     // Función para cancelar la edición del nombre del archivo
     const handleCancelEditFileName = () => {
         setEditingFileId(null);
         setEditingFileName('');
     };
-    
+
     // Función para abrir el editor de archivos
     const handleEditFile = (file) => {
         setEditFile(file);
     };
-    
+
     // Función para cerrar el editor
     const handleCloseEditor = () => {
         setEditFile(null);
     };
-    
+
     // Función para guardar cambios en un archivo
     const handleSaveFile = async (fileId, updatedFile) => {
         try {
             // Actualizar el archivo en el backend
             const updatedFileData = await updateFileContent(fileId, updatedFile);
-            
+
             // Buscar el archivo en los recursos y actualizarlo
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
@@ -362,13 +363,13 @@ const ResourcesPage = () => {
                     Object.keys(updatedResources[subjectId]).forEach(folder => {
                         // Ignorar la propiedad folderIds
                         if (folder === 'folderIds') return;
-                        
+
                         // Si la carpeta tiene archivos, buscar el archivo por su ID
                         if (Array.isArray(updatedResources[subjectId][folder])) {
                             const fileIndex = updatedResources[subjectId][folder].findIndex(
                                 file => file.id === fileId
                             );
-                            
+
                             // Si se encuentra el archivo, actualizarlo
                             if (fileIndex !== -1) {
                                 updatedResources[subjectId][folder][fileIndex] = {
@@ -377,8 +378,8 @@ const ResourcesPage = () => {
                                     name: updatedFileData.fileName || updatedFile.name,
                                     url: updatedFileData.fileUrl || updatedResources[subjectId][folder][fileIndex].url,
                                     date: updatedFileData.uploadDate || new Date().toISOString(),
-                                    size: updatedFileData.fileSize 
-                                        ? `${(updatedFileData.fileSize / 1024).toFixed(2)} KB` 
+                                    size: updatedFileData.fileSize
+                                        ? `${(updatedFileData.fileSize / 1024).toFixed(2)} KB`
                                         : updatedResources[subjectId][folder][fileIndex].size
                                 };
                             }
@@ -387,7 +388,7 @@ const ResourcesPage = () => {
                 });
                 return updatedResources;
             });
-            
+
             showNotification('Archivo actualizado con éxito', 'success');
             return updatedFileData;
         } catch (err) {
@@ -407,7 +408,7 @@ const ResourcesPage = () => {
                 filteredResources.folderIds = resources[selectedSubject].folderIds;
                 return;
             }
-            
+
             // Procesar solo arrays (carpetas con archivos)
             if (Array.isArray(resources[selectedSubject][folder])) {
                 const filteredFiles = resources[selectedSubject][folder].filter(
@@ -446,6 +447,7 @@ const ResourcesPage = () => {
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
+                    paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
                 <div className="relative z-10">
@@ -538,97 +540,97 @@ const ResourcesPage = () => {
                                                 // Filtrar propiedades que no son carpetas de archivos
                                                 .filter(key => key !== 'folderIds')
                                                 .map(folder => (
-                                                <div key={folder} className="border border-border rounded-lg overflow-hidden">
-                                                    <div className="flex justify-between items-center bg-primary-light p-3 border-b">
-                                                        <h3 className="font-medium text-primary flex items-center">
-                                                            <FaBook className="mr-2 text-primary" />
-                                                            {folder}
-                                                        </h3>
-                                                        <label className="flex items-center bg-primary text-white px-3 py-1 rounded-full hover:bg-accent cursor-pointer text-sm">
-                                                            <FaPlus className="mr-1" /> Subir
-                                                            <input
-                                                            type="file"
-                                                            accept=".pdf,.doc,.docx,.txt,.md,.csv,.json,.html,.css,.js,.jpg,.jpeg,.png,.gif,.mp3,.wav,.mp4"
-                                                            onChange={e => handleFileUpload(selectedSubject, folder, e)}
-                                                            className="hidden"
-                                                            />
-                                                        </label>
-                                                    </div>
-                                                    {filteredSubjectResources[folder].length === 0 ? (
-                                                        <div className="p-4 text-center text-text-secondary">
-                                                            No hay recursos en esta carpeta
+                                                    <div key={folder} className="border border-border rounded-lg overflow-hidden">
+                                                        <div className="flex justify-between items-center bg-primary-light p-3 border-b">
+                                                            <h3 className="font-medium text-primary flex items-center">
+                                                                <FaBook className="mr-2 text-primary" />
+                                                                {folder}
+                                                            </h3>
+                                                            <label className="flex items-center bg-primary text-white px-3 py-1 rounded-full hover:bg-accent cursor-pointer text-sm">
+                                                                <FaPlus className="mr-1" /> Subir
+                                                                <input
+                                                                    type="file"
+                                                                    accept=".pdf,.doc,.docx,.txt,.md,.csv,.json,.html,.css,.js,.jpg,.jpeg,.png,.gif,.mp3,.wav,.mp4"
+                                                                    onChange={e => handleFileUpload(selectedSubject, folder, e)}
+                                                                    className="hidden"
+                                                                />
+                                                            </label>
                                                         </div>
-                                                    ) : (
-                                                        <div className="divide-y divide-border">
-                                                            {filteredSubjectResources[folder].map((resource, index) => (
-                                                                <div
-                                                                    key={index}
-                                                                    className="flex flex-col sm:flex-row belo-justify-between items-start sm:items-center p-3 hover:bg-primary-light"
-                                                                >
-                                                                    <div className="flex-1 pr-4">
-                                                                        {editingFileId === resource.id ? (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={editingFileName}
-                                                                            onChange={(e) => setEditingFileName(e.target.value)}
-                                                                            className="w-full p-1 text-sm border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-                                                                            autoFocus
-                                                                        />
-                                                                        <button 
-                                                                            onClick={() => handleSaveFileName(selectedSubject, folder, resource.id)}
-                                                                            className="p-1 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada/10"
-                                                                            title="Guardar"
-                                                                        >
-                                                                            <FaCheck size={14} />
-                                                                        </button>
-                                                                        <button 
-                                                                            onClick={handleCancelEditFileName}
-                                                                            className="p-1 text-task-vencida hover:text-task-vencida/80 rounded-full hover:bg-task-vencida/10"
-                                                                            title="Cancelar"
-                                                                        >
-                                                                            <FaTimes size={14} />
-                                                                        </button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="font-medium text-text">{resource.name}</div>
-                                                                )}
-                                                                        <div className="flex flex-col sm:flex-row text-xs text-text-secondary mt-1">
-                                                                            <span className="mr-4">
-                                                                                {resource.date ? formatDate(resource.date) : 'Sin fecha'}
-                                                                            </span>
-                                                                            <span>{resource.size || '--'}</span>
+                                                        {filteredSubjectResources[folder].length === 0 ? (
+                                                            <div className="p-4 text-center text-text-secondary">
+                                                                No hay recursos en esta carpeta
+                                                            </div>
+                                                        ) : (
+                                                            <div className="divide-y divide-border">
+                                                                {filteredSubjectResources[folder].map((resource, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        className="flex flex-col sm:flex-row belo-justify-between items-start sm:items-center p-3 hover:bg-primary-light"
+                                                                    >
+                                                                        <div className="flex-1 pr-4">
+                                                                            {editingFileId === resource.id ? (
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        value={editingFileName}
+                                                                                        onChange={(e) => setEditingFileName(e.target.value)}
+                                                                                        className="w-full p-1 text-sm border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                                                                        autoFocus
+                                                                                    />
+                                                                                    <button
+                                                                                        onClick={() => handleSaveFileName(selectedSubject, folder, resource.id)}
+                                                                                        className="p-1 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada/10"
+                                                                                        title="Guardar"
+                                                                                    >
+                                                                                        <FaCheck size={14} />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={handleCancelEditFileName}
+                                                                                        className="p-1 text-task-vencida hover:text-task-vencida/80 rounded-full hover:bg-task-vencida/10"
+                                                                                        title="Cancelar"
+                                                                                    >
+                                                                                        <FaTimes size={14} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="font-medium text-text">{resource.name}</div>
+                                                                            )}
+                                                                            <div className="flex flex-col sm:flex-row text-xs text-text-secondary mt-1">
+                                                                                <span className="mr-4">
+                                                                                    {resource.date ? formatDate(resource.date) : 'Sin fecha'}
+                                                                                </span>
+                                                                                <span>{resource.size || '--'}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex space-x-2 mt-2 sm:mt-0">
+                                                                            <button
+                                                                                onClick={() => handleStartEditFileName(resource)}
+                                                                                className="p-2 text-primary hover:text-primary/80 rounded-full hover:bg-primary-light"
+                                                                                title="Editar nombre"
+                                                                            >
+                                                                                <FaPencilAlt />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleDownloadFile(resource.id, resource.name)}
+                                                                                className="p-2 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada"
+                                                                                title="Descargar"
+                                                                            >
+                                                                                <FaDownload />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleFileDelete(selectedSubject, folder, resource.id)}
+                                                                                className="p-2 text-task-vencida hover:text-task-vencida/80 rounded-full hover:bg-task-vencida"
+                                                                                title="Eliminar"
+                                                                            >
+                                                                                <FaTrash />
+                                                                            </button>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="flex space-x-2 mt-2 sm:mt-0">
-                                                                        <button
-                                                                        onClick={() => handleStartEditFileName(resource)}
-                                                                        className="p-2 text-primary hover:text-primary/80 rounded-full hover:bg-primary-light"
-                                                                        title="Editar nombre"
-                                                                        >
-                                                                        <FaPencilAlt />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleDownloadFile(resource.id, resource.name)}
-                                                                            className="p-2 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada"
-                                                                            title="Descargar"
-                                                                        >
-                                                                            <FaDownload />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleFileDelete(selectedSubject, folder, resource.id)}
-                                                                            className="p-2 text-task-vencida hover:text-task-vencida/80 rounded-full hover:bg-task-vencida"
-                                                                            title="Eliminar"
-                                                                        >
-                                                                            <FaTrash />
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
                                         </div>
                                     )}
                                 </div>

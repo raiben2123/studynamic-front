@@ -430,7 +430,7 @@ const Dashboard = () => {
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8" // Modificado el padding-bottom
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
@@ -438,6 +438,7 @@ const Dashboard = () => {
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
+                    paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
                 <div className="relative z-10">

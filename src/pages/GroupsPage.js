@@ -253,6 +253,7 @@ const GroupsPage = () => {
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
+                    paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
                 <div className="relative z-10">

@@ -78,23 +78,28 @@ const Sidebar = () => {
         <>
             {/* Mobile Bottom Tab Bar */}
             {isMobile && (
-                <div className="w-full h-14 bg-primary-sidebar fixed bottom-0 left-0 z-50 flex items-center justify-around py-1 shadow-lg">
-                    <button onClick={toggleDrawer} className="p-2 text-white flex flex-col items-center justify-center">
+                <div className="w-full h-16 bg-primary-sidebar fixed bottom-0 left-0 z-[9999] flex items-center justify-around py-2 shadow-lg">
+                    <button
+                        onClick={toggleDrawer}
+                        className="p-2 text-white flex flex-col items-center justify-center"
+                        style={{ minWidth: '48px' }} // Asegura un ancho mínimo para los botones
+                    >
                         <FaBars className="text-xl" />
-                        <span className="text-xs">Menú</span>
+                        <span className="text-xs mt-1">Menú</span>
                     </button>
 
-                    {/* Botones de navegación rápida */}
-                    {menuItems.slice(0, 4).map(item => (
+                    {/* Botones de navegación rápida - limitados a 3 para mejor espaciado */}
+                    {menuItems.slice(0, 3).map(item => (
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
                             className="p-1 flex flex-col items-center justify-center"
+                            style={{ minWidth: '48px' }}
                         >
                             <div className={`p-1 ${getActiveStyle(item.path) ? 'text-white' : 'text-white/70'}`}>
                                 {item.icon}
                             </div>
-                            <span className={`text-[10px] ${getActiveStyle(item.path) ? 'text-white' : 'text-white/70'}`}>
+                            <span className={`text-[10px] mt-1 ${getActiveStyle(item.path) ? 'text-white' : 'text-white/70'}`}>
                                 {item.name}
                             </span>
                         </button>
@@ -159,8 +164,8 @@ const Sidebar = () => {
                                                 setIsExpanded(false);
                                             }}
                                             className={`w-full flex items-center space-x-3 p-3 rounded-lg ${getActiveStyle(item.path)
-                                                    ? 'bg-primary text-white'
-                                                    : 'hover:bg-border text-text'
+                                                ? 'bg-primary text-white'
+                                                : 'hover:bg-border text-text'
                                                 }`}
                                         >
                                             <div>{item.icon}</div>
@@ -200,7 +205,7 @@ const Sidebar = () => {
                                 />
                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-task-finalizada rounded-full border-2 border-white"></div>
                             </div>
-                            
+
                             <div className="mt-2 invisible group-hover:visible w-40 text-center">
                                 <p className="font-medium text-white truncate">{user?.name || user?.username}</p>
                                 <p className="text-xs text-white/80 truncate">{user?.email || ''}</p>
@@ -213,11 +218,10 @@ const Sidebar = () => {
                             <button
                                 key={item.path}
                                 onClick={() => navigate(item.path)}
-                                className={`group relative w-12 h-12 rounded-full group-hover:w-48 group-hover:rounded-lg group-hover:justify-start group-hover:pl-4 transition-all duration-300 flex items-center justify-center ${
-                                    getActiveStyle(item.path)
+                                className={`group relative w-12 h-12 rounded-full group-hover:w-48 group-hover:rounded-lg group-hover:justify-start group-hover:pl-4 transition-all duration-300 flex items-center justify-center ${getActiveStyle(item.path)
                                         ? 'bg-white text-primary'
                                         : 'text-white hover:bg-white/20'
-                                }`}
+                                    }`}
                                 title={item.name}
                             >
                                 <div className="text-xl">{item.icon}</div>

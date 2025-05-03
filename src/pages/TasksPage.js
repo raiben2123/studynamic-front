@@ -21,6 +21,7 @@ const TasksPage = () => {
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState('all'); // 'all', 'pending', 'completed'
     const { token, userId } = useAuth();
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     // Estado para el modal de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
@@ -243,6 +244,7 @@ const TasksPage = () => {
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
+                    paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
                 <div className="relative z-10">

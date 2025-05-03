@@ -671,6 +671,7 @@ const GroupDetailsPage = () => {
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
+                    paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
                 {/* Toast notification */}

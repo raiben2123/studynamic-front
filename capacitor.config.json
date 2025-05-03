@@ -3,6 +3,12 @@
   "appName": "Studynamic",
   "webDir": "build",
   "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "cleartext": true,
+    "allowNavigation": ["studynamic.org"]
+  },
   "plugins": {
     "Preferences": {
       "secure": true
@@ -14,11 +20,18 @@
     },
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "StatusBar": {
+      "style": "dark",
+      "backgroundColor": "#467BAA",
+      "overlaysWebView": true
     }
   },
-  "server": {
-    "androidScheme": "https",
-    "iosScheme": "https"
+  "android": {
+    "allowMixedContent": true,
+    "navigationBarColor": "#467BAA",
+    "navigationBarVisible": false,
+    "hideNavigationBar": true
   },
   "splashScreen": {
     "launchShowDuration": 2000,

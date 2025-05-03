@@ -12,6 +12,7 @@ const SettingsPage = () => {
     const [savedMessage, setSavedMessage] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     // Estados para formulario
     const [name, setName] = useState('');
@@ -21,13 +22,13 @@ const SettingsPage = () => {
     const [selectedTheme, setSelectedTheme] = useState('default');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    
+
     // Estado para el modal de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         type: 'warning',
         confirmText: 'Confirmar'
     });
@@ -145,11 +146,11 @@ const SettingsPage = () => {
             message: '¿Estás seguro de que quieres restaurar la configuración predeterminada?',
             onConfirm: () => {
                 setSelectedTheme('default');
-                
+
                 updateProfile({
                     theme: 'default'
                 });
-                
+
                 setSavedMessage('Configuración restaurada a valores predeterminados');
                 setTimeout(() => setSavedMessage(''), 3000);
             },
@@ -223,6 +224,7 @@ const SettingsPage = () => {
                     backgroundRepeat: 'no-repeat',
                     opacity: 1,
                     position: 'relative',
+                    paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
                 <div className="relative z-10">
@@ -251,7 +253,7 @@ const SettingsPage = () => {
                                 <h2 className="text-xl font-semibold mb-4">Perfil de Usuario</h2>
 
                                 <div className="mb-6 flex flex-col items-center">
-                                    <ProfilePictureUploader 
+                                    <ProfilePictureUploader
                                         onSuccess={(imageUrl) => {
                                             setPreviewImage(imageUrl);
                                             setSavedMessage('Foto de perfil actualizada correctamente');
@@ -380,7 +382,7 @@ const SettingsPage = () => {
                     </div>
                 </div>
             </div>
-            
+
             {/* Modal de Confirmación */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
