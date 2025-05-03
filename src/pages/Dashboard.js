@@ -1,5 +1,5 @@
 // src/pages/Dashboard.js - Actualizado para usar las variables de los temas correctamente
-import React, { useState, useEffect, useCallback, useMemo  } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
@@ -396,44 +396,54 @@ const Dashboard = () => {
             return [];
         }
 
+        // Determinar el tipo de componente
+        let itemType = '';
+        if (Component === TaskCard) itemType = 'task';
+        else if (Component === EventCard) itemType = 'event';
+        else if (Component === GroupCard) itemType = 'group';
+
         return items
-            .filter(item => item && typeof item === 'object') // Validación adicional
+            .filter(item => item && typeof item === 'object')
             .map((item, index) => (
                 <div key={item?.id || index} className="min-w-full">
-                    {item ? (
-                        <Component
-                            {...props}
-                            {...{ [Component.name.toLowerCase().replace('card', '')]: item }}
-                            onUpdate={onUpdate}
-                            onDelete={onDelete}
-                        />
-                    ) : null}
+                    <Component
+                        {...props}
+                        {...{ [itemType]: item }}
+                        onUpdate={onUpdate}
+                        onDelete={onDelete}
+                    />
                 </div>
             ));
     };
 
-    const taskItems = createCarouselItems(
-        pendingTasks.slice(0, 5),
-        TaskCard,
-        handleEditTask,
-        handleTaskDelete,
-        { subjects: subjects.map(s => s.title) }
-    );
+    const taskItems = useMemo(() => {
+        return createCarouselItems(
+            pendingTasks.slice(0, 5),
+            TaskCard,
+            handleEditTask,
+            handleTaskDelete,
+            { subjects: subjects.map(s => s.title) }
+        );
+    }, [pendingTasks, subjects, handleEditTask, handleTaskDelete]);
 
-    const eventItems = createCarouselItems(
-        upcomingEvents.slice(0, 5),
-        EventCard,
-        handleEditEvent,
-        handleEventDelete
-    );
+    const eventItems = useMemo(() => {
+        return createCarouselItems(
+            upcomingEvents.slice(0, 5),
+            EventCard,
+            handleEditEvent,
+            handleEventDelete
+        );
+    }, [upcomingEvents, handleEditEvent, handleEventDelete]);
 
-    const groupItems = createCarouselItems(
-        sortedGroups.slice(0, 5),
-        GroupCard,
-        null,
-        null,
-        { onNavigate: handleNavigateToGroup }
-    );
+    const groupItems = useMemo(() => {
+        return createCarouselItems(
+            sortedGroups.slice(0, 5),
+            GroupCard,
+            null,
+            null,
+            { onNavigate: handleNavigateToGroup }
+        );
+    }, [sortedGroups, handleNavigateToGroup]);
 
     return (
         <div className="flex flex-col min-h-screen md:flex-row">
