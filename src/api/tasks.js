@@ -244,10 +244,12 @@ export const getGroupTasks = async (groupId) => {
     return getTasks(true, groupId);
 };
 
-export default {
+const tasksService = {
     getTasks,
     addTask,
     updateTask,
     deleteTask,
     getGroupTasks
 };
+
+export default tasksService;

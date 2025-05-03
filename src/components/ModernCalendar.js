@@ -1,6 +1,6 @@
 // src/components/ModernCalendar.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO, getDay, addDays } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, isSameMonth, isSameDay, isToday, parseISO, getDay, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight, FaCalendarDay, FaPlus, FaTasks, FaCalendarAlt, FaVideo, FaLink } from 'react-icons/fa';
 
@@ -57,11 +57,7 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
             return eventDate && isSameDay(eventDate, day);
         });
     };
-
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(currentDate);
-    const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
+    
     // Esta función ahora devuelve correctamente los días en orden de lunes a domingo
     const getWeekDays = () => ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 

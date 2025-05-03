@@ -1,5 +1,5 @@
 // src/api/subjectSchedules.js
-import { getToken, getUserId } from './auth';
+import { getToken } from './auth';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -231,10 +231,12 @@ export const deleteSchedule = async (scheduleId) => {
     }
 };
 
-export default {
+const schedulesService = {
     getSchedules,
     getSchedulesBySubject,
     addSchedule,
     updateSchedule,
     deleteSchedule
 };
+
+export default schedulesService;

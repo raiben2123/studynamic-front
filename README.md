@@ -1,70 +1,128 @@
-# Getting Started with Create React App
+# Studynamic - Aplicación de organización de estudios
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Studynamic es una aplicación para la organización de estudios que permite a los estudiantes gestionar tareas, horarios, recursos y grupos de estudio.
 
-## Available Scripts
+## Características principales
 
-In the project directory, you can run:
+- Gestión de tareas y recordatorios
+- Calendario de eventos académicos
+- Organización de recursos por asignaturas
+- Grupos de estudio colaborativos
+- Tema claro/oscuro
+- Funciona en dispositivos móviles y web
 
-### `npm start`
+## Requisitos de desarrollo
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js 18 o superior
+- npm 9 o superior
+- Android Studio (para desarrollo Android)
+- Xcode (para desarrollo iOS, solo en macOS)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Configuración del proyecto
 
-### `npm test`
+1. Clona el repositorio:
+```bash
+git clone https://github.com/tu-usuario/studynamic-front.git
+cd studynamic-front
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Instala las dependencias:
+```bash
+npm install
+```
 
-### `npm run build`
+3. Inicia el servidor de desarrollo:
+```bash
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Desarrollo con Capacitor
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Studynamic utiliza Capacitor para generar aplicaciones nativas para Android e iOS.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Scripts disponibles
 
-### `npm run eject`
+- `npm start` - Inicia el servidor de desarrollo web
+- `npm run build` - Genera la versión de producción para web
+- `npm run build:mobile` - Genera la versión de producción y sincroniza con los proyectos nativos
+- `npm run cap:init` - Inicializa Capacitor en el proyecto
+- `npm run cap:add:android` - Añade la plataforma Android
+- `npm run cap:add:ios` - Añade la plataforma iOS
+- `npm run cap:sync` - Sincroniza el código web con los proyectos nativos
+- `npm run cap:open:android` - Abre el proyecto en Android Studio
+- `npm run cap:open:ios` - Abre el proyecto en Xcode
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Configuración inicial para desarrollo móvil
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Para configurar el proyecto para desarrollo móvil por primera vez:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Genera la versión de producción:
+```bash
+npm run build
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. Inicializa Capacitor (si aún no se ha hecho):
+```bash
+npm run cap:init
+```
 
-## Learn More
+3. Añade las plataformas que necesites:
+```bash
+npm run cap:add:android
+npm run cap:add:ios  # Solo en macOS
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+4. Sincroniza los proyectos nativos:
+```bash
+npm run cap:sync
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+5. Abre el proyecto en el IDE nativo:
+```bash
+npm run cap:open:android
+# o
+npm run cap:open:ios  # Solo en macOS
+```
 
-### Code Splitting
+### Desarrollo continuo
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Durante el desarrollo, después de realizar cambios en el código:
 
-### Analyzing the Bundle Size
+1. Genera la versión de producción y sincroniza:
+```bash
+npm run build:mobile
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+2. Abre el IDE nativo y ejecuta la aplicación:
+```bash
+npm run cap:open:android
+# o
+npm run cap:open:ios
+```
 
-### Making a Progressive Web App
+## Estructura del proyecto
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```
+studynamic-front/
+├── android/             # Proyecto Android generado por Capacitor
+├── public/              # Archivos públicos
+├── src/                 # Código fuente
+│   ├── api/             # Servicios de API
+│   ├── assets/          # Imágenes y recursos estáticos
+│   ├── components/      # Componentes React reutilizables
+│   ├── context/         # Contextos de React (AuthContext, etc.)
+│   ├── pages/           # Páginas/rutas principales
+│   ├── services/        # Servicios de la aplicación
+│   ├── styles/          # Archivos CSS y de estilos
+│   └── utils/           # Utilidades y funciones auxiliares
+├── capacitor.config.json  # Configuración de Capacitor
+└── package.json         # Dependencias y scripts
+```
 
-### Advanced Configuration
+## Temas y estilos
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Studynamic utiliza Tailwind CSS para los estilos, con soporte para temas claro y oscuro.
 
-### Deployment
+## Licencia
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+[MIT](LICENSE)

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getSubjectsByUser } from '../api/subjects';
-import { uploadFile, downloadFile, getFilesBySubject, getFilesByFolder, deleteFile, renameFile, updateFileContent } from '../api/files';
-import { getFoldersBySubject, createStandardFoldersForSubject, addFileToFolder, createFolder } from '../api/folders';
+import { uploadFile, downloadFile, getFilesByFolder, deleteFile, renameFile, updateFileContent } from '../api/files';
+import { createStandardFoldersForSubject, createFolder } from '../api/folders';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
-import { FaBook, FaFolderPlus, FaPlus, FaDownload, FaEye, FaTrash, FaSearch, FaEdit, FaCheck, FaTimes, FaPencilAlt } from 'react-icons/fa';
+import { FaBook, FaPlus, FaDownload, FaTrash, FaSearch, FaCheck, FaTimes, FaPencilAlt } from 'react-icons/fa';
 
 const ResourcesPage = () => {
     const [subjects, setSubjects] = useState([]);
@@ -18,10 +18,9 @@ const ResourcesPage = () => {
     const [notification, setNotification] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSubject, setSelectedSubject] = useState(null);
-    const [editingFile, setEditingFile] = useState(null);
-    const [newFileName, setNewFileName] = useState('');
-    const [previewFile, setPreviewFile] = useState(null);
-    const [editFile, setEditFile] = useState(null);
+    const [editingFileId, setEditingFileId] = useState(null);
+    const [editingFileName, setEditingFileName] = useState('');
+    const [ setEditFile ] = useState(null);
     const { token, userId } = useAuth();
 
     useEffect(() => {
@@ -36,7 +35,7 @@ const ResourcesPage = () => {
                 for (const subject of subjectsData) {
                     try {
                         // Verificar y crear carpetas estándar si no existen
-                        const { folders, folderMap } = await createStandardFoldersForSubject(subject.id, userId);
+                        const { folderMap } = await createStandardFoldersForSubject(subject.id, userId);
                         
                         // Inicializar estructura de recursos por carpeta
                         const subjectResources = {
@@ -286,13 +285,56 @@ const ResourcesPage = () => {
             });
     };
 
-    const handleDeleteResource = (subjectId, folder, resourceIndex) => {
-        setResources(prevResources => {
-            const updatedResources = { ...prevResources };
-            updatedResources[subjectId][folder].splice(resourceIndex, 1);
-            return updatedResources;
-        });
-        showNotification('Recurso eliminado con éxito', 'success');
+
+    
+    // Función para iniciar la edición del nombre de un archivo
+    const handleStartEditFileName = (file) => {
+        setEditingFileId(file.id);
+        setEditingFileName(file.name);
+    };
+    
+    // Función para guardar el nuevo nombre del archivo
+    const handleSaveFileName = async (subjectId, folder, fileId) => {
+        if (!editingFileName.trim()) {
+            showNotification('El nombre del archivo no puede estar vacío', 'error');
+            return;
+        }
+        
+        try {
+            // Llamar a la API para renombrar el archivo
+            await renameFile(fileId, editingFileName);
+            
+            // Actualizar el estado local
+            setResources(prevResources => {
+                const updatedResources = { ...prevResources };
+                if (updatedResources[subjectId] && updatedResources[subjectId][folder]) {
+                    const fileIndex = updatedResources[subjectId][folder].findIndex(file => file.id === fileId);
+                    
+                    if (fileIndex !== -1) {
+                        updatedResources[subjectId][folder][fileIndex] = {
+                            ...updatedResources[subjectId][folder][fileIndex],
+                            name: editingFileName
+                        };
+                    }
+                }
+                return updatedResources;
+            });
+            
+            showNotification('Nombre del archivo actualizado con éxito', 'success');
+            
+            // Limpiar el estado de edición
+            setEditingFileId(null);
+            setEditingFileName('');
+        } catch (err) {
+            console.error('Error al renombrar el archivo:', err);
+            showNotification(`Error al renombrar el archivo: ${err.message}`, 'error');
+        }
+    };
+    
+    // Función para cancelar la edición del nombre del archivo
+    const handleCancelEditFileName = () => {
+        setEditingFileId(null);
+        setEditingFileName('');
     };
     
     // Función para abrir el editor de archivos
@@ -524,7 +566,33 @@ const ResourcesPage = () => {
                                                                     className="flex flex-col sm:flex-row belo-justify-between items-start sm:items-center p-3 hover:bg-primary-light"
                                                                 >
                                                                     <div className="flex-1 pr-4">
-                                                                        <div className="font-medium text-text">{resource.name}</div>
+                                                                        {editingFileId === resource.id ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={editingFileName}
+                                                                            onChange={(e) => setEditingFileName(e.target.value)}
+                                                                            className="w-full p-1 text-sm border border-border bg-input-bg text-text rounded focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                                                                            autoFocus
+                                                                        />
+                                                                        <button 
+                                                                            onClick={() => handleSaveFileName(selectedSubject, folder, resource.id)}
+                                                                            className="p-1 text-task-finalizada hover:text-task-finalizada/80 rounded-full hover:bg-task-finalizada/10"
+                                                                            title="Guardar"
+                                                                        >
+                                                                            <FaCheck size={14} />
+                                                                        </button>
+                                                                        <button 
+                                                                            onClick={handleCancelEditFileName}
+                                                                            className="p-1 text-task-vencida hover:text-task-vencida/80 rounded-full hover:bg-task-vencida/10"
+                                                                            title="Cancelar"
+                                                                        >
+                                                                            <FaTimes size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="font-medium text-text">{resource.name}</div>
+                                                                )}
                                                                         <div className="flex flex-col sm:flex-row text-xs text-text-secondary mt-1">
                                                                             <span className="mr-4">
                                                                                 {resource.date ? formatDate(resource.date) : 'Sin fecha'}
@@ -534,11 +602,11 @@ const ResourcesPage = () => {
                                                                     </div>
                                                                     <div className="flex space-x-2 mt-2 sm:mt-0">
                                                                         <button
-                                                                            onClick={() => handleEditFile(resource)}
-                                                                            className="p-2 text-primary hover:text-primary/80 rounded-full hover:bg-primary-light"
-                                                                            title="Editar"
+                                                                        onClick={() => handleStartEditFileName(resource)}
+                                                                        className="p-2 text-primary hover:text-primary/80 rounded-full hover:bg-primary-light"
+                                                                        title="Editar nombre"
                                                                         >
-                                                                            <FaPencilAlt />
+                                                                        <FaPencilAlt />
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleDownloadFile(resource.id, resource.name)}

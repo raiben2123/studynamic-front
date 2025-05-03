@@ -313,7 +313,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                     {errors.marks && (
                         <p className="text-error text-xs mt-1">{errors.marks}</p>
                     )}
-                    <div>
+                    {/* <div>
                         <label className="block text-sm font-medium mb-1 text-text">Notificación</label>
                         <input
                             type="date"
@@ -325,7 +325,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                         {errors.notificationDate && (
                             <p className="text-error text-xs mt-1">{errors.notificationDate}</p>
                         )}
-                    </div>
+                    </div> */}
                     <div className="flex justify-end space-x-2 pt-3">
                         <button
                             type="button"

@@ -272,7 +272,7 @@ export const moveFileToFolder = async (fileId, newFolderId) => {
   }
 };
 
-export default {
+const folderService = {
   getUserFolders,
   getFoldersBySubject,
   getGroupFolders,
@@ -283,3 +283,5 @@ export default {
   addFileToFolder,
   moveFileToFolder
 };
+
+export default folderService;

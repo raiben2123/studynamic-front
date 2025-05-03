@@ -55,10 +55,12 @@ const FilesTab = ({ groupId }) => {
     loadFolders();
   }, [groupId]);
   
-  // Nota: Esta función no se usa automáticamente, pero se mantiene para uso futuro opcional
+  // Nota: Esta función está disponible para uso futuro si es necesario
+  // pero no se utiliza actualmente
+  /*
   const createStandardFolders = async () => {
     try {
-      // Definición de tipos de carpeta
+      // Definición de tipos de carpeta (no se usa actualmente)
       const folderTypes = {
         'General': 0,   // FolderType.General = 0
         'Apuntes': 1,   // FolderType.Notes = 1
@@ -97,6 +99,7 @@ const FilesTab = ({ groupId }) => {
       throw error;
     }
   };
+  */
   
   // Cargar archivos cuando cambia la carpeta activa
   useEffect(() => {

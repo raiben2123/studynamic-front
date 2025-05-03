@@ -198,7 +198,7 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
                     </div>
                 </div>
                 {errors.marks && <p className="text-red-500 text-xs mt-1">{errors.marks}</p>}
-                <div>
+                {/* <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
                     <input
                         type="date"
@@ -211,7 +211,7 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
                     {errors.notificationDate && (
                         <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
                     )}
-                </div>
+                </div> */}
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"

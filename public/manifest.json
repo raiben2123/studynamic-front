@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Studynamic",
+  "name": "Studynamic - Organización de estudios",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#467BAA",
+  "background_color": "#F8FAFC",
+  "orientation": "portrait",
+  "categories": ["education", "productivity"]
 }

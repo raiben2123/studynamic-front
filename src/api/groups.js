@@ -652,7 +652,7 @@ export const leaveGroup = async (groupId, memberId = null) => {
     }
 };
 
-export default {
+const groupsService = {
     getGroupsByUserId,
     getGroupById,
     getGroupMembers,
@@ -667,3 +667,5 @@ export default {
     generateInviteLink,
     joinGroupWithLink
 };
+
+export default groupsService;

@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext'; // Importamos useAuth
 import AuthHeader from '../components/auth/AuthHeader';
 import LoginForm from '../components/auth/LoginForm';
 import SignUpForm from '../components/auth/SignUpForm';
-import { register } from '../api/auth';
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);

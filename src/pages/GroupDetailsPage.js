@@ -22,17 +22,12 @@ import {
     FaBook,
     FaCog,
     FaPlus,
-    FaUserCircle,
-    FaFileUpload,
     FaEllipsisV,
     FaCrown,
-    FaDownload,
     FaVideo,
     FaUserMinus,
-    FaEye,
     FaLink,
     FaLock,
-    FaExclamationTriangle,
     FaFile
 } from 'react-icons/fa';
 import { formatDateForDisplay } from '../utils/dateUtils';
@@ -47,7 +42,7 @@ import { getSubjects } from '../api/subjects';
 const GroupDetailsPage = () => {
     const { groupId } = useParams();
     const navigate = useNavigate();
-    const { token, userId, user, userTheme } = useAuth();
+    const { token, userId } = useAuth();
 
     // Estado
     const [group, setGroup] = useState(null);
@@ -73,7 +68,6 @@ const GroupDetailsPage = () => {
     const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
-    const [newFolderName, setNewFolderName] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingTask, setEditingTask] = useState(null);

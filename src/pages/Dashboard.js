@@ -17,7 +17,7 @@ import EventModal from '../components/modals/EventModal';
 import SubjectModal from '../components/modals/SubjectModal';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import Carousel from '../components/Carousel';
-import { FaChartPie, FaCalendarAlt, FaBook, FaUsers, FaTasks, FaPlus } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 
 const Dashboard = () => {
     const [tasks, setTasks] = useState([]);

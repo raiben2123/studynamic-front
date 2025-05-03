@@ -186,10 +186,12 @@ export const getGroupEvents = async (groupId) => {
     return getEvents(true, groupId);
 };
 
-export default {
+const eventsService = {
     getEvents,
     addEvent,
     updateEvent,
     deleteEvent,
     getGroupEvents
 };
+
+export default eventsService;

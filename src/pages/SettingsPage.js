@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
-import defaultProfile1 from '../assets/default_profile_picture1.png';
 import { applyTheme, colorThemes } from '../services/themeService';
 import ConfirmationModal from '../components/modals/ConfirmationModal';
 import ProfilePictureUploader from '../components/profile/ProfilePictureUploader';

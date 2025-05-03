@@ -187,7 +187,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             <option value="Finalizada">Finalizada</option>
                         </select>
                     </div>
-                    <div>
+                    {/* <div>
                         <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
                         <input
                             type="date"
@@ -201,7 +201,7 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                         {errors.notificationDate && (
                             <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
                         )}
-                    </div>
+                    </div> */}
                     <div className="flex justify-end space-x-2">
                         <button
                             type="button"

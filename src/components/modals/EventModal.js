@@ -156,7 +156,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                         rows="3"
                     />
                 </div>
-                <div>
+                {/* <div>
                     <label className="block text-sm font-medium mb-1 text-text">Notificación</label>
                     <input
                         type="datetime-local"
@@ -165,7 +165,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                         onChange={handleChange}
                         className="w-full p-2 bg-input-bg text-text border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-                </div>
+                </div> */}
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"

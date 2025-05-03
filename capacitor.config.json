@@ -1,0 +1,33 @@
+{
+  "appId": "io.studynamic.app",
+  "appName": "Studynamic",
+  "webDir": "build",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "Preferences": {
+      "secure": true
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#467BAA",
+      "sound": "beep.wav"
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  },
+  "splashScreen": {
+    "launchShowDuration": 2000,
+    "launchAutoHide": true,
+    "backgroundColor": "#F8FAFC",
+    "androidScaleType": "CENTER_CROP",
+    "showSpinner": true,
+    "spinnerColor": "#467BAA",
+    "androidSpinnerStyle": "large",
+    "iosSpinnerStyle": "large"
+  }
+}

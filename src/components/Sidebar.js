@@ -21,7 +21,7 @@ const Sidebar = () => {
     const location = useLocation();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isExpanded, setIsExpanded] = useState(false);
-    const { logout, user, userTheme } = useAuth();
+    const { logout, user } = useAuth();
     const userProfilePic = user?.profilePicture || null;
 
     useEffect(() => {

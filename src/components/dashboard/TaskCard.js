@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { formatDateForDisplay } from '../../utils/dateUtils';
 import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck, FaPaperclip } from 'react-icons/fa';
 import { dayjs } from '../../dayjs'
 import utc from 'dayjs/plugin/utc'

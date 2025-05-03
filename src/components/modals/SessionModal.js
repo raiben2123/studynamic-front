@@ -110,7 +110,7 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
                         className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                 </div>
-                <div>
+                {/* <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700">Notificación (opcional)</label>
                     <input
                         type="datetime-local"
@@ -118,7 +118,7 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
                         onChange={(e) => setNotificationDate(e.target.value)}
                         className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
-                </div>
+                </div> */}
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"

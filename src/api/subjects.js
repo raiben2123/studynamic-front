@@ -1,6 +1,6 @@
 // src/api/subjects.js
 import { getToken, getUserId } from './auth';
-import { addSchedule, updateSchedule, deleteSchedule } from './subjectSchedules';
+import { addSchedule } from './subjectSchedules';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -239,10 +239,12 @@ export const deleteSubject = async (subjectId) => {
     }
 };
 
-export default {
+const subjectsService = {
     getSubjects,
     getSubjectsByUser,
     addSubject,
     updateSubject,
     deleteSubject
 };
+
+export default subjectsService;
