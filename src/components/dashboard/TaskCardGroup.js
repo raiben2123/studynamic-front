@@ -1,12 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react-icons/fa';
-import { dayjs } from '../../dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import dayjs from '../../utils/dayjsConfig';
 
 const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
     console.log('Task recibido:', task); // Log para depuración
@@ -29,11 +24,9 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
         }
 
         try {
-            const dueDate = dayjs.utc(task.dueDate).tz('Europe/Madrid');
-            const today = dayjs().tz('Europe/Madrid').startOf('day');
-
-            const diffDays = dueDate.startOf('day').diff(today, 'day');
-            return diffDays;
+            const dueDate = dayjs(task.dueDate).startOf('day');
+            const today = dayjs().startOf('day');
+            return dueDate.diff(today, 'day');
         } catch (error) {
             console.error('Error calculando días restantes:', error);
             return null;
@@ -72,6 +65,17 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
         return `${daysRemaining} días restantes`;
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Sin fecha';
+        try {
+            const date = dayjs(dateString);
+            return date.format('DD/MM/YYYY');
+        } catch (error) {
+            console.error('Error formateando fecha:', error);
+            return 'Error en fecha';
+        }
+    };
+
     return (
         <div className="bg-card-bg rounded-xl p-4 shadow-sm transition-all duration-300 relative z-0 mx-1 border border-border">
             <div className="flex items-start mb-2">
@@ -101,9 +105,7 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
                 <div className="flex items-center">
                     <div className="mr-2 w-2 h-2 rounded-full bg-primary"></div>
                     <span className="text-xs text-text-secondary">
-                        {task.dueDate
-                            ? dayjs.utc(task.dueDate).tz('Europe/Madrid').format('DD/MM/YYYY')
-                            : 'Sin fecha'}
+                        {formatDate(task.dueDate)}
                     </span>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded-full ${getTaskStatusColor()}`}>

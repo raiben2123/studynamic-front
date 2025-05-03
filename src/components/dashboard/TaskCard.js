@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck, FaPaperclip } from 'react-icons/fa';
-import { dayjs } from '../../dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone';
+import dayjs from '../../utils/dayjsConfig';
 import { getFilesByTask } from '../../api/files';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
 
 const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     const [hasAttachments, setHasAttachments] = useState(false);
@@ -40,7 +34,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     }
 
     const handleDelete = () => {
-        // En lugar de window.confirm, directamente llamamos a onDelete que ahora mostrará el modal de confirmación
         onDelete(task.id);
     };
 
@@ -52,17 +45,14 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
         }
 
         try {
-            const dueDate = dayjs.utc(task.dueDate).tz('Europe/Madrid');
-            const today = dayjs().tz('Europe/Madrid').startOf('day');
-
-            const diffDays = dueDate.startOf('day').diff(today, 'day');
-            return diffDays;
+            const dueDate = dayjs(task.dueDate).startOf('day');
+            const today = dayjs().startOf('day');
+            return dueDate.diff(today, 'day');
         } catch (error) {
             console.error('Error calculando días restantes:', error);
             return null;
         }
     };
-
 
     const daysRemaining = calculateDaysRemaining();
 
@@ -127,7 +117,7 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
                     <div className="mr-2 w-2 h-2 rounded-full bg-primary"></div>
                     <span className="text-xs text-text-secondary">
                         {task.dueDate
-                            ? dayjs.utc(task.dueDate).tz('Europe/Madrid').format('DD/MM/YYYY')
+                            ? dayjs(task.dueDate).format('DD/MM/YYYY')
                             : 'Sin fecha'}
                     </span>
                 </div>
@@ -163,7 +153,7 @@ TaskCard.propTypes = {
     task: PropTypes.shape({
         id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
         title: PropTypes.string,
-        dueDate: PropTypes.string, // Opcional
+        dueDate: PropTypes.string,
         status: PropTypes.string,
         importance: PropTypes.string,
         markObtained: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

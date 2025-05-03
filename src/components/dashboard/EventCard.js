@@ -1,17 +1,9 @@
-// src/components/dashboard/EventCard.js - Modified to use theme variables
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
-import { dayjs } from '../../dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
+import dayjs from '../../utils/dayjsConfig';
 
 const EventCard = ({ event, onUpdate, onDelete }) => {
-
     // Verifica si event existe
     if (!event) {
         console.warn('Event es undefined o null');
@@ -21,7 +13,7 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     const formatDateTime = (dateString) => {
         if (!dateString) return 'Sin fecha';
         try {
-            const date = dayjs.utc(dateString).tz('Europe/Madrid'); // ajusta a tu zona horaria
+            const date = dayjs(dateString);
             const isMobile = window.innerWidth < 768;
             return isMobile
                 ? date.format('DD/MM HH:mm')
@@ -35,8 +27,8 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     const getTimeUntil = () => {
         if (!event.startDateTime) return 'Sin fecha';
         try {
-            const eventDate = dayjs.utc(event.startDateTime).tz('Europe/Madrid');
-            const now = dayjs().tz('Europe/Madrid');
+            const eventDate = dayjs(event.startDateTime);
+            const now = dayjs();
     
             if (eventDate.isBefore(now)) return 'Evento pasado';
     
@@ -73,7 +65,6 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
     };
 
     const handleDelete = () => {
-        // Llamamos directamente a onDelete sin window.confirm
         onDelete(event.id);
     };
 
@@ -136,7 +127,7 @@ EventCard.propTypes = {
     event: PropTypes.shape({
         id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
         title: PropTypes.string,
-        startDateTime: PropTypes.string, // Opcional
+        startDateTime: PropTypes.string,
         endDateTime: PropTypes.string,
         description: PropTypes.string,
         notification: PropTypes.string,
