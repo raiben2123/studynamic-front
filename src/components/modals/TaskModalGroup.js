@@ -1,4 +1,3 @@
-// src/components/modals/TaskModalGroup.js - Con corrección para limpiar el formulario al cerrar
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { extractDateFromIso } from '../../utils/dateUtils';
@@ -18,7 +17,6 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
     const [errors, setErrors] = useState({});
     const isMobile = window.innerWidth < 768;
 
-    // Función para reiniciar el formulario
     const resetForm = () => {
         setFormData({
             id: '',
@@ -33,11 +31,9 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
         setErrors({});
     };
 
-    // Este efecto se ejecuta cuando cambia task o isOpen
     useEffect(() => {
         if (isOpen) {
             if (task) {
-                // Normalizamos las fechas para asegurarnos de que estén en formato YYYY-MM-DD
                 const normalizedDueDate = extractDateFromIso(task.dueDate);
                 const normalizedNotificationDate = extractDateFromIso(task.notificationDate);
 
@@ -52,15 +48,12 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
                     notificationDate: normalizedNotificationDate,
                 });
             } else {
-                // Si no hay tarea, reiniciamos el formulario
                 resetForm();
             }
         }
     }, [task, isOpen]);
 
-    // Función para manejar el cierre del modal
     const handleClose = () => {
-        // Reiniciar el formulario explícitamente al cerrar
         resetForm();
         onClose();
     };
@@ -99,8 +92,6 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
         }
 
         onSave(formData);
-        // No reseteamos el formulario aquí porque onSave puede fallar,
-        // y en ese caso queremos mantener los datos para corregirlos
     };
 
     const handleChange = (e) => {
@@ -114,7 +105,7 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
     return (
         <Modal
             isOpen={isOpen}
-            onClose={handleClose} // Usamos handleClose en vez de onClose
+            onClose={handleClose}
             title={task ? 'Editar Tarea' : 'Nueva Tarea'}
             size={isMobile ? 'md' : 'lg'}
         >
@@ -198,24 +189,11 @@ const TaskModalGroup = ({ isOpen, onClose, onSave, task }) => {
                     </div>
                 </div>
                 {errors.marks && <p className="text-red-500 text-xs mt-1">{errors.marks}</p>}
-                {/* <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
-                    <input
-                        type="date"
-                        name="notificationDate"
-                        value={formData.notificationDate}
-                        onChange={handleChange}
-                        className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.notificationDate ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                    />
-                    {errors.notificationDate && (
-                        <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
-                    )}
-                </div> */}
+
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"
-                        onClick={handleClose} // Usamos handleClose en vez de onClose
+                        onClick={handleClose}
                         className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
                     >
                         Cancelar

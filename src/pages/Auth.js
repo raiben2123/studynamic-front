@@ -1,8 +1,7 @@
-// src/pages/Auth.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext'; // Importamos useAuth
+import { useAuth } from '../context/AuthContext';
 import AuthHeader from '../components/auth/AuthHeader';
 import LoginForm from '../components/auth/LoginForm';
 import SignUpForm from '../components/auth/SignUpForm';
@@ -13,24 +12,19 @@ const Auth = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login, register } = useAuth(); // Usamos el login del contexto
+    const { login, register } = useAuth();
     const navigate = useNavigate();
 
-    // Actualización de la función handleLogin en Auth.js
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         const success = await login(username, password);
         if (success) {
-            // Verificar si hay una redirección pendiente después de iniciar sesión
             const redirectPath = localStorage.getItem('redirectAfterLogin');
             if (redirectPath) {
-                // Limpiar la redirección pendiente
                 localStorage.removeItem('redirectAfterLogin');
-                // Redirigir a la URL guardada
                 navigate(redirectPath);
             } else {
-                // Comportamiento normal - ir al dashboard
                 navigate('/home');
             }
         } else {
@@ -43,15 +37,11 @@ const Auth = () => {
         setError('');
         const success = await register(username, email, password);
         if (success) {
-            // Verificar si hay una redirección pendiente después de registrarse
             const redirectPath = localStorage.getItem('redirectAfterLogin');
             if (redirectPath) {
-                // Limpiar la redirección pendiente
                 localStorage.removeItem('redirectAfterLogin');
-                // Redirigir a la URL guardada
                 navigate(redirectPath);
             } else {
-                // Comportamiento normal - ir al dashboard
                 navigate('/home');
             }
         } else {

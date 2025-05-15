@@ -1,13 +1,10 @@
-// src/api/subjectSchedules.js
 import { getToken } from './auth';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
-// Convertir TimeSpan de C# a formato de hora legible
 const formatTimeSpan = (timeSpan) => {
     if (!timeSpan) return '';
     
-    // Si es un string (HH:mm:ss), lo convertimos a HH:mm
     if (typeof timeSpan === 'string') {
         if (timeSpan.includes(':')) {
             const parts = timeSpan.split(':');
@@ -16,7 +13,6 @@ const formatTimeSpan = (timeSpan) => {
         return timeSpan;
     }
     
-    // Si es un objeto TimeSpan de .NET
     if (typeof timeSpan === 'object') {
         const hours = String(timeSpan.hours || 0).padStart(2, '0');
         const minutes = String(timeSpan.minutes || 0).padStart(2, '0');
@@ -26,20 +22,16 @@ const formatTimeSpan = (timeSpan) => {
     return '';
 };
 
-// Convertir formato de hora HH:MM a HH:MM:SS para el API
 const formatTimeForAPI = (timeString) => {
     if (!timeString) return null;
     
-    // Si ya tiene segundos (HH:MM:SS), lo devolvemos tal cual
     if (timeString.split(':').length === 3) {
         return timeString;
     }
     
-    // Si solo tiene horas y minutos (HH:MM), añadimos los segundos
     return `${timeString}:00`;
 };
 
-// Mapear la respuesta del API a nuestro formato
 const mapScheduleFromDTO = (dto) => ({
     id: dto.id,
     subjectId: dto.subjectId,
@@ -51,7 +43,6 @@ const mapScheduleFromDTO = (dto) => ({
     weekType: dto.weekType
 });
 
-// Obtener todos los horarios
 export const getSchedules = async () => {
     const token = await getToken();
     
@@ -82,7 +73,6 @@ export const getSchedules = async () => {
     }
 };
 
-// Obtener horarios por asignatura
 export const getSchedulesBySubject = async (subjectId) => {
     const token = await getToken();
     
@@ -113,7 +103,6 @@ export const getSchedulesBySubject = async (subjectId) => {
     }
 };
 
-// Añadir un nuevo horario
 export const addSchedule = async (schedule) => {
     const token = await getToken();
     
@@ -122,11 +111,10 @@ export const addSchedule = async (schedule) => {
     }
 
     try {
-        // Preparar los datos para enviar al API
         const scheduleDTO = {
             subjectId: parseInt(schedule.subjectId, 10),
             dayOfWeek: parseInt(schedule.dayOfWeek, 10),
-            startTime: formatTimeForAPI(schedule.startTime), // Usar formato HH:MM:SS
+            startTime: formatTimeForAPI(schedule.startTime),
             durationMinutes: parseInt(schedule.durationMinutes, 10),
             weekType: parseInt(schedule.weekType, 10)
         };
@@ -153,7 +141,6 @@ export const addSchedule = async (schedule) => {
     }
 };
 
-// Actualizar un horario existente
 export const updateSchedule = async (scheduleId, schedule) => {
     const token = await getToken();
     
@@ -162,12 +149,11 @@ export const updateSchedule = async (scheduleId, schedule) => {
     }
 
     try {
-        // Preparar los datos para enviar al API
         const scheduleDTO = {
             id: parseInt(scheduleId, 10),
             subjectId: parseInt(schedule.subjectId, 10),
             dayOfWeek: parseInt(schedule.dayOfWeek, 10),
-            startTime: formatTimeForAPI(schedule.startTime), // Usar formato HH:MM:SS
+            startTime: formatTimeForAPI(schedule.startTime),
             durationMinutes: parseInt(schedule.durationMinutes, 10),
             weekType: parseInt(schedule.weekType, 10)
         };
@@ -186,7 +172,6 @@ export const updateSchedule = async (scheduleId, schedule) => {
             throw new Error(`Error al actualizar el horario: ${errorText || response.statusText}`);
         }
 
-        // Si el servidor devuelve No Content (204)
         if (response.status === 204) {
             return {
                 id: scheduleId,
@@ -202,7 +187,6 @@ export const updateSchedule = async (scheduleId, schedule) => {
     }
 };
 
-// Eliminar un horario
 export const deleteSchedule = async (scheduleId) => {
     const token = await getToken();
     

@@ -1,4 +1,3 @@
-// src/components/modals/EventModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
@@ -14,7 +13,6 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
     const [errors, setErrors] = useState({});
     const isMobile = window.innerWidth < 768;
 
-    // Función para reiniciar el formulario
     const resetForm = () => {
         setFormData({
             title: '',
@@ -26,7 +24,6 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
         setErrors({});
     };
 
-    // Este efecto se ejecuta cuando cambia event, defaultDate o isOpen
     useEffect(() => {
         if (isOpen) {
             if (event) {
@@ -51,9 +48,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
         }
     }, [event, defaultDate, isOpen]);
 
-    // Función para manejar el cierre del modal
     const handleClose = () => {
-        // Reiniciar el formulario explícitamente al cerrar
         resetForm();
         onClose();
     };
@@ -79,7 +74,6 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
             return;
         }
         onSave(formData);
-        // No reseteamos aquí porque onSave puede fallar
     };
 
     const handleChange = (e) => {
@@ -93,7 +87,7 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={handleClose} // Usamos handleClose en vez de onClose
+            onClose={handleClose}
             title={event ? 'Editar Evento' : 'Nuevo Evento'}
             size={isMobile ? 'md' : 'lg'}
         >
@@ -156,20 +150,10 @@ const EventModal = ({ isOpen, onClose, onSave, event, defaultDate }) => {
                         rows="3"
                     />
                 </div>
-                {/* <div>
-                    <label className="block text-sm font-medium mb-1 text-text">Notificación</label>
-                    <input
-                        type="datetime-local"
-                        name="notification"
-                        value={formData.notification}
-                        onChange={handleChange}
-                        className="w-full p-2 bg-input-bg text-text border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div> */}
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"
-                        onClick={handleClose} // Usamos handleClose también aquí
+                        onClick={handleClose}
                         className="px-3 py-2 bg-input-bg text-text rounded-lg hover:bg-border transition"
                     >
                         Cancelar

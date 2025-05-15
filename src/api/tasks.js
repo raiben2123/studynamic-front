@@ -1,4 +1,3 @@
-// src/api/tasks.js
 import { getToken, getUserId } from './auth';
 import { prepareDateForApi, extractDateFromIso } from '../utils/dateUtils';
 
@@ -16,7 +15,6 @@ const STATUS_MAP = {
 };
 
 const mapTaskFromDTO = (dto) => {
-    // Aseguramos que las fechas estén en formato YYYY-MM-DD
     const dueDate = dto.dueDate ? extractDateFromIso(dto.dueDate) : '';
     const notificationDate = dto.notification ? extractDateFromIso(dto.notification) : '';
     
@@ -31,19 +29,13 @@ const mapTaskFromDTO = (dto) => {
         subject: dto.subjectTitle,
         subjectId: dto.subjectId,
         notificationDate: notificationDate,
-        groupId: dto.groupId, // Añadimos el groupId para poder filtrar tareas de grupos
+        groupId: dto.groupId,
         groupName: dto.groupName,
         userId: dto.userId,
         username: dto.username
     };
 };
 
-/**
- * Obtiene las tareas según el contexto (usuario o grupo)
- * @param {boolean} isGroup - Indica si se deben obtener las tareas de un grupo
- * @param {number} groupId - ID del grupo (solo si isGroup es true)
- * @returns {Promise<Array>} Lista de tareas
- */
 export const getTasks = async (isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -52,7 +44,6 @@ export const getTasks = async (isGroup = false, groupId = null) => {
         throw new Error('No autenticado');
     }
 
-    // Determinamos la URL a utilizar
     let url;
     if (isGroup && groupId) {
         url = `${BASE_URL}/usertasks/group/${groupId}`;
@@ -76,13 +67,6 @@ export const getTasks = async (isGroup = false, groupId = null) => {
     return Array.isArray(tasksData) ? tasksData.map(mapTaskFromDTO) : [mapTaskFromDTO(tasksData)];
 };
 
-/**
- * Añade una nueva tarea
- * @param {Object} task - Datos de la tarea
- * @param {boolean} isGroup - Indica si es una tarea de grupo
- * @param {number} groupId - ID del grupo (solo si isGroup es true)
- * @returns {Promise<Object>} Tarea añadida
- */
 export const addTask = async (task, isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -91,7 +75,6 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
         throw new Error('No autenticado');
     }
 
-    // Preparar las fechas para enviar a la API
     const dueDateForApi = prepareDateForApi(task.dueDate);
     const notificationDateForApi = task.notificationDate ? prepareDateForApi(task.notificationDate) : null;
 
@@ -127,14 +110,6 @@ export const addTask = async (task, isGroup = false, groupId = null) => {
     return mapTaskFromDTO(addedTask);
 };
 
-/**
- * Actualiza una tarea existente
- * @param {number} taskId - ID de la tarea a actualizar
- * @param {Object} task - Nuevos datos de la tarea
- * @param {boolean} isGroup - Indica si es una tarea de grupo
- * @param {number} groupId - ID del grupo (solo si isGroup es true)
- * @returns {Promise<Object>} Tarea actualizada
- */
 export const updateTask = async (taskId, task, isGroup = false, groupId = null) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -143,7 +118,6 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
         throw new Error('No autenticado');
     }
 
-    // Preparar las fechas para enviar a la API
     const dueDateForApi = prepareDateForApi(task.dueDate);
     const notificationDateForApi = task.notificationDate ? prepareDateForApi(task.notificationDate) : null;
 
@@ -185,7 +159,6 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
     }
 
     if (response.status === 204) {
-        // Cuando el servidor no devuelve contenido (204), construimos la respuesta
         return mapTaskFromDTO({
             id: taskDTO.id,
             title: taskDTO.title,
@@ -206,11 +179,6 @@ export const updateTask = async (taskId, task, isGroup = false, groupId = null) 
     return mapTaskFromDTO(updatedTask);
 };
 
-/**
- * Elimina una tarea
- * @param {number} taskId - ID de la tarea a eliminar
- * @returns {Promise<boolean>} Resultado de la operación
- */
 export const deleteTask = async (taskId) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -235,11 +203,6 @@ export const deleteTask = async (taskId) => {
     return true;
 };
 
-/**
- * Obtiene las tareas de un grupo específico
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Array>} Lista de tareas del grupo
- */
 export const getGroupTasks = async (groupId) => {
     return getTasks(true, groupId);
 };

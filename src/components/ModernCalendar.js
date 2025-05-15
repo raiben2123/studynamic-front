@@ -1,4 +1,3 @@
-// src/components/ModernCalendar.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import { format, addMonths, subMonths, startOfMonth, isSameMonth, isSameDay, isToday, parseISO, getDay, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -11,12 +10,10 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [showEventsList, setShowEventsList] = useState(false);
 
-    // Detectar cambios en el tamaño de la pantalla
     useEffect(() => {
         const handleResize = () => {
             const newIsMobile = window.innerWidth < 768;
             setIsMobile(newIsMobile);
-            // Si cambia de móvil a desktop, resetear la vista de eventos
             if (!newIsMobile && showEventsList) {
                 setShowEventsList(false);
             }
@@ -58,29 +55,22 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
         });
     };
     
-    // Esta función ahora devuelve correctamente los días en orden de lunes a domingo
     const getWeekDays = () => ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-    // Esta función ajusta el índice para que coincida con el día correcto
     const adjustDayOfWeek = (day) => {
-        // En JavaScript, getDay() devuelve 0 para domingo, 1 para lunes...
-        // Necesitamos convertirlo a nuestro formato donde 0 es lunes, 1 es martes...
-        const jsDay = getDay(day); // 0 = domingo, 1 = lunes, ..., 6 = sábado
-        return jsDay === 0 ? 6 : jsDay - 1; // Convertir a 0 = lunes, ..., 6 = domingo
+        const jsDay = getDay(day);
+        return jsDay === 0 ? 6 : jsDay - 1;
     };
 
-    // Función para obtener los días organizados por semanas, comenzando el lunes
     const getCalendarDays = () => {
         const firstDayOfMonth = startOfMonth(currentDate);
         const firstDayOfCalendar = addDays(firstDayOfMonth, -adjustDayOfWeek(firstDayOfMonth));
         
-        // Crear un array de 42 días (6 semanas) a partir del primer día del calendario
         const calendarDays = [];
         for (let i = 0; i < 42; i++) {
             calendarDays.push(addDays(firstDayOfCalendar, i));
         }
         
-        // Organizamos los días en semanas
         const weeks = [];
         for (let i = 0; i < 6; i++) {
             weeks.push(calendarDays.slice(i * 7, (i + 1) * 7));
@@ -108,7 +98,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
 
         const handleDayClick = () => {
             setSelectedDay(day);
-            // En móvil, al seleccionar un día, mostramos automáticamente sus eventos
             if (isMobile) {
                 setShowEventsList(true);
             }
@@ -124,7 +113,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
         );
     };
 
-    // Renderizar los eventos del día seleccionado
     const renderDayEvents = () => {
         if (dayEvents.length === 0) {
             return (
@@ -214,7 +202,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
         );
     };
 
-    // Helper para formatear hora
     const formatTime = (dateString) => {
         if (!dateString) return '';
         try {
@@ -225,14 +212,11 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
         }
     };
 
-    // Vista específica para móvil
     if (isMobile) {
         return (
             <div className="bg-card-bg rounded-xl shadow-sm overflow-hidden h-full flex flex-col border border-border">
-                {/* Si estamos en la vista de eventos, mostramos un calendario simplificado con la lista de eventos */}
                 {showEventsList ? (
                     <>
-                        {/* Header con navegación */}
                         <div className="flex justify-between items-center p-4 border-b border-border">
                             <button 
                                 onClick={() => setShowEventsList(false)} 
@@ -246,17 +230,15 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                                     .toUpperCase() +
                                     format(selectedDay, 'EEEE, d MMMM', { locale: es }).slice(1)}
                             </h3>
-                            <div></div> {/* Espacio vacío para equilibrar el diseño */}
+                            <div></div>
                         </div>
                         
-                        {/* Lista de eventos del día */}
                         <div className="flex-1 bg-input-bg overflow-y-auto">
                             {renderDayEvents()}
                         </div>
                     </>
                 ) : (
                     <>
-                        {/* Header del calendario */}
                         <div className="flex justify-between items-center p-4 border-b border-border">
                             <h2 className="text-xl font-medium text-text">Agenda</h2>
                             <button
@@ -270,7 +252,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                             </button>
                         </div>
 
-                        {/* Navegación del mes */}
                         <div className="flex justify-between items-center p-4">
                             <h3 className="text-lg font-medium text-text">
                                 {format(currentDate, 'MMMM', { locale: es }).charAt(0).toUpperCase() +
@@ -286,7 +267,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                             </div>
                         </div>
 
-                        {/* Días de la semana */}
                         <div className="grid grid-cols-7 gap-2 px-3 pb-2">
                             {getWeekDays().map((day, index) => (
                                 <div key={day} className="text-center py-2 text-text-secondary font-medium">
@@ -295,7 +275,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                             ))}
                         </div>
 
-                        {/* Días del mes organizados por semanas */}
                         <div className="px-3 pb-4">
                             {getCalendarDays().map((week, weekIndex) => (
                                 <div key={weekIndex} className="grid grid-cols-7 gap-2 mb-2">
@@ -304,7 +283,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                             ))}
                         </div>
                         
-                        {/* Botón para ver eventos del día seleccionado */}
                         <div className="p-4 border-t border-border bg-input-bg flex justify-center">
                             <button
                                 onClick={() => setShowEventsList(true)}
@@ -319,14 +297,12 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
         );
     }
 
-    // Vista para escritorio
     return (
         <div
             className={`bg-card-bg rounded-xl shadow-sm overflow-hidden h-full border border-border ${layout === 'side' ? 'flex flex-col md:flex-row' : 'flex flex-col'
                 }`}
         >
             <div className={layout === 'side' ? 'md:w-2/3' : ''}>
-                {/* Header del calendario */}
                 <div className="flex justify-between items-center p-4 border-b border-border">
                     <h2 className="text-2xl font-medium text-text">Agenda</h2>
                     <button
@@ -340,7 +316,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                     </button>
                 </div>
 
-                {/* Navegación del mes */}
                 <div className="flex justify-between items-center p-4">
                     <h3 className="text-xl font-medium text-text">
                         {format(currentDate, 'MMMM', { locale: es }).charAt(0).toUpperCase() +
@@ -356,7 +331,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                     </div>
                 </div>
 
-                {/* Días de la semana */}
                 <div className="grid grid-cols-7 gap-2 px-3 pb-2">
                     {getWeekDays().map((day, index) => (
                         <div key={day} className="text-center py-3 text-text-secondary font-medium">
@@ -365,7 +339,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                     ))}
                 </div>
 
-                {/* Días del mes organizados por semanas */}
                 <div className="px-3 pb-6">
                     {getCalendarDays().map((week, weekIndex) => (
                         <div key={weekIndex} className="grid grid-cols-7 gap-2 mb-2">
@@ -375,7 +348,6 @@ const ModernCalendar = ({ events = [], onAddEvent, layout = 'bottom' }) => {
                 </div>
             </div>
 
-            {/* Panel de eventos - Vista escritorio */}
             <div className={`${layout === 'side' ? 'md:w-1/3 md:border-t-0 md:border-l' : 'border-t'} 
                             bg-input-bg p-4 overflow-auto border-border`}>
                 <h3 className="text-lg font-medium text-text mb-4">

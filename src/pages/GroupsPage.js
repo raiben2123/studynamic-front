@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Logo from '../assets/Logo_opacidad33.png';
-import ConfirmationModal from '../components/modals/ConfirmationModal'; // Importar el modal de confirmación
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 import {
     FaSearch,
     FaTimes,
@@ -20,7 +20,6 @@ import { getGroupsByUserId, getAllGroups, createGroup, joinGroup, leaveGroup } f
 const GroupsPage = () => {
     const navigate = useNavigate();
     const { token, userId } = useAuth();
-    // State
     const [groups, setGroups] = useState([]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -30,17 +29,15 @@ const GroupsPage = () => {
     const [newGroupPassword, setNewGroupPassword] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [notification, setNotification] = useState(null); // Para notificaciones
+    const [notification, setNotification] = useState(null);
     const [joinGroupId, setJoinGroupId] = useState(null);
     const [isTooltipOpen, setIsTooltipOpen] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // Search results
     const [searchResults, setSearchResults] = useState([]);
     const [allGroups, setAllGroups] = useState([]);
-    const [activePage, setActivePage] = useState('my-groups'); // 'my-groups' or 'join-groups'
+    const [activePage, setActivePage] = useState('my-groups');
 
-    // Estado para el modal de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
@@ -49,7 +46,6 @@ const GroupsPage = () => {
         type: 'warning'
     });
 
-    // Load user's groups and all available groups
     useEffect(() => {
         const fetchGroups = async () => {
             setLoading(true);
@@ -82,12 +78,10 @@ const GroupsPage = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, [token, userId]);
 
-    // Sort groups by member count
     const sortedGroups = [...groups].sort((a, b) =>
         (b.members?.length || b.memberCount || 0) - (a.members?.length || a.memberCount || 0)
     );
 
-    // Filter groups based on search query
     useEffect(() => {
         const availableGroups = allGroups.filter(group =>
             !groups.some(g => g.id === group.id)
@@ -110,7 +104,6 @@ const GroupsPage = () => {
         setTimeout(() => setNotification(null), 3000);
     };
 
-    // Cerrar el modal de confirmación
     const closeConfirmationModal = () => {
         setConfirmationModal({
             ...confirmationModal,
@@ -137,14 +130,11 @@ const GroupsPage = () => {
 
         setLoading(true);
         try {
-            // Usar la función joinGroup que ahora asegura que el rol sea 2 (miembro)
             await joinGroup(joinGroupId, joinPassword);
 
-            // Actualizar la lista de grupos tras unirse exitosamente
             const updatedGroups = await getGroupsByUserId();
             setGroups(updatedGroups);
 
-            // Limpiar el estado
             setJoinPassword('');
             setJoinGroupId(null);
             setSearchQuery('');
@@ -181,7 +171,7 @@ const GroupsPage = () => {
             setError(null);
             showNotification(`Grupo ${newGroupName} creado con éxito`, 'success');
 
-            navigate(`/groups/${createdGroup.id}`); // Redirige al grupo recién creado
+            navigate(`/groups/${createdGroup.id}`);
         } catch (err) {
             console.error('Error creating group:', err);
             setError('Error al crear el grupo');
@@ -199,7 +189,6 @@ const GroupsPage = () => {
             return;
         }
 
-        // Abrir modal de confirmación
         setConfirmationModal({
             isOpen: true,
             title: 'Abandonar Grupo',
@@ -223,7 +212,6 @@ const GroupsPage = () => {
         });
     };
 
-    // Dynamic group card colors based on theme-swapper
     const getGroupColor = (groupName) => {
         const colors = [
             'bg-primary',
@@ -292,7 +280,6 @@ const GroupsPage = () => {
                         </div>
                     </div>
 
-                    {/* Tabs for navigation */}
                     <div className="mb-6">
                         <div className="flex border-b-2 border-border">
                             <button
@@ -531,7 +518,6 @@ const GroupsPage = () => {
                 </div>
             </div>
 
-            {/* Modal para crear grupo */}
             {isAddModalOpen && (
                 <motion.div
                     className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -608,7 +594,6 @@ const GroupsPage = () => {
                 </motion.div>
             )}
 
-            {/* Modal de Confirmación */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
                 onClose={closeConfirmationModal}

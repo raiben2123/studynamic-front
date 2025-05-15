@@ -8,7 +8,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
     const [hasAttachments, setHasAttachments] = useState(false);
     const [attachmentsCount, setAttachmentsCount] = useState(0);
 
-    // Cargar archivos adjuntos cuando se monte el componente
     useEffect(() => {
         const fetchAttachments = async () => {
             try {
@@ -27,7 +26,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
         fetchAttachments();
     }, [task]);
 
-    // Verifica si task existe
     if (!task) {
         console.warn('Task es undefined o null');
         return <div className="text-error">Error: Tarea no disponible</div>;
@@ -37,7 +35,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
         onDelete(task.id);
     };
 
-    // Calculate days remaining
     const calculateDaysRemaining = () => {
         if (!task.dueDate) {
             console.warn('No hay dueDate:', task);
@@ -56,7 +53,6 @@ const TaskCard = ({ task, onUpdate, onDelete, subjects }) => {
 
     const daysRemaining = calculateDaysRemaining();
 
-    // Apply different styling based on status and days remaining
     const getTaskStatusColor = () => {
         if (task.status === 'Finalizada') return 'bg-task-finalizada text-task-finalizada';
         if (daysRemaining === null) return 'bg-task-normal text-task-normal';

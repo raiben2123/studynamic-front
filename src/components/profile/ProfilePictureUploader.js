@@ -11,14 +11,12 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Cargar imagen existente si hay
   useEffect(() => {
     if (user && user.profilePicture) {
       setPreview(user.profilePicture);
     }
   }, [user]);
 
-  // Obtener el userId del contexto de autenticación
   useEffect(() => {
     if (!userId) {
       console.warn('El ID de usuario no está disponible en el contexto de autenticación');
@@ -27,7 +25,6 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
     }
   }, [userId]);
 
-  // Determinar tamaño del componente
   const getSizeClass = () => {
     switch (size) {
       case 'sm':
@@ -42,9 +39,7 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
     }
   };
 
-  // Validar la imagen subida
   const validateImage = (file) => {
-    // Verificar tipo de archivo
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
       return {
@@ -53,8 +48,7 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
       };
     }
 
-    // Verificar tamaño (máximo 2MB)
-    const maxSize = 2 * 1024 * 1024; // 2MB
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
       return {
         valid: false,
@@ -65,31 +59,26 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
     return { valid: true };
   };
 
-  // Manejar el clic en el botón de subida
   const handleUploadClick = () => {
     fileInputRef.current.click();
   };
 
-  // Manejar cambio en el input de archivo
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validar archivo
     const validation = validateImage(file);
     if (!validation.valid) {
       setError(validation.error);
       return;
     }
 
-    // Crear preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreview(reader.result);
     };
     reader.readAsDataURL(file);
 
-    // Subir archivo
     setLoading(true);
     setError('');
 
@@ -101,7 +90,6 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
       console.log('Enviando foto con userId:', userId);
       const result = await uploadProfilePicture(userId, file);
       
-      // Actualizar perfil en el contexto de autenticación
       if (updateProfile) {
         await updateProfile({ profilePicture: result.profilePicture });
       }
@@ -124,7 +112,6 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
         className={`relative ${getSizeClass()} bg-input-bg rounded-full overflow-hidden flex items-center justify-center border border-border group cursor-pointer`}
         onClick={handleUploadClick}
       >
-        {/* Preview de la imagen o placeholder */}
         {preview ? (
           <img
             src={preview}
@@ -135,7 +122,6 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
           <FaUser className="w-1/2 h-1/2 text-text-secondary" />
         )}
 
-        {/* Overlay para hover */}
         <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
           {loading ? (
             <FaSpinner className="animate-spin text-white text-xl" />
@@ -144,7 +130,6 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
           )}
         </div>
 
-        {/* Input de archivo oculto */}
         <input
           type="file"
           ref={fileInputRef}
@@ -154,14 +139,12 @@ const ProfilePictureUploader = ({ onSuccess, size = 'md' }) => {
         />
       </div>
 
-      {/* Mensaje de error */}
       {error && (
         <div className="mt-2 text-xs text-error text-center max-w-xs">
           {error}
         </div>
       )}
 
-      {/* Texto de ayuda */}
       <div className="mt-2 text-xs text-text-secondary text-center">
         Haz clic para cambiar tu foto de perfil
       </div>

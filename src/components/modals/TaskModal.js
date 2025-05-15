@@ -1,4 +1,3 @@
-// src/components/modals/TaskModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { extractDateFromIso } from '../../utils/dateUtils';
@@ -22,12 +21,10 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
     const [errors, setErrors] = useState({});
     const isMobile = window.innerWidth < 768;
     
-    // Estado para los archivos adjuntos
     const [files, setFiles] = useState([]);
     const [fileLoading, setFileLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('taskDetails'); // 'taskDetails' o 'files'
+    const [activeTab, setActiveTab] = useState('taskDetails');
 
-    // Esta función reinicia el formulario
     const resetForm = () => {
         setFormData({
             id: '',
@@ -41,18 +38,15 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
             notificationDate: '',
         });
         setErrors({});
-        setActiveTab('taskDetails'); // Restablecer a la pestaña de detalles
+        setActiveTab('taskDetails');
     };
 
-    // Efecto que se ejecuta cuando cambia task o isOpen
     useEffect(() => {
         if (isOpen) {
             if (task) {
-                // Normalizamos las fechas para asegurarnos de que estén en formato YYYY-MM-DD
                 const normalizedDueDate = extractDateFromIso(task.dueDate);
                 const normalizedNotificationDate = extractDateFromIso(task.notificationDate);
                 
-                // Si la tarea tiene subject pero no subjectId, buscamos el subjectId
                 let subjectId = task.subjectId;
                 if (!subjectId && task.subject) {
                     const foundSubject = subjects.find(s => s.title === task.subject);
@@ -73,19 +67,16 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                     notificationDate: normalizedNotificationDate,
                 });
                 
-                // Cargar archivos asociados a la tarea si tenemos un ID
                 if (task.id) {
                     loadTaskFiles(task.id);
                 }
             } else {
-                // Si no hay tarea, reiniciamos el formulario
                 resetForm();
                 setFiles([]);
             }
         }
     }, [task, subjects, isOpen]);
     
-    // Función para cargar archivos de la tarea
     const loadTaskFiles = async (taskId) => {
         setFileLoading(true);
         try {
@@ -98,9 +89,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         }
     };
 
-    // Función para manejar el cierre del modal
     const handleClose = () => {
-        // Reiniciamos el formulario explícitamente al cerrar
         resetForm();
         onClose();
     };
@@ -126,7 +115,6 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
             newErrors.marks = 'La nota obtenida no puede ser mayor que la nota máxima';
         }
         
-        // Validamos que la fecha de notificación no sea posterior a la fecha de entrega
         if (formData.notificationDate && formData.dueDate && 
             new Date(formData.notificationDate) > new Date(formData.dueDate)) {
             newErrors.notificationDate = 'La notificación no puede ser posterior a la fecha de entrega';
@@ -142,18 +130,14 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
             return;
         }
         
-        // Añadir subject al formData para que tenga tanto ID como nombre
         const subjectTitle = subjects.find((s) => s.id === parseInt(formData.subjectId))?.title || '';
         
-        // Preparar los datos antes de enviarlos
         const taskData = {
             ...formData,
-            subject: subjectTitle  // Aseguramos que la tarea tenga el nombre de la asignatura
+            subject: subjectTitle
         };
         
         onSave(taskData);
-        // No reseteamos el formulario aquí porque onSave puede fallar,
-        // y en ese caso queremos mantener los datos para corregirlos
     };
 
     const handleChange = (e) => {
@@ -164,12 +148,10 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
         }
     };
     
-    // Función para manejar archivos subidos exitosamente
     const handleFileUploaded = (file) => {
         setFiles([...files, file]);
     };
     
-    // Función para manejar la actualización de la lista de archivos
     const handleRefreshFiles = () => {
         if (formData.id) {
             loadTaskFiles(formData.id);
@@ -179,11 +161,10 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={handleClose} // Usamos handleClose en lugar de onClose
+            onClose={handleClose}
             title={task ? 'Editar Tarea' : 'Nueva Tarea'}
             size={isMobile ? 'md' : 'lg'}
         >
-            {/* Pestañas para navegar entre Detalles y Archivos */}
             <div className="flex border-b border-border mb-4">
                 <button
                     className={`py-2 px-4 text-sm font-medium border-b-2 ${activeTab === 'taskDetails' 
@@ -198,7 +179,7 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                         ? 'border-primary text-primary' 
                         : 'border-transparent text-text-secondary hover:text-text hover:border-border'}`}
                     onClick={() => setActiveTab('files')}
-                    disabled={!task || !task.id} // Solo habilitado si es una tarea existente
+                    disabled={!task || !task.id}
                 >
                     Archivos adjuntos
                     {files.length > 0 && (
@@ -209,7 +190,6 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                 </button>
             </div>
 
-            {/* Contenido de la pestaña de detalles */}
             {activeTab === 'taskDetails' && (
                 <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
@@ -313,23 +293,10 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                     {errors.marks && (
                         <p className="text-error text-xs mt-1">{errors.marks}</p>
                     )}
-                    {/* <div>
-                        <label className="block text-sm font-medium mb-1 text-text">Notificación</label>
-                        <input
-                            type="date"
-                            name="notificationDate"
-                            value={formData.notificationDate}
-                            onChange={handleChange}
-                            className={`w-full p-2 bg-input-bg text-text border rounded focus:outline-none focus:ring-2 focus:ring-primary ${errors.notificationDate ? 'border-error' : 'border-border'}`}
-                        />
-                        {errors.notificationDate && (
-                            <p className="text-error text-xs mt-1">{errors.notificationDate}</p>
-                        )}
-                    </div> */}
                     <div className="flex justify-end space-x-2 pt-3">
                         <button
                             type="button"
-                            onClick={handleClose} // Usamos handleClose también aquí
+                            onClick={handleClose}
                             className="px-3 py-2 bg-input-bg text-text rounded-lg hover:bg-border transition"
                         >
                             Cancelar
@@ -344,7 +311,6 @@ const TaskModal = ({ isOpen, onClose, onSave, subjects, task }) => {
                 </form>
             )}
 
-            {/* Contenido de la pestaña de archivos */}
             {activeTab === 'files' && task && task.id && (
                 <div className="space-y-4">
                     <div className="mb-4">

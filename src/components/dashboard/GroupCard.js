@@ -1,4 +1,3 @@
-// src/components/dashboard/GroupCard.js - Updated to use theme variables
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaUsers, FaArrowRight } from 'react-icons/fa';

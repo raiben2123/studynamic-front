@@ -1,4 +1,3 @@
-// src/components/Carousel.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -28,7 +27,6 @@ const Carousel = ({
         return () => clearInterval(slideInterval);
     }, [autoSlide, autoSlideInterval, next]);
 
-    // Touch handlers for mobile swiping
     const handleTouchStart = (e) => {
         setTouchStart(e.targetTouches[0].clientX);
     };
@@ -39,10 +37,8 @@ const Carousel = ({
 
     const handleTouchEnd = () => {
         if (touchStart - touchEnd > 100) {
-            // Swiped left
             next();
         } else if (touchStart - touchEnd < -100) {
-            // Swiped right
             prev();
         }
     };

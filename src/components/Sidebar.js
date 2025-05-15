@@ -1,4 +1,3 @@
-// src/components/Sidebar.js - Con arreglos de z-index y textos en hover
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -33,7 +32,6 @@ const Sidebar = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Cierra el menú lateral en dispositivos móviles cuando se navega
     useEffect(() => {
         if (isMobile) {
             setIsExpanded(false);
@@ -45,12 +43,10 @@ const Sidebar = () => {
         navigate('/');
     };
 
-    // Mobile drawer
     const toggleDrawer = () => {
         setIsExpanded(!isExpanded);
     };
 
-    // Lista de menú para ambas vistas
     const menuItems = [
         { path: '/home', name: 'Inicio', icon: <FaHome /> },
         { path: '/calendar', name: 'Calendario', icon: <FaCalendarAlt /> },
@@ -60,13 +56,11 @@ const Sidebar = () => {
         { path: '/settings', name: 'Configuración', icon: <FaCog /> },
     ];
 
-    // Variantes de animación para el drawer móvil
     const drawerVariants = {
         hidden: { x: '-100%' },
         visible: { x: 0 }
     };
 
-    // Estilo para indicar elemento activo
     const getActiveStyle = (path) => {
         if (path === '/groups' && location.pathname.startsWith('/groups')) {
             return true;
@@ -76,19 +70,17 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Mobile Bottom Tab Bar */}
             {isMobile && (
                 <div className="w-full h-16 bg-primary-sidebar fixed bottom-0 left-0 z-[9999] flex items-center justify-around py-2 shadow-lg">
                     <button
                         onClick={toggleDrawer}
                         className="p-2 text-white flex flex-col items-center justify-center"
-                        style={{ minWidth: '48px' }} // Asegura un ancho mínimo para los botones
+                        style={{ minWidth: '48px' }}
                     >
                         <FaBars className="text-xl" />
                         <span className="text-xs mt-1">Menú</span>
                     </button>
 
-                    {/* Botones de navegación rápida - limitados a 3 para mejor espaciado */}
                     {menuItems.slice(0, 3).map(item => (
                         <button
                             key={item.path}
@@ -107,7 +99,6 @@ const Sidebar = () => {
                 </div>
             )}
 
-            {/* Mobile Drawer */}
             <AnimatePresence>
                 {isMobile && isExpanded && (
                     <>
@@ -189,7 +180,6 @@ const Sidebar = () => {
                 )}
             </AnimatePresence>
 
-            {/* Desktop Sidebar - ARREGLADO con z-index elevado y clases para mostrar texto */}
             {!isMobile && (
                 <div className="fixed left-0 top-0 h-full w-20 bg-primary-sidebar flex flex-col items-center py-6 shadow-xl group hover:w-56 transition-all duration-300 ease-in-out z-50">
                     <div className="overflow-hidden whitespace-nowrap flex-shrink-0 mb-6">
@@ -245,7 +235,6 @@ const Sidebar = () => {
                 </div>
             )}
 
-            {/* Espacio de compensación para que el contenido no sea ocultado por la barra lateral */}
             {!isMobile && <div className="w-20 flex-shrink-0"></div>}
         </>
     );

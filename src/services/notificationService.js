@@ -1,14 +1,9 @@
-// src/services/notificationService.js
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
-// Comprobar si el dispositivo es nativo (Android o iOS)
 const isNative = Capacitor.isNativePlatform();
 
-/**
- * Solicita permisos para enviar notificaciones
- * @returns {Promise<boolean>} - Devuelve true si los permisos fueron concedidos
- */
+
 export const requestNotificationPermission = async () => {
   if (!isNative) {
     return false;
@@ -23,15 +18,7 @@ export const requestNotificationPermission = async () => {
   }
 };
 
-/**
- * Programa una notificación local
- * @param {Object} notificationData - Datos de la notificación
- * @param {string} notificationData.title - Título de la notificación
- * @param {string} notificationData.body - Cuerpo de la notificación
- * @param {Date} notificationData.scheduleDate - Fecha programada para la notificación
- * @param {string} [notificationData.id] - ID opcional de la notificación
- * @returns {Promise<number>} - ID de la notificación programada
- */
+
 export const scheduleNotification = async ({ title, body, scheduleDate, id = null }) => {
   if (!isNative) {
     console.log('Programando notificación (web):', { title, body, scheduleDate });
@@ -39,7 +26,6 @@ export const scheduleNotification = async ({ title, body, scheduleDate, id = nul
   }
 
   try {
-    // Generar un ID único para la notificación si no se proporciona uno
     const notificationId = id || new Date().getTime();
     
     await LocalNotifications.schedule({
@@ -64,11 +50,6 @@ export const scheduleNotification = async ({ title, body, scheduleDate, id = nul
   }
 };
 
-/**
- * Cancela una notificación programada
- * @param {number} notificationId - ID de la notificación a cancelar
- * @returns {Promise<void>}
- */
 export const cancelNotification = async (notificationId) => {
   if (!isNative) {
     console.log('Cancelando notificación (web):', notificationId);
@@ -83,10 +64,6 @@ export const cancelNotification = async (notificationId) => {
   }
 };
 
-/**
- * Cancela todas las notificaciones programadas
- * @returns {Promise<void>}
- */
 export const cancelAllNotifications = async () => {
   if (!isNative) {
     console.log('Cancelando todas las notificaciones (web)');
@@ -101,10 +78,6 @@ export const cancelAllNotifications = async () => {
   }
 };
 
-/**
- * Obtiene todas las notificaciones programadas pendientes
- * @returns {Promise<Array>} - Lista de notificaciones pendientes
- */
 export const getPendingNotifications = async () => {
   if (!isNative) {
     return [];
@@ -119,13 +92,7 @@ export const getPendingNotifications = async () => {
   }
 };
 
-/**
- * Programa o actualiza una notificación para una tarea
- * @param {Object} task - Datos de la tarea
- * @returns {Promise<number>} - ID de la notificación
- */
 export const scheduleTaskNotification = async (task) => {
-  // Solo programa notificaciones si la tarea tiene fecha de notificación y está pendiente o en curso
   if (!task.notificationDate || !['Pendiente', 'En curso'].includes(task.status)) {
     return null;
   }
@@ -133,20 +100,16 @@ export const scheduleTaskNotification = async (task) => {
   try {
     const notificationDate = new Date(task.notificationDate);
     
-    // No programar si la fecha ya pasó
     if (notificationDate < new Date()) {
       return null;
     }
     
-    // Usar el ID de la tarea para evitar duplicados
     const notificationId = task.id;
     
-    // Preparar el título y cuerpo de la notificación
     const title = `Recordatorio: ${task.title}`;
     const dueDate = new Date(task.dueDate).toLocaleDateString();
     const body = `Tienes una tarea para entregar el ${dueDate}. Asignatura: ${task.subject}`;
     
-    // Programar la notificación
     return await scheduleNotification({
       id: notificationId,
       title,

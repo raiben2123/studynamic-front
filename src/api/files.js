@@ -1,4 +1,3 @@
-// Constantes para FileType (deben coincidir con el enum FileType del backend)
 const FileType = {
   SubjectResource: 0,
   TaskAttachment: 1,
@@ -6,7 +5,6 @@ const FileType = {
   ProfilePicture: 3
 };
 
-// Obtener archivos por carpeta
 export const getFilesByFolder = async (folderId) => {
   try {
     const token = getAuthToken();
@@ -29,23 +27,16 @@ export const getFilesByFolder = async (folderId) => {
   }
 };
 
-// src/api/files.js
-
-// El API_URL es la URL base para las solicitudes a la API
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 
-// Función para obtener el token de autenticación
 const getAuthToken = () => {
-  // Intenta obtener el token del localStorage
   const token = localStorage.getItem('token');
   if (!token) {
-    // Si no existe en localStorage, intentar obtenerlo desde la sesión
     return sessionStorage.getItem('token');
   }
   return token;
 };
 
-// Obtener archivos por tarea
 export const getFilesByTask = async (taskId) => {
   try {
     const token = getAuthToken();
@@ -68,7 +59,6 @@ export const getFilesByTask = async (taskId) => {
   }
 };
 
-// Obtener archivos por asignatura
 export const getFilesBySubject = async (subjectId) => {
   try {
     const token = getAuthToken();
@@ -91,7 +81,6 @@ export const getFilesBySubject = async (subjectId) => {
   }
 };
 
-// Obtener archivos por grupo
 export const getFilesByGroup = async (groupId) => {
   try {
     const token = getAuthToken();
@@ -114,7 +103,6 @@ export const getFilesByGroup = async (groupId) => {
   }
 };
 
-// Descargar archivo
 export const downloadFile = (fileId) => {
   const token = getAuthToken();
   return `${API_URL}/file/download/${fileId}?token=${token}`;
@@ -135,10 +123,8 @@ export const uploadFile = async (file, fileType, userId = null, subjectId = null
     const formData = new FormData();
     formData.append('file', file);
     
-    // Mapear el tipo de archivo al enum correspondiente
     let fileTypeEnum;
     if (typeof fileType === 'string') {
-      // Si es un string, hacer la conversión según el valor
       switch (fileType) {
         case 'GroupResource':
           fileTypeEnum = FileType.GroupResource;
@@ -153,10 +139,8 @@ export const uploadFile = async (file, fileType, userId = null, subjectId = null
           fileTypeEnum = FileType.SubjectResource;
       }
     } else if (typeof fileType === 'number' && fileType >= 0 && fileType <= 3) {
-      // Si ya es un número válido, usarlo directamente
       fileTypeEnum = fileType;
     } else {
-      // Valor por defecto
       fileTypeEnum = FileType.SubjectResource;
     }
     
@@ -182,7 +166,6 @@ export const uploadFile = async (file, fileType, userId = null, subjectId = null
     });
 
     if (!response.ok) {
-      // Intentar obtener más información sobre el error
       let errorDetail = '';
       try {
         const errorData = await response.text();
@@ -201,7 +184,6 @@ export const uploadFile = async (file, fileType, userId = null, subjectId = null
   }
 };
 
-// Renombrar archivo
 export const renameFile = async (fileId, newFileName) => {
   try {
     const token = getAuthToken();
@@ -225,7 +207,6 @@ export const renameFile = async (fileId, newFileName) => {
   }
 };
 
-// Eliminar archivo
 export const deleteFile = async (fileId) => {
   try {
     const token = getAuthToken();
@@ -248,7 +229,6 @@ export const deleteFile = async (fileId) => {
   }
 };
 
-// Actualizar el contenido de un archivo
 export const updateFileContent = async (fileId, file) => {
   try {
     const token = getAuthToken();
@@ -274,7 +254,6 @@ export const updateFileContent = async (fileId, file) => {
   }
 };
 
-// Obtener URL de descarga
 export const getDownloadUrl = (fileId) => {
   const token = getAuthToken();
   return `${API_URL}/file/download/${fileId}?token=${token}`;

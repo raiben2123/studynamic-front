@@ -1,4 +1,3 @@
-// src/pages/SettingsPage.js - actualizado para manejar correctamente el tema y contraseña
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
@@ -14,7 +13,6 @@ const SettingsPage = () => {
     const [loading, setLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // Estados para formulario
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
@@ -23,7 +21,6 @@ const SettingsPage = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    // Estado para el modal de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
@@ -34,7 +31,6 @@ const SettingsPage = () => {
     });
 
     useEffect(() => {
-        // Cargar datos del usuario
         if (user) {
             setName(user.name || '');
             setEmail(user.email || '');
@@ -42,7 +38,6 @@ const SettingsPage = () => {
             setPassword(user.password || '');
         }
 
-        // Cargar tema guardado
         if (userTheme) {
             setSelectedTheme(userTheme);
         }
@@ -51,13 +46,11 @@ const SettingsPage = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validar que sea una imagen
             if (!file.type.startsWith('image/')) {
                 setError('Por favor, selecciona un archivo de imagen válido.');
                 return;
             }
 
-            // Limitar tamaño a 2MB
             if (file.size > 2 * 1024 * 1024) {
                 setError('La imagen es demasiado grande. El tamaño máximo es 2MB.');
                 return;
@@ -65,7 +58,6 @@ const SettingsPage = () => {
 
             setProfilePicture(file);
 
-            // Mostrar vista previa
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreviewImage(reader.result);
@@ -88,10 +80,8 @@ const SettingsPage = () => {
             setLoading(true);
             setError(null);
 
-            // Preparar datos para actualización
             const updateData = {};
 
-            // Solo incluir campos que han cambiado
             if (name !== (user?.name || '')) {
                 updateData.name = name;
             }
@@ -110,7 +100,6 @@ const SettingsPage = () => {
                 updateData.password = password;
             }
 
-            // Incluir foto de perfil solo si se cambió
             if (profilePicture) {
                 updateData.profilePicture = profilePicture;
             }
@@ -122,7 +111,6 @@ const SettingsPage = () => {
                 return;
             }
 
-            // Actualizar perfil a través del contexto
             const success = await updateProfile(updateData);
 
             if (success) {
@@ -159,7 +147,6 @@ const SettingsPage = () => {
         });
     };
 
-    // Cerrar el modal de confirmación
     const closeConfirmationModal = () => {
         setConfirmationModal({
             ...confirmationModal,
@@ -167,7 +154,6 @@ const SettingsPage = () => {
         });
     };
 
-    // Determinar si hay cambios sin guardar
     const hasUnsavedChanges = () => {
         if (!user) return false;
 
@@ -178,7 +164,6 @@ const SettingsPage = () => {
             password !== (user.password || '');
     };
 
-    // Obtener el color primario según el tema seleccionado
     const getThemeColors = (themeId) => {
         switch (themeId) {
             case 'dark':
@@ -248,7 +233,6 @@ const SettingsPage = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Perfil de Usuario */}
                             <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95">
                                 <h2 className="text-xl font-semibold mb-4">Perfil de Usuario</h2>
 
@@ -320,7 +304,6 @@ const SettingsPage = () => {
                                 </div>
                             </div>
 
-                            {/* Temas y Apariencia */}
                             <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95">
                                 <h2 className="text-xl font-semibold mb-4">Temas y Apariencia</h2>
 
@@ -362,7 +345,6 @@ const SettingsPage = () => {
                         </div>
                     )}
 
-                    {/* Botones de acción */}
                     <div className="mt-6 flex justify-end space-x-4">
                         <button
                             onClick={handleResetToDefault}
@@ -383,7 +365,6 @@ const SettingsPage = () => {
                 </div>
             </div>
 
-            {/* Modal de Confirmación */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
                 onClose={closeConfirmationModal}

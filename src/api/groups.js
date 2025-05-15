@@ -1,4 +1,3 @@
-// src/api/groups.js - Actualizado con funciones para invitaciones
 import { getToken, getUserId } from './auth';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
@@ -11,10 +10,6 @@ const mapGroupFromDTO = (dto) => ({
     description: dto.description
 });
 
-/**
- * Obtiene todos los grupos disponibles en el sistema.
- * @returns {Promise<Array>} Lista de todos los grupos
- */
 export const getAllGroups = async () => {
     const token = await getToken();
 
@@ -39,8 +34,7 @@ export const getAllGroups = async () => {
         return Array.isArray(groupsData) ? groupsData.map(mapGroupFromDTO) : [mapGroupFromDTO(groupsData)];
     } catch (error) {
         console.error('Error en getAllGroups:', error);
-        
-        // Si estamos en desarrollo, devolvemos datos simulados
+
         if (process.env.NODE_ENV === 'development') {
             return [
                 { id: 100, name: 'Grupo de Matemáticas Avanzadas', memberCount: 20, description: 'Grupo para discutir temas avanzados de matemáticas universitarias' },
@@ -55,12 +49,6 @@ export const getAllGroups = async () => {
         throw error;
     }
 };
-
-
-/**
- * Obtiene los grupos a los que pertenece el usuario autenticado.
- * @returns {Promise<Array>} Lista de grupos
- */
 
 export const getGroupsByUserId = async () => {
     const token = await getToken();
@@ -79,7 +67,6 @@ export const getGroupsByUserId = async () => {
     });
 
     if (response.status === 404) {
-        // Si el error 404 es porque no hay grupos, devolvemos lista vacía
         const errorText = await response.text();
         if (errorText.includes("No se encontraron grupos para este usuario")) {
             return [];
@@ -96,12 +83,6 @@ export const getGroupsByUserId = async () => {
     return Array.isArray(groupsData) ? groupsData.map(mapGroupFromDTO) : [mapGroupFromDTO(groupsData)];
 };
 
-
-/**
- * Obtiene los detalles de un grupo específico
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Object>} Detalles del grupo
- */
 export const getGroupById = async (groupId) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -126,8 +107,7 @@ export const getGroupById = async (groupId) => {
         return await response.json();
     } catch (error) {
         console.error('Error en getGroupById:', error);
-        
-        // Si estamos en desarrollo, devolvemos datos simulados
+
         if (process.env.NODE_ENV === 'development') {
             return {
                 id: parseInt(groupId),
@@ -141,11 +121,6 @@ export const getGroupById = async (groupId) => {
     }
 };
 
-/**
- * Obtiene los miembros de un grupo
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Array>} Lista de miembros del grupo
- */
 export const getGroupMembers = async (groupId) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -170,8 +145,7 @@ export const getGroupMembers = async (groupId) => {
         return await response.json();
     } catch (error) {
         console.error('Error en getGroupMembers:', error);
-        
-        // Si estamos en desarrollo, devolvemos datos simulados
+
         if (process.env.NODE_ENV === 'development') {
             return [
                 { userId: 1, username: 'Usuario 1', roleId: 1, roleName: 'Admin' },
@@ -184,11 +158,6 @@ export const getGroupMembers = async (groupId) => {
     }
 };
 
-/**
- * Obtiene las tareas de un grupo específico
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Array>} Lista de tareas del grupo
- */
 export const getGroupTasks = async (groupId) => {
     const token = await getToken();
 
@@ -213,7 +182,6 @@ export const getGroupTasks = async (groupId) => {
     } catch (error) {
         console.error('Error en getGroupTasks:', error);
         
-        // Si estamos en desarrollo, devolvemos datos simulados
         if (process.env.NODE_ENV === 'development') {
             return [
                 {
@@ -241,11 +209,6 @@ export const getGroupTasks = async (groupId) => {
     }
 };
 
-/**
- * Obtiene los eventos de un grupo específico
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Array>} Lista de eventos del grupo
- */
 export const getGroupEvents = async (groupId) => {
     const token = await getToken();
 
@@ -270,7 +233,6 @@ export const getGroupEvents = async (groupId) => {
     } catch (error) {
         console.error('Error en getGroupEvents:', error);
         
-        // Si estamos en desarrollo, devolvemos datos simulados
         if (process.env.NODE_ENV === 'development') {
             return [
                 {
@@ -296,11 +258,6 @@ export const getGroupEvents = async (groupId) => {
     }
 };
 
-/**
- * Crea un nuevo grupo
- * @param {Object} groupData - Datos del grupo a crear
- * @returns {Promise<Object>} Datos del grupo creado
- */
 export const createGroup = async (groupData) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -310,7 +267,6 @@ export const createGroup = async (groupData) => {
     }
 
     try {
-        // Primero creamos el grupo
         const groupResponse = await fetch(`${BASE_URL}/groups`, {
             method: 'POST',
             headers: {
@@ -329,8 +285,6 @@ export const createGroup = async (groupData) => {
 
         const newGroup = await groupResponse.json();
 
-        // Luego añadimos al creador como admin del grupo
-        // NOTA: Este es el único caso donde el roleId debe ser 1 (admin)
         const memberResponse = await fetch(`${BASE_URL}/groupmembers`, {
             method: 'POST',
             headers: {
@@ -340,7 +294,7 @@ export const createGroup = async (groupData) => {
             body: JSON.stringify({
                 groupId: newGroup.id,
                 userId: parseInt(userId),
-                roleId: 1, // Rol de admin - CORRECTO, el creador es admin
+                roleId: 1,
                 password: groupData.password
             }),
         });
@@ -352,8 +306,7 @@ export const createGroup = async (groupData) => {
         return newGroup;
     } catch (error) {
         console.error('Error en createGroup:', error);
-        
-        // Si estamos en desarrollo, devolvemos datos simulados
+
         if (process.env.NODE_ENV === 'development') {
             return {
                 id: Date.now(),
@@ -366,12 +319,6 @@ export const createGroup = async (groupData) => {
     }
 };
 
-/**
- * Actualiza la información de un grupo
- * @param {number} groupId - ID del grupo
- * @param {Object} groupData - Nuevos datos del grupo
- * @returns {Promise<Object>} Datos actualizados del grupo
- */
 export const updateGroup = async (groupId, groupData) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -399,7 +346,6 @@ export const updateGroup = async (groupId, groupData) => {
             throw new Error('Error al actualizar el grupo');
         }
 
-        // El endpoint devuelve 204 No Content
         if (response.status === 204) {
             return {
                 id: parseInt(groupId),
@@ -413,7 +359,6 @@ export const updateGroup = async (groupId, groupData) => {
     } catch (error) {
         console.error('Error en updateGroup:', error);
         
-        // Si estamos en desarrollo, devolvemos datos simulados
         if (process.env.NODE_ENV === 'development') {
             return {
                 id: parseInt(groupId),
@@ -427,11 +372,6 @@ export const updateGroup = async (groupId, groupData) => {
     }
 };
 
-/**
- * Elimina un grupo
- * @param {number} groupId - ID del grupo a eliminar
- * @returns {Promise<boolean>} Resultado de la operación
- */
 export const deleteGroup = async (groupId) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -457,7 +397,6 @@ export const deleteGroup = async (groupId) => {
     } catch (error) {
         console.error('Error en deleteGroup:', error);
         
-        // Si estamos en desarrollo, simulamos éxito
         if (process.env.NODE_ENV === 'development') {
             return true;
         }
@@ -466,11 +405,6 @@ export const deleteGroup = async (groupId) => {
     }
 };
 
-/**
- * Genera un enlace de invitación para unirse a un grupo
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Object>} Objeto con el enlace de invitación
- */
 export const generateInviteLink = async (groupId) => {
     const token = await getToken();
     
@@ -495,7 +429,6 @@ export const generateInviteLink = async (groupId) => {
     } catch (error) {
         console.error('Error generando enlace de invitación:', error);
         
-        // Para desarrollo, generamos un enlace local
         if (process.env.NODE_ENV === 'development') {
             const inviteLink = `${window.location.origin}/#/groups/join/${groupId}`;
             return { inviteLink };
@@ -505,12 +438,6 @@ export const generateInviteLink = async (groupId) => {
     }
 };
 
-/**
- * Une a un usuario a un grupo usando la contraseña
- * @param {number} groupId - ID del grupo
- * @param {string} password - Contraseña del grupo
- * @returns {Promise<Object>} Información del miembro añadido
- */
 export const joinGroup = async (groupId, password) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -520,8 +447,6 @@ export const joinGroup = async (groupId, password) => {
     }
 
     try {
-        // Llamada directa al endpoint para unirse usando el nuevo formato
-        // CORRECCIÓN: Siempre usamos roleId: 2 (miembro) cuando un usuario se une a un grupo
         const memberResponse = await fetch(`${BASE_URL}/groupmembers/user/${userId}`, {
             method: 'POST',
             headers: {
@@ -531,7 +456,7 @@ export const joinGroup = async (groupId, password) => {
             body: JSON.stringify({
                 GroupId: parseInt(groupId),
                 UserId: parseInt(userId),
-                RoleId: 2, // Rol de miembro normal (forzamos siempre el 2 para miembros)
+                RoleId: 2,
                 Password: password
             }),
         });
@@ -547,12 +472,11 @@ export const joinGroup = async (groupId, password) => {
     } catch (error) {
         console.error('Error en joinGroup:', error);
         
-        // Si estamos en desarrollo, devolvemos datos simulados
         if (process.env.NODE_ENV === 'development') {
             return {
                 GroupId: parseInt(groupId),
                 UserId: parseInt(userId),
-                RoleId: 2, // Siempre 2 para nuevos miembros
+                RoleId: 2,
                 Username: 'Tú',
                 RoleName: 'Miembro'
             };
@@ -562,11 +486,6 @@ export const joinGroup = async (groupId, password) => {
     }
 };
 
-/**
- * Unirse a un grupo a través de un enlace de invitación
- * @param {number} groupId - ID del grupo
- * @returns {Promise<Object>} Resultado de la operación
- */
 export const joinGroupWithLink = async (groupId) => {
     const token = await getToken();
     
@@ -575,8 +494,6 @@ export const joinGroupWithLink = async (groupId) => {
     }
 
     try {
-        // IMPORTANTE: el servidor debe asignar RoleId = 2 (miembro) cuando se une con enlace
-        // Esta implementación asume que el backend asigna correctamente el rol de miembro
         const response = await fetch(`${BASE_URL}/groups/join/${groupId}`, {
             method: 'GET',
             headers: {
@@ -586,7 +503,6 @@ export const joinGroupWithLink = async (groupId) => {
         });
 
         if (!response.ok) {
-            // Si el grupo requiere contraseña, devolvemos un objeto con esa información
             if (response.status === 302 || response.status === 307) {
                 const locationHeader = response.headers.get('Location');
                 if (locationHeader && locationHeader.includes('invite=true')) {
@@ -596,12 +512,10 @@ export const joinGroupWithLink = async (groupId) => {
             throw new Error('Error al unirse al grupo a través del enlace');
         }
 
-        // Si se ha unido exitosamente, devolvemos los datos del grupo
         return { success: true, groupId };
     } catch (error) {
         console.error('Error al unirse al grupo con enlace:', error);
         
-        // Para desarrollo
         if (process.env.NODE_ENV === 'development') {
             return { success: true, groupId };
         }
@@ -610,12 +524,6 @@ export const joinGroupWithLink = async (groupId) => {
     }
 };
 
-/**
- * Hace que un usuario abandone un grupo
- * @param {number} groupId - ID del grupo
- * @param {number} memberId - ID del miembro (opcional, si no se proporciona usa el userId actual)
- * @returns {Promise<boolean>} Resultado de la operación
- */
 export const leaveGroup = async (groupId, memberId = null) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -643,7 +551,6 @@ export const leaveGroup = async (groupId, memberId = null) => {
     } catch (error) {
         console.error('Error en leaveGroup:', error);
         
-        // Si estamos en desarrollo, simulamos éxito
         if (process.env.NODE_ENV === 'development') {
             return true;
         }

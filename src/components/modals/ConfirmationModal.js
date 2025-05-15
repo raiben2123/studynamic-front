@@ -1,22 +1,9 @@
-// src/components/modals/ConfirmationModal.js - Actualizado para usar variables de tema
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { motion } from 'framer-motion';
 import { FaExclamationTriangle, FaCheckCircle, FaQuestionCircle, FaInfoCircle } from 'react-icons/fa';
 
-/**
- * Modal de confirmación reutilizable para acciones importantes
- * @param {Object} props - Propiedades del componente
- * @param {boolean} props.isOpen - Si el modal está abierto o no
- * @param {function} props.onClose - Función para cerrar el modal
- * @param {string} props.title - Título del modal
- * @param {string} props.message - Mensaje de confirmación
- * @param {function} props.onConfirm - Función a ejecutar al confirmar
- * @param {string} props.confirmText - Texto del botón de confirmación (opcional)
- * @param {string} props.cancelText - Texto del botón de cancelación (opcional)
- * @param {string} props.type - Tipo de confirmación: 'danger', 'warning', 'info', 'success' (opcional)
- */
 const ConfirmationModal = ({
     isOpen,
     onClose,
@@ -32,7 +19,6 @@ const ConfirmationModal = ({
         onClose();
     };
 
-    // Configurar colores según el tipo - usando colores seguros conocidos en vez de task-media
     const getTypeConfig = () => {
         switch (type) {
             case 'danger':

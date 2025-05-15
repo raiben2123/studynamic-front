@@ -1,24 +1,20 @@
-// src/components/modals/SessionModal.js - Con corrección para limpiar el formulario al cerrar
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 
 const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
     const [title, setTitle] = useState('');
-    const [start, setStart] = useState(defaultDate || ''); // Fecha por defecto desde el calendario
-    const [zoomLink, setZoomLink] = useState(''); // Opcional
-    const [notificationDate, setNotificationDate] = useState(''); // Opcional
+    const [start, setStart] = useState(defaultDate || '');
+    const [zoomLink, setZoomLink] = useState('');
+    const [notificationDate, setNotificationDate] = useState('');
     const [errors, setErrors] = useState({});
 
-    // Reiniciar el formulario cuando cambie isOpen o defaultDate
     useEffect(() => {
         if (isOpen) {
-            // Si se abre el modal, establecemos la fecha predeterminada
             setStart(defaultDate || '');
         }
     }, [isOpen, defaultDate]);
 
-    // Función para reiniciar el formulario
     const resetForm = () => {
         setTitle('');
         setStart(defaultDate || '');
@@ -27,7 +23,6 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
         setErrors({});
     };
 
-    // Manejar el cierre del modal
     const handleClose = () => {
         resetForm();
         onClose();
@@ -55,18 +50,15 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
         onSave({
             title,
             start,
-            zoomLink: zoomLink || `https://zoom.us/j/${Date.now()}`, // Generamos un enlace por defecto si no se proporciona
+            zoomLink: zoomLink || `https://zoom.us/j/${Date.now()}`,
             notificationDate,
         });
-        
-        // No reseteamos el formulario aquí, lo haremos después de cerrar el modal
-        // El formulario se reiniciará automáticamente gracias al useEffect y handleClose
     };
 
     return (
         <Modal 
             isOpen={isOpen} 
-            onClose={handleClose} // Usar handleClose en vez de onClose
+            onClose={handleClose}
             title="Añadir Sesión de Estudio"
             size="md"
         >
@@ -110,19 +102,10 @@ const SessionModal = ({ isOpen, onClose, onSave, defaultDate }) => {
                         className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                 </div>
-                {/* <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Notificación (opcional)</label>
-                    <input
-                        type="datetime-local"
-                        value={notificationDate}
-                        onChange={(e) => setNotificationDate(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div> */}
                 <div className="flex justify-end space-x-2 pt-3">
                     <button
                         type="button"
-                        onClick={handleClose} // Usar handleClose en vez de onClose
+                        onClick={handleClose}
                         className="px-3 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
                     >
                         Cancelar

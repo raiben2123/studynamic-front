@@ -1,4 +1,3 @@
-// src/components/settings/ThemeSection.js
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -86,6 +85,5 @@ ThemeSection.propTypes = {
     onThemeChange: PropTypes.func.isRequired
 };
 
-// Exportar los temas para que estén disponibles en otras partes de la aplicación
 export { colorThemes };
 export default ThemeSection;

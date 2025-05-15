@@ -1,8 +1,3 @@
-/***************************************
- * ESTILOS RESPONSIVOS (Primera parte)
- ***************************************/
-
-/* Contenedores principales responsivos */
 .main-container {
   width: 100%;
   min-height: 100vh;
@@ -32,7 +27,6 @@
   }
 }
 
-/* Contenedores con logo de fondo */
 .background-logo-container {
   background-image: var(--logo-image-url);
   background-size: 50%;
@@ -42,7 +36,6 @@
   position: relative;
 }
 
-/* Tarjetas y secciones */
 .card {
   background-color: var(--card-bg-color);
   color: var(--text-color);
@@ -65,7 +58,6 @@
   }
 }
 
-/* Grid responsivo con mayor control */
 .responsive-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -85,7 +77,6 @@
   }
 }
 
-/* Mejoras a componentes específicos */
 .dashboard-card {
   height: 100%;
   display: flex;
@@ -120,7 +111,6 @@
   }
 }
 
-/* Botones responsivos */
 .responsive-button {
   display: inline-flex;
   align-items: center;
@@ -166,7 +156,6 @@
   background-color: var(--input-bg-color);
 }
 
-/* Mejoras para modales en móvil */
 .modal-container {
   position: fixed;
   top: 0;
@@ -202,7 +191,6 @@
   }
 }
 
-/* Menús y navegación */
 .menu-container, .nav-container, .sidebar {
   background-color: var(--menu-bg-color);
   color: var(--text-color);

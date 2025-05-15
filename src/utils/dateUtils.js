@@ -1,25 +1,14 @@
-// src/utils/dateUtils.js
 
 const DEFAULT_DATE = 'Sin fecha';
 const INVALID_DATE = 'Fecha inválida';
 const ERROR_DATE = 'Error de fecha';
 
-/**
- * Verifica si una fecha es válida
- * @param {Date|string} date
- * @returns {boolean}
- */
 const isValidDate = (date) => {
     if (!date) return false;
     const d = new Date(date);
     return d instanceof Date && !isNaN(d.getTime());
 };
 
-/**
- * Parsea una fecha de forma segura
- * @param {string} dateString
- * @returns {Date|null}
- */
 const safeParseDateString = (dateString) => {
     if (!dateString) return null;
     
@@ -32,11 +21,6 @@ const safeParseDateString = (dateString) => {
     }
 };
 
-/**
- * Formatea una fecha para mostrar en la UI (DD/MM/YYYY)
- * @param {string} dateString
- * @returns {string}
- */
 export const formatDateForDisplay = (dateString) => {
     if (!dateString) return DEFAULT_DATE;
     
@@ -55,11 +39,6 @@ export const formatDateForDisplay = (dateString) => {
     }
 };
 
-/**
- * Formatea fecha y hora para mostrar en la UI (DD/MM/YYYY HH:mm)
- * @param {string} dateString
- * @returns {string}
- */
 export const formatDateTimeForDisplay = (dateString) => {
     if (!dateString) return DEFAULT_DATE;
     
@@ -80,11 +59,6 @@ export const formatDateTimeForDisplay = (dateString) => {
     }
 };
 
-/**
- * Convierte una fecha en formato display (DD/MM/YYYY) a formato ISO (YYYY-MM-DD)
- * @param {string} displayDate
- * @returns {string}
- */
 export const convertDisplayDateToIsoDate = (displayDate) => {
     if (!displayDate || [DEFAULT_DATE, INVALID_DATE, ERROR_DATE].includes(displayDate)) {
         return '';
@@ -96,7 +70,6 @@ export const convertDisplayDateToIsoDate = (displayDate) => {
         
         const [day, month, year] = parts;
         
-        // Verificar que los componentes sean números válidos
         if (!day || !month || !year || 
             isNaN(Number(day)) || 
             isNaN(Number(month)) || 
@@ -111,22 +84,15 @@ export const convertDisplayDateToIsoDate = (displayDate) => {
     }
 };
 
-/**
- * Prepara una fecha para enviar a la API
- * @param {string} dateString
- * @returns {string|null}
- */
 export const prepareDateForApi = (dateString) => {
     if (!dateString) return null;
     
     try {
-        // Si ya tiene formato ISO con tiempo
         if (dateString.includes('T')) {
             const date = safeParseDateString(dateString);
             return date ? date.toISOString() : null;
         }
         
-        // Si es una fecha simple, añadir el tiempo
         const date = safeParseDateString(`${dateString}T00:00:00`);
         return date ? date.toISOString() : null;
     } catch (error) {
@@ -135,11 +101,6 @@ export const prepareDateForApi = (dateString) => {
     }
 };
 
-/**
- * Extrae la fecha de una cadena ISO
- * @param {string} isoString
- * @returns {string}
- */
 export const extractDateFromIso = (isoString) => {
     if (!isoString) return '';
     
@@ -149,7 +110,6 @@ export const extractDateFromIso = (isoString) => {
             return date ? date.toISOString().split('T')[0] : '';
         }
         
-        // Verificar si es una fecha válida
         const date = safeParseDateString(isoString);
         return date ? isoString : '';
     } catch (error) {
@@ -158,11 +118,6 @@ export const extractDateFromIso = (isoString) => {
     }
 };
 
-/**
- * Valida si una fecha está en el pasado
- * @param {string} dateString
- * @returns {boolean}
- */
 export const isDateInPast = (dateString) => {
     if (!dateString) return false;
     
@@ -181,12 +136,6 @@ export const isDateInPast = (dateString) => {
     }
 };
 
-/**
- * Compara dos fechas para ordenamiento
- * @param {string} dateA
- * @param {string} dateB
- * @returns {number}
- */
 export const compareDates = (dateA, dateB) => {
     try {
         const dateObjA = safeParseDateString(dateA);

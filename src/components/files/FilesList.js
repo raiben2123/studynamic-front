@@ -8,7 +8,6 @@ const FilesList = ({ files, onRename, onDelete, onRefresh }) => {
   const [newFileName, setNewFileName] = useState('');
   const [error, setError] = useState('');
 
-  // Función para obtener el icono adecuado según el tipo de archivo
   const getFileIcon = (fileExtension) => {
     const extension = fileExtension.toLowerCase();
     
@@ -19,22 +18,18 @@ const FilesList = ({ files, onRename, onDelete, onRefresh }) => {
     return <FaFile className="text-primary" />;
   };
 
-  // Función para formatear el tamaño del archivo
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' bytes';
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / 1048576).toFixed(1) + ' MB';
   };
 
-  // Función para manejar el inicio de edición
   const handleStartEdit = (file) => {
     setEditingFile(file);
-    // Obtener el nombre sin extensión para mayor comodidad
     const nameWithoutExtension = file.fileName.split('.').slice(0, -1).join('.');
     setNewFileName(nameWithoutExtension);
   };
 
-  // Función para manejar el guardado del nuevo nombre
   const handleSaveEdit = async () => {
     if (!newFileName.trim()) {
       setError('El nombre no puede estar vacío');
@@ -59,7 +54,6 @@ const FilesList = ({ files, onRename, onDelete, onRefresh }) => {
     }
   };
 
-  // Función para manejar la eliminación
   const handleDelete = async (fileId) => {
     try {
       await deleteFile(fileId);
@@ -77,7 +71,6 @@ const FilesList = ({ files, onRename, onDelete, onRefresh }) => {
     }
   };
 
-  // Si no hay archivos, mostrar mensaje
   if (!files || files.length === 0) {
     return (
       <div className="text-center py-6 bg-input-bg rounded-lg">

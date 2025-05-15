@@ -1,4 +1,3 @@
-// src/pages/GroupDetailsPage.js - Con protección de URL
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -33,7 +32,6 @@ import {
 import { formatDateForDisplay } from '../utils/dateUtils';
 import FilesTab from '../components/files/FilesTab';
 
-// API imports
 import { deleteGroup, getGroupById, getGroupMembers, leaveGroup, getGroupsByUserId, joinGroup } from '../api/groups';
 import { getTasks, addTask, updateTask, deleteTask } from '../api/tasks';
 import { getEvents, addEvent, updateEvent, deleteEvent } from '../api/events';
@@ -44,7 +42,6 @@ const GroupDetailsPage = () => {
     const navigate = useNavigate();
     const { token, userId } = useAuth();
 
-    // Estado
     const [group, setGroup] = useState(null);
     const [members, setMembers] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -52,15 +49,13 @@ const GroupDetailsPage = () => {
     const [subjects, setSubjects] = useState([]);
     const [notes, setNotes] = useState({});
     const [studySessions, setStudySessions] = useState([]);
-    const [activeTab, setActiveTab] = useState('members'); // 'members', 'tasks', 'calendar', 'notes', 'files', 'sessions', 'settings'
+    const [activeTab, setActiveTab] = useState('members');
 
-    // Estado para autorización de acceso
     const [hasAccess, setHasAccess] = useState(false);
     const [checkingAccess, setCheckingAccess] = useState(true);
     const [joinPassword, setJoinPassword] = useState('');
     const [showJoinModal, setShowJoinModal] = useState(false);
 
-    // Modal states
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
@@ -77,10 +72,8 @@ const GroupDetailsPage = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [memberTooltip, setMemberTooltip] = useState(null);
 
-    // Notificación toast
     const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
-    // Estado para el modal de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
@@ -97,7 +90,6 @@ const GroupDetailsPage = () => {
         });
     };
 
-    // Responsive handler
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
@@ -107,26 +99,20 @@ const GroupDetailsPage = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Verificar acceso al grupo
     useEffect(() => {
         const checkGroupAccess = async () => {
             setCheckingAccess(true);
             try {
-                // Obtener lista de grupos del usuario
                 const userGroups = await getGroupsByUserId();
 
-                // Verificar si el usuario es miembro del grupo
                 const isMember = userGroups.some(group => group.id === parseInt(groupId));
 
                 if (isMember) {
-                    // El usuario tiene acceso al grupo
                     setHasAccess(true);
-                    // Continuar cargando datos del grupo
                     fetchGroupData();
                 } else {
-                    // El usuario no tiene acceso al grupo
                     setHasAccess(false);
-                    setGroup(await getGroupById(groupId)); // Solo obtener info básica para mostrar en modal de unirse
+                    setGroup(await getGroupById(groupId));
                 }
             } catch (error) {
                 console.error('Error verificando acceso al grupo:', error);
@@ -143,15 +129,12 @@ const GroupDetailsPage = () => {
         }
     }, [groupId, token, userId]);
 
-    // Fetch grupo data solo si tiene acceso
     const fetchGroupData = async () => {
         setLoading(true);
         try {
-            // Fetch group details
             const groupData = await getGroupById(groupId);
             setGroup(groupData);
 
-            // Fetch members, tasks, events in parallel
             const [membersData, tasksData, eventsData, subjectsData] = await Promise.all([
                 getGroupMembers(groupId),
                 getTasks(true, groupId),
@@ -164,10 +147,8 @@ const GroupDetailsPage = () => {
             setEvents(eventsData || []);
             setSubjects(subjectsData || []);
 
-            // Initialize notes structure with default folders
             setNotes({});
 
-            // Initialize study sessions with sample data
             setStudySessions([
                 {
                     id: 1,
@@ -188,7 +169,6 @@ const GroupDetailsPage = () => {
         }
     };
 
-    // Manejar unirse al grupo
     const handleJoinGroup = async () => {
         if (!joinPassword) {
             showToast('Por favor, introduce la contraseña del grupo', 'error');
@@ -210,7 +190,6 @@ const GroupDetailsPage = () => {
         }
     };
 
-    // Check if current user is admin
     const isAdmin = React.useMemo(() => {
         return members.some(member =>
             member.userId === parseInt(userId) &&
@@ -218,7 +197,6 @@ const GroupDetailsPage = () => {
         );
     }, [members, userId]);
 
-    // Funciones de Toast
     const showToast = (message, type = 'success') => {
         setToast({ visible: true, message, type });
         setTimeout(() => {
@@ -226,18 +204,16 @@ const GroupDetailsPage = () => {
         }, 3000);
     };
 
-    // Manejadores de eventos para el calendario
     const [modernCalendarEvents, setModernCalendarEvents] = useState([]);
     const [selectedCalendarDay, setSelectedCalendarDay] = useState(new Date());
     const [dayEvents, setDayEvents] = useState([]);
-    // Filtrar eventos del día seleccionado
+
     useEffect(() => {
         if (modernCalendarEvents.length > 0) {
             const filteredEvents = modernCalendarEvents.filter(event => {
                 const eventDate = event.dueDate || event.startDateTime;
                 if (!eventDate) return false;
 
-                // Verificar que pertenezca al grupo actual
                 if (event.groupId === undefined || event.groupId !== parseInt(groupId)) {
                     return false;
                 }
@@ -261,7 +237,6 @@ const GroupDetailsPage = () => {
         setIsAddModalOpen(true);
     };
 
-    // Reemplazar la llamada a window.confirm para eliminar tarea
     const handleTaskDelete = async (taskId) => {
         setConfirmationModal({
             isOpen: true,
@@ -282,7 +257,6 @@ const GroupDetailsPage = () => {
         });
     };
 
-    // Reemplazar la llamada a window.confirm para eliminar evento
     const handleEventDelete = async (eventId) => {
         setConfirmationModal({
             isOpen: true,
@@ -303,7 +277,6 @@ const GroupDetailsPage = () => {
         });
     };
 
-    // Reemplazar la llamada a window.confirm para eliminar una sesión de estudio
     const handleSessionDelete = (sessionId) => {
         setConfirmationModal({
             isOpen: true,
@@ -318,7 +291,6 @@ const GroupDetailsPage = () => {
         });
     };
 
-    // Reemplazar la llamada a window.confirm para eliminar el grupo
     const handleDeleteGroup = () => {
         setConfirmationModal({
             isOpen: true,
@@ -343,7 +315,6 @@ const GroupDetailsPage = () => {
             message: '¿Estás seguro de que quieres expulsar a este miembro del grupo?',
             onConfirm: async () => {
                 try {
-                    // API call to remove member
                     await leaveGroup(groupId, memberId);
                     setMembers(members.filter((m) => m.userId !== memberId));
                     showToast('Miembro expulsado correctamente', 'success');
@@ -357,19 +328,15 @@ const GroupDetailsPage = () => {
         });
     };
 
-    // Función simplificada para compartir enlace a grupo
     const handleShareLink = () => {
-        // Crear la URL de invitación
         const inviteUrl = `${window.location.origin}/#/groups/join/${groupId}`;
 
-        // Copiar al portapapeles
         navigator.clipboard.writeText(inviteUrl)
             .then(() => {
                 showToast('Enlace copiado al portapapeles', 'success');
             })
             .catch(err => {
                 console.error('Error al copiar el enlace:', err);
-                // Mostrar el modal con el enlace para que el usuario pueda copiarlo manualmente
                 setShareLink(inviteUrl);
                 setIsShareModalOpen(true);
             });
@@ -379,10 +346,8 @@ const GroupDetailsPage = () => {
         try {
             const taskToAdd = {
                 ...newTask,
-                // Especificamos explícitamente que esta tarea pertenece al grupo
                 groupId: parseInt(groupId)
             };
-            // El segundo parámetro "true" indica que esta es una tarea de grupo
             const addedTask = await addTask(taskToAdd, true, groupId);
             setTasks([...tasks, addedTask]);
             setIsTaskModalOpen(false);
@@ -412,12 +377,9 @@ const GroupDetailsPage = () => {
         try {
             const eventToAdd = {
                 ...newEvent,
-                // Especificamos explícitamente que este evento pertenece al grupo
                 groupId: parseInt(groupId),
-                // Establecemos userId a null para indicar que es un evento de grupo
                 userId: null
             };
-            // El segundo parámetro "true" indica que es un evento de grupo
             const addedEvent = await addEvent(eventToAdd, true);
             setEvents([...events, addedEvent]);
             setIsEventModalOpen(false);
@@ -444,26 +406,23 @@ const GroupDetailsPage = () => {
     };
 
     const handleAddSession = (newSession) => {
-        // For now, we'll just add it to local state since we don't have a backend API for sessions
         const sessionToAdd = {
             id: Date.now(),
             ...newSession,
             allDay: !newSession.start.includes('T'),
-            groupId: parseInt(groupId) // Añadimos el groupId para asegurarnos de que se filtre correctamente
+            groupId: parseInt(groupId)
         };
         setStudySessions([...studySessions, sessionToAdd]);
         setIsSessionModalOpen(false);
         showToast('Sesión de estudio programada correctamente', 'success');
     };
 
-    // Transformar eventos para el ModernCalendar
     useEffect(() => {
-        if (!hasAccess) return; // No procesar si no tiene acceso
+        if (!hasAccess) return;
 
         const currentGroupId = parseInt(groupId);
 
         const updatedEvents = [
-            // Tareas del grupo con la asignatura correctamente asociada
             ...tasks
                 .filter(task => task.groupId === currentGroupId)
                 .map((task) => ({
@@ -473,12 +432,10 @@ const GroupDetailsPage = () => {
                     type: 'task',
                     importance: task.importance,
                     status: task.status,
-                    // Aseguramos que siempre tenga una asignatura
                     subject: task.subject || 'Sin asignatura',
                     groupId: task.groupId
                 })),
 
-            // Eventos del grupo
             ...events
                 .filter(event => event.groupId === currentGroupId)
                 .map((event) => ({
@@ -490,7 +447,6 @@ const GroupDetailsPage = () => {
                     groupId: event.groupId
                 })),
 
-            // Sesiones de estudio
             ...studySessions
                 .filter(session => session.groupId === currentGroupId)
                 .map((session) => ({
@@ -506,7 +462,6 @@ const GroupDetailsPage = () => {
         setModernCalendarEvents(updatedEvents);
     }, [tasks, events, studySessions, groupId, hasAccess]);
 
-    // Obtener un color para el avatar del miembro basado en su nombre
     const getMemberColor = (memberName) => {
         const colors = [
             'bg-primary', 'bg-accent', 'bg-task-finalizada',
@@ -515,7 +470,6 @@ const GroupDetailsPage = () => {
 
         if (!memberName) return colors[0];
 
-        // Calculate a hash value from the member name
         const hash = memberName.split('').reduce((acc, char) => {
             return acc + char.charCodeAt(0);
         }, 0);
@@ -523,14 +477,12 @@ const GroupDetailsPage = () => {
         return colors[hash % colors.length];
     };
 
-    // Navegación con animación entre tabs
     const tabVariants = {
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: -10 }
     };
 
-    // Si estamos verificando acceso, mostrar cargando
     if (checkingAccess) {
         return (
             <div className="flex flex-col min-h-screen md:flex-row">
@@ -545,7 +497,6 @@ const GroupDetailsPage = () => {
         );
     }
 
-    // Si no tiene acceso, mostrar pantalla de acceso denegado
     if (!hasAccess) {
         return (
             <div className="flex flex-col min-h-screen md:flex-row">
@@ -574,7 +525,6 @@ const GroupDetailsPage = () => {
                     </div>
                 </div>
 
-                {/* Modal para unirse al grupo */}
                 {showJoinModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
@@ -674,7 +624,6 @@ const GroupDetailsPage = () => {
                     paddingBottom: isMobile ? '5rem' : '2rem',
                 }}
             >
-                {/* Toast notification */}
                 <AnimatePresence>
                     {toast.visible && (
                         <motion.div
@@ -940,13 +889,11 @@ const GroupDetailsPage = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        // Contenedor con altura adecuada para dispositivos móviles y escritorio
                                         <div className="h-[60vh] md:h-[70vh]">
                                             <ModernCalendar
                                                 layout='side'
                                                 events={modernCalendarEvents}
                                                 onAddEvent={(date) => {
-                                                    // Convertir la fecha a formato ISO string YYYY-MM-DD
                                                     setSelectedDate(date.toISOString().split('T')[0]);
                                                     setIsAddModalOpen(true);
                                                 }}
@@ -1073,7 +1020,6 @@ const GroupDetailsPage = () => {
                                                 <div className="pt-2">
                                                     <button
                                                         onClick={() => {
-                                                            // En un caso real esto actualizaría la información del grupo
                                                             showToast('Información actualizada correctamente', 'success');
                                                         }}
                                                         className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors"
@@ -1135,7 +1081,6 @@ const GroupDetailsPage = () => {
                     </div>
                 </Modal>
 
-                {/* Modal de selección para calendario */}
                 {isAddModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-card-bg p-6 rounded-xl shadow-lg w-full max-w-md mx-4">
@@ -1181,7 +1126,6 @@ const GroupDetailsPage = () => {
                     </div>
                 )}
 
-                {/* Modal para añadir/editar tarea */}
                 <TaskModalGroup
                     isOpen={isTaskModalOpen}
                     onClose={() => {
@@ -1193,7 +1137,6 @@ const GroupDetailsPage = () => {
                     task={editingTask}
                 />
 
-                {/* Modal para añadir/editar evento */}
                 <EventModal
                     isOpen={isEventModalOpen}
                     onClose={() => {
@@ -1205,7 +1148,6 @@ const GroupDetailsPage = () => {
                     defaultDate={selectedDate}
                 />
 
-                {/* Modal para añadir sesión */}
                 <SessionModal
                     isOpen={isSessionModalOpen}
                     onClose={() => setIsSessionModalOpen(false)}
@@ -1213,7 +1155,6 @@ const GroupDetailsPage = () => {
                     defaultDate={selectedDate}
                 />
 
-                {/* Modal para detalles del evento */}
                 <Modal
                     isOpen={isEventDetailsOpen}
                     onClose={() => setIsEventDetailsOpen(false)}
@@ -1324,7 +1265,6 @@ const GroupDetailsPage = () => {
                     )}
                 </Modal>
             </div>
-            {/* Modal de Confirmación */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
                 onClose={closeConfirmationModal}
@@ -1335,7 +1275,6 @@ const GroupDetailsPage = () => {
                 confirmText={confirmationModal.confirmText || 'Confirmar'}
             />
 
-            {/* Modal para compartir enlace - Versión simplificada */}
             <Modal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}

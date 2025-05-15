@@ -1,128 +1,109 @@
-/***************************************
- * VARIABLES Y TEMAS
- ***************************************/
-
-/* Variables base del tema por defecto */
 :root {
-  /* Colores principales */
   --primary-color: #467BAA;
   --primary-color-sidebar: #467BAA;
   --primary-color-rgb: 70, 123, 170;
   --secondary-color: #f5a623;
   --accent-color: #5aa0f2;
   --background-color: #e6f0fa;
-  --color-primary-light: #bfdbfe; /* blue-200, claro de #467BAA */
-  --color-error: #EF4444; /* red-500 */
+  --color-primary-light: #bfdbfe;
+  --color-error: #EF4444;
   
-  /* Variables para tareas */
-  --color-task-finalizada-bg: #DCFCE7; /* green-100 */
-  --color-task-finalizada: #15803D; /* green-700 */
-  --color-task-vencida-bg: #FEE2E2; /* red-100 */
-  --color-task-vencida: #B91C1C; /* red-700 */
-  --color-task-hoy-bg: #FFEDD5; /* orange-100 */
-  --color-task-hoy: #C2410C; /* orange-700 */
-  --color-task-pronto-bg: #FEF9C3; /* yellow-100 */
-  --color-task-pronto: #A16207; /* yellow-700 */
-  --color-task-normal-bg: #DBEAFE; /* blue-100 */
-  --color-task-normal: #1E40AF; /* blue-800 */
-  --color-task-calificacion-bg: #DBEAFE; /* blue-100 */
-  --color-task-calificacion: #1E40AF; /* blue-800 */
-  --color-task-alta: #EF4444; /* red-500 */
-  --color-task-media: #F59E0B; /* orange-500 */
-  --color-task-baja: #3B82F6; /* blue-500 */
+  --color-task-finalizada-bg: #DCFCE7;
+  --color-task-finalizada: #15803D;
+  --color-task-vencida-bg: #FEE2E2;
+  --color-task-vencida: #B91C1C;
+  --color-task-hoy-bg: #FFEDD5;
+  --color-task-hoy: #C2410C;
+  --color-task-pronto-bg: #FEF9C3;
+  --color-task-pronto: #A16207;
+  --color-task-normal-bg: #DBEAFE;
+  --color-task-normal: #1E40AF;
+  --color-task-calificacion-bg: #DBEAFE;
+  --color-task-calificacion: #1E40AF;
+  --color-task-alta: #EF4444;
+  --color-task-media: #F59E0B;
+  --color-task-baja: #3B82F6;
   
-  /* Variables para eventos */
-  --color-event-pasado-bg: #F3F4F6; /* gray-100 */
-  --color-event-pasado: #1F2937; /* gray-800 */
-  --color-event-proximo-bg: #FEE2E2; /* red-100 */
-  --color-event-proximo: #B91C1C; /* red-700 */
-  --color-event-cercano-bg: #FFEDD5; /* orange-100 */
-  --color-event-cercano: #C2410C; /* orange-700 */
-  --color-event-futuro-bg: #DCFCE7; /* green-100 */
-  --color-event-futuro: #15803D; /* green-700 */
-  --color-activity-progress: #467BAA; /* primary */
+  --color-event-pasado-bg: #F3F4F6;
+  --color-event-pasado: #1F2937;
+  --color-event-proximo-bg: #FEE2E2;
+  --color-event-proximo: #B91C1C;
+  --color-event-cercano-bg: #FFEDD5;
+  --color-event-cercano: #C2410C;
+  --color-event-futuro-bg: #DCFCE7;
+  --color-event-futuro: #15803D;
+  --color-activity-progress: #467BAA;
   
-  /* Variables para bordes y textos */
-  --color-task-border: #E11D48; /* rose-600 */
-  --color-event-border: #8B5CF6; /* violet-500 */
-  --color-task-text: #E11D48; /* rose-600 */
-  --color-event-text: #8B5CF6; /* violet-500 */
+
+  --color-task-border: #E11D48;
+  --color-event-border: #8B5CF6;
+  --color-task-text: #E11D48;
+  --color-event-text: #8B5CF6;
   
-  /* Variables responsivas */
   --mobile-padding: 0.75rem;
   --desktop-padding: 1.5rem;
   --bottom-nav-height: 3.5rem;
   --sidebar-width-desktop: 5rem;
   
-  /* Variables para colores de texto y fondos */
-  --text-color: #1f2937; /* Color de texto principal (casi negro) */
-  --text-color-secondary: #4b5563; /* Color de texto secundario */
-  --menu-bg-color: #ffffff; /* Fondo de menús - blanco */
-  --card-bg-color: #ffffff; /* Fondo de tarjetas - blanco */
-  --input-bg-color: #f9fafb; /* Fondo de inputs - gris muy claro */
-  --border-color: #e5e7eb; /* Color de bordes - gris claro */
+  --text-color: #1f2937;
+  --text-color-secondary: #4b5563;
+  --menu-bg-color: #ffffff;
+  --card-bg-color: #ffffff;
+  --input-bg-color: #f9fafb;
+  --border-color: #e5e7eb;
 }
 
-/* Tema oscuro */
 .theme-dark {
-  /* Colores principales */
-  --primary-color: #a2cef1; /* Azul para elementos primarios */
+  --primary-color: #a2cef1;
   --primary-color-sidebar: #111827;
   --primary-color-rgb: 59, 130, 246;
   --secondary-color: #f39c12;
-  --accent-color: #60A5FA; /* Azul accent más brillante */
-  --background-color: #121212; /* Fondo principal casi negro */
-  --color-primary-light: #1e3a8a; /* Azul oscuro para fondos de componentes */
+  --accent-color: #60A5FA;
+  --background-color: #121212;
+  --color-primary-light: #1e3a8a;
   
-  /* Colores para texto y fondos en tema oscuro */
-  --text-color: #0056a7; /* Texto blanco para máximo contraste */
-  --text-color-secondary: #d1d5db; /* Texto secundario en gris claro */
-  --menu-bg-color: #1f2937; /* Fondo de menús en gris muy oscuro */
-  --card-bg-color: #111827; /* Fondo de tarjetas en negro/gris muy oscuro */
-  --input-bg-color: #374151; /* Fondo de inputs en gris oscuro */
-  --border-color: #4b5563; /* Color de bordes en gris medio */
+  --text-color: #0056a7;
+  --text-color-secondary: #d1d5db;
+  --menu-bg-color: #1f2937;
+  --card-bg-color: #111827;
+  --input-bg-color: #374151;
+  --border-color: #4b5563;
   
-  /* Variables para errores y estados */
-  --color-error: #F87171; /* red-400 - más brillante para mejor visibilidad */
+  --color-error: #F87171;
   
-  /* Variables para tareas - ajustadas para mejor contraste en fondo oscuro */
-  --color-task-finalizada-bg: #064E3B; /* green-900 */
-  --color-task-finalizada: #34D399; /* green-400 - más brillante */
-  --color-task-vencida-bg: #7F1D1D; /* red-900 */
-  --color-task-vencida: #FCA5A5; /* red-300 - más brillante */
-  --color-task-hoy-bg: #7C2D12; /* orange-900 */
-  --color-task-hoy: #FDBA74; /* orange-300 - más brillante */
-  --color-task-pronto-bg: #713F12; /* yellow-900 */
-  --color-task-pronto: #FBBF24; /* yellow-400 - más brillante */
-  --color-task-normal-bg: #1E3A8A; /* blue-900 */
-  --color-task-normal: #93C5FD; /* blue-300 - más brillante */
-  --color-task-calificacion-bg: #1E3A8A; /* blue-900 */
-  --color-task-calificacion: #93C5FD; /* blue-300 - más brillante */
+  --color-task-finalizada-bg: #064E3B;
+  --color-task-finalizada: #34D399;
+  --color-task-vencida-bg: #7F1D1D;
+  --color-task-vencida: #FCA5A5;
+  --color-task-hoy-bg: #7C2D12;
+  --color-task-hoy: #FDBA74;
+  --color-task-pronto-bg: #713F12;
+  --color-task-pronto: #FBBF24;
+  --color-task-normal-bg: #1E3A8A;
+  --color-task-normal: #93C5FD;
+  --color-task-calificacion-bg: #1E3A8A;
+  --color-task-calificacion: #93C5FD;
   
-  /* Prioridades de tareas */
-  --color-task-alta: #F87171; /* red-400 - más brillante */
-  --color-task-media: #FB923C; /* orange-400 - más brillante */
-  --color-task-baja: #60A5FA; /* blue-400 - más brillante */
+  --color-task-alta: #F87171;
+  --color-task-media: #FB923C;
+  --color-task-baja: #60A5FA;
   
-  /* Variables para eventos - ajustadas para mejor contraste */
-  --color-event-pasado-bg: #1F2937; /* gray-800 */
-  --color-event-pasado: #D1D5DB; /* gray-300 - más brillante */
-  --color-event-proximo-bg: #7F1D1D; /* red-900 */
-  --color-event-proximo: #FCA5A5; /* red-300 - más brillante */
-  --color-event-cercano-bg: #7C2D12; /* orange-900 */
-  --color-event-cercano: #FDBA74; /* orange-300 - más brillante */
-  --color-event-futuro-bg: #064E3B; /* green-900 */
-  --color-event-futuro: #34D399; /* green-400 - más brillante */
+  --color-event-pasado-bg: #1F2937;
+  --color-event-pasado: #D1D5DB;
+  --color-event-proximo-bg: #7F1D1D;
+  --color-event-proximo: #FCA5A5;
+  --color-event-cercano-bg: #7C2D12;
+  --color-event-cercano: #FDBA74;
+  --color-event-futuro-bg: #064E3B;
+  --color-event-futuro: #34D399;
   
-  /* Progreso y bordes */
-  --color-activity-progress: #3B82F6; /* primary */
-  --color-task-border: #FCA5A5; /* red-300 - más brillante */
-  --color-event-border: #A78BFA; /* violet-400 - más brillante */
-  --color-task-text: #FCA5A5; /* red-300 - más brillante */
-  --color-event-text: #A78BFA; /* violet-400 - más brillante */
+  --color-activity-progress: #3B82F6;
+  --color-task-border: #FCA5A5;
+  --color-event-border: #A78BFA;
+  --color-task-text: #FCA5A5;
+  --color-event-text: #A78BFA;
 }
 
-/* Tema verde */
 .theme-green {
   --primary-color: #27ae60;
   --primary-color-sidebar: #27ae60;
@@ -130,48 +111,46 @@
   --secondary-color: #f1c40f;
   --accent-color: #2ecc71;
   --background-color: #e8f5e9;
-  --color-primary-light: #86efac; /* green-300, claro de #27ae60 */
+  --color-primary-light: #86efac;
   
-  /* Variables para texto y fondos */
-  --text-color: #1f2937; /* Color de texto principal (casi negro) */
-  --text-color-secondary: #4b5563; /* Color de texto secundario */
-  --menu-bg-color: #ffffff; /* Fondo de menús - blanco */
-  --card-bg-color: #ffffff; /* Fondo de tarjetas - blanco */
-  --input-bg-color: #f9fafb; /* Fondo de inputs - gris muy claro */
-  --border-color: #e5e7eb; /* Color de bordes - gris claro */
+  --text-color: #1f2937;
+  --text-color-secondary: #4b5563;
+  --menu-bg-color: #ffffff;
+  --card-bg-color: #ffffff;
+  --input-bg-color: #f9fafb;
+  --border-color: #e5e7eb;
   
-  --color-error: #EF4444; /* red-500 */
-  --color-task-finalizada-bg: #DCFCE7; /* green-100 */
-  --color-task-finalizada: #15803D; /* green-700 */
-  --color-task-vencida-bg: #FEE2E2; /* red-100 */
-  --color-task-vencida: #B91C1C; /* red-700 */
-  --color-task-hoy-bg: #FFEDD5; /* orange-100 */
-  --color-task-hoy: #C2410C; /* orange-700 */
-  --color-task-pronto-bg: #FEF9C3; /* yellow-100 */
-  --color-task-pronto: #A16207; /* yellow-700 */
-  --color-task-normal-bg: #DBEAFE; /* blue-100 */
-  --color-task-normal: #1E40AF; /* blue-800 */
-  --color-task-calificacion-bg: #DBEAFE; /* blue-100 */
-  --color-task-calificacion: #1E40AF; /* blue-800 */
-  --color-task-alta: #EF4444; /* red-500 */
-  --color-task-media: #F59E0B; /* orange-500 */
-  --color-task-baja: #3B82F6; /* blue-500 */
-  --color-event-pasado-bg: #F3F4F6; /* gray-100 */
-  --color-event-pasado: #1F2937; /* gray-800 */
-  --color-event-proximo-bg: #FEE2E2; /* red-100 */
-  --color-event-proximo: #B91C1C; /* red-700 */
-  --color-event-cercano-bg: #FFEDD5; /* orange-100 */
-  --color-event-cercano: #C2410C; /* orange-700 */
-  --color-event-futuro-bg: #DCFCE7; /* green-100 */
-  --color-event-futuro: #15803D; /* green-700 */
-  --color-activity-progress: #27ae60; /* primary */
-  --color-task-border: #E11D48; /* rose-600 */
-  --color-event-border: #8B5CF6; /* violet-500 */
-  --color-task-text: #E11D48; /* rose-600 */
-  --color-event-text: #8B5CF6; /* violet-500 */
+  --color-error: #EF4444;
+  --color-task-finalizada-bg: #DCFCE7;
+  --color-task-finalizada: #15803D;
+  --color-task-vencida-bg: #FEE2E2;
+  --color-task-vencida: #B91C1C;
+  --color-task-hoy-bg: #FFEDD5;
+  --color-task-hoy: #C2410C;
+  --color-task-pronto-bg: #FEF9C3;
+  --color-task-pronto: #A16207;
+  --color-task-normal-bg: #DBEAFE;
+  --color-task-normal: #1E40AF;
+  --color-task-calificacion-bg: #DBEAFE;
+  --color-task-calificacion: #1E40AF;
+  --color-task-alta: #EF4444;
+  --color-task-media: #F59E0B;
+  --color-task-baja: #3B82F6;
+  --color-event-pasado-bg: #F3F4F6;
+  --color-event-pasado: #1F2937;
+  --color-event-proximo-bg: #FEE2E2;
+  --color-event-proximo: #B91C1C;
+  --color-event-cercano-bg: #FFEDD5;
+  --color-event-cercano: #C2410C;
+  --color-event-futuro-bg: #DCFCE7;
+  --color-event-futuro: #15803D;
+  --color-activity-progress: #27ae60;
+  --color-task-border: #E11D48;
+  --color-event-border: #8B5CF6;
+  --color-task-text: #E11D48;
+  --color-event-text: #8B5CF6;
 }
 
-/* Tema púrpura */
 .theme-purple {
   --primary-color: #8e44ad;
   --primary-color-sidebar: #8e44ad;
@@ -179,43 +158,42 @@
   --secondary-color: #e74c3c;
   --accent-color: #9b59b6;
   --background-color: #f3e5f5;
-  --color-primary-light: #d8b4fe; /* purple-200, claro de #8e44ad */
+  --color-primary-light: #d8b4fe;
   
-  /* Variables para texto y fondos */
-  --text-color: #1f2937; /* Color de texto principal (casi negro) */
-  --text-color-secondary: #4b5563; /* Color de texto secundario */
-  --menu-bg-color: #ffffff; /* Fondo de menús - blanco */
-  --card-bg-color: #ffffff; /* Fondo de tarjetas - blanco */
-  --input-bg-color: #f9fafb; /* Fondo de inputs - gris muy claro */
-  --border-color: #e5e7eb; /* Color de bordes - gris claro */
+  --text-color: #1f2937;
+  --text-color-secondary: #4b5563;
+  --menu-bg-color: #ffffff;
+  --card-bg-color: #ffffff;
+  --input-bg-color: #f9fafb;
+  --border-color: #e5e7eb;
   
-  --color-error: #EF4444; /* red-500 */
-  --color-task-finalizada-bg: #DCFCE7; /* green-100 */
-  --color-task-finalizada: #15803D; /* green-700 */
-  --color-task-vencida-bg: #FEE2E2; /* red-100 */
-  --color-task-vencida: #B91C1C; /* red-700 */
-  --color-task-hoy-bg: #FFEDD5; /* orange-100 */
-  --color-task-hoy: #C2410C; /* orange-700 */
-  --color-task-pronto-bg: #FEF9C3; /* yellow-100 */
-  --color-task-pronto: #A16207; /* yellow-700 */
-  --color-task-normal-bg: #DBEAFE; /* blue-100 */
-  --color-task-normal: #1E40AF; /* blue-800 */
-  --color-task-calificacion-bg: #DBEAFE; /* blue-100 */
-  --color-task-calificacion: #1E40AF; /* blue-800 */
-  --color-task-alta: #EF4444; /* red-500 */
-  --color-task-media: #F59E0B; /* orange-500 */
-  --color-task-baja: #3B82F6; /* blue-500 */
-  --color-event-pasado-bg: #F3F4F6; /* gray-100 */
-  --color-event-pasado: #1F2937; /* gray-800 */
-  --color-event-proximo-bg: #FEE2E2; /* red-100 */
-  --color-event-proximo: #B91C1C; /* red-700 */
-  --color-event-cercano-bg: #FFEDD5; /* orange-100 */
-  --color-event-cercano: #C2410C; /* orange-700 */
-  --color-event-futuro-bg: #DCFCE7; /* green-100 */
-  --color-event-futuro: #15803D; /* green-700 */
-  --color-activity-progress: #8e44ad; /* primary */
-  --color-task-border: #E11D48; /* rose-600 */
-  --color-event-border: #8B5CF6; /* violet-500 */
-  --color-task-text: #E11D48; /* rose-600 */
-  --color-event-text: #8B5CF6; /* violet-500 */
+  --color-error: #EF4444;
+  --color-task-finalizada-bg: #DCFCE7;
+  --color-task-finalizada: #15803D;
+  --color-task-vencida-bg: #FEE2E2;
+  --color-task-vencida: #B91C1C;
+  --color-task-hoy-bg: #FFEDD5;
+  --color-task-hoy: #C2410C;
+  --color-task-pronto-bg: #FEF9C3;
+  --color-task-pronto: #A16207;
+  --color-task-normal-bg: #DBEAFE;
+  --color-task-normal: #1E40AF;
+  --color-task-calificacion-bg: #DBEAFE;
+  --color-task-calificacion: #1E40AF;
+  --color-task-alta: #EF4444;
+  --color-task-media: #F59E0B;
+  --color-task-baja: #3B82F6;
+  --color-event-pasado-bg: #F3F4F6;
+  --color-event-pasado: #1F2937;
+  --color-event-proximo-bg: #FEE2E2;
+  --color-event-proximo: #B91C1C;
+  --color-event-cercano-bg: #FFEDD5;
+  --color-event-cercano: #C2410C;
+  --color-event-futuro-bg: #DCFCE7;
+  --color-event-futuro: #15803D;
+  --color-activity-progress: #8e44ad;
+  --color-task-border: #E11D48;
+  --color-event-border: #8B5CF6;
+  --color-task-text: #E11D48;
+  --color-event-text: #8B5CF6;
 }

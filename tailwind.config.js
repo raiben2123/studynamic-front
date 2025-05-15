@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
@@ -6,7 +5,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Colores primarios del tema
         'primary': 'var(--primary-color)',
         'primary-light': 'var(--color-primary-light)',
         'secondary': 'var(--secondary-color)',
@@ -14,7 +12,6 @@ module.exports = {
         'background': 'var(--background-color)',
         'error': 'var(--color-error)',
         
-        // Colores para texto y fondos (importante para tema oscuro)
         'text': 'var(--text-color)',
         'text-secondary': 'var(--text-color-secondary)',
         'menu-bg': 'var(--menu-bg-color)',
@@ -22,7 +19,6 @@ module.exports = {
         'input-bg': 'var(--input-bg-color)',
         'border': 'var(--border-color)',
         
-        // Colores para tareas
         'task-finalizada': 'var(--color-task-finalizada)',
         'task-finalizada-bg': 'var(--color-task-finalizada-bg)',
         'task-vencida': 'var(--color-task-vencida)',
@@ -39,7 +35,6 @@ module.exports = {
         'task-media': 'var(--color-task-media)',
         'task-baja': 'var(--color-task-baja)',
         
-        // Colores para eventos
         'event-pasado': 'var(--color-event-pasado)',
         'event-pasado-bg': 'var(--color-event-pasado-bg)',
         'event-proximo': 'var(--color-event-proximo)',
@@ -50,7 +45,6 @@ module.exports = {
         'event-futuro-bg': 'var(--color-event-futuro-bg)',
         'activity-progress': 'var(--color-activity-progress)',
         
-        // Colores para bordes y textos
         'task': 'var(--color-task-text)',
         'task-border': 'var(--color-task-border)',
         'event': 'var(--color-event-text)',
@@ -82,5 +76,5 @@ module.exports = {
     },
   },
   plugins: [],
-  darkMode: 'class', // Habilitar modo oscuro basado en clases
+  darkMode: 'class',
 };

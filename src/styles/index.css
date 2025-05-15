@@ -1,26 +1,11 @@
-/* 
- * Studynamic - Archivo principal de estilos
- * Este archivo importa todos los archivos CSS parciales
- */
-
-/* Importar todos los archivos CSS parciales */
 @import './import-tailwind.css';
-/* Directivas de Tailwind y definición de fuentes */
 @import './variables-themes.css';
-/* Variables y Temas */
 @import './clases-themes.css';
-/* Clases Utilitarias de Temas */
 @import './base.css';
-/* Estilos Básicos y App */
 @import './responsive1.css';
-/* Estilos Responsivos (Primera parte) */
 @import './responsive2.css';
-/* Estilos Responsivos (Calendario y eventos) */
 @import './responsive3.css';
-/* Estilos Responsivos (Misceláneos y componentes adicionales) */
 
-
-/* Añade esto al principio de tu archivo index.css */
 :root {
     --vh: 1vh;
 }
@@ -29,13 +14,11 @@ body {
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
     height: 100vh;
-    /* Fallback */
     height: calc(var(--vh, 1vh) * 100);
     margin: 0;
     padding: 0;
 }
 
-/* Para dispositivos Android */
 @media screen and (display-mode: fullscreen) {
     body {
         padding-bottom: env(safe-area-inset-bottom);

@@ -1,4 +1,3 @@
-// src/components/dashboard/SubjectCard.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaEdit, FaTrash, FaBook, FaClock, FaCalendarAlt, FaAngleDown, FaAngleUp } from 'react-icons/fa';
@@ -7,7 +6,6 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     const [showSchedules, setShowSchedules] = useState(false);
     const [schedules, setSchedules] = useState([]);
 
-    // Este useEffect asegura que los schedules se actualicen cuando cambia el subject
     useEffect(() => {
         if (subject && subject.schedules) {
             setSchedules(subject.schedules);
@@ -19,7 +17,6 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     const formatTimeSpan = (timeSpan) => {
         if (!timeSpan) return '';
         
-        // Si tiene formato HH:MM:SS (como en la respuesta JSON), extraer solo HH:MM
         if (typeof timeSpan === 'string' && timeSpan.length === 8 && timeSpan.split(':').length === 3) {
             return timeSpan.substring(0, 5);
         }
@@ -38,7 +35,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     };
 
     const getDayName = (dayOfWeek) => {
-        const days = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa']; // Abreviados para móvil
+        const days = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
         return days[dayOfWeek] || '?';
     };
 
@@ -55,8 +52,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
         
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
-        
-        // Más compacto para móviles
+
         if (window.innerWidth < 768) {
             return hours > 0 ? `${hours}h${mins > 0 ? mins + 'm' : ''}` : `${mins}m`;
         }
@@ -71,8 +67,7 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     };
 
     const hasSchedules = schedules && schedules.length > 0;
-    
-    // Generate a "random" subject color from the subject name
+
     const getSubjectColor = () => {
         const colors = [
             'bg-blue-500',
@@ -85,7 +80,6 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
             'bg-teal-500'
         ];
         
-        // Use the subject title to deterministically choose a color
         const charCodeSum = subject.title
             .split('')
             .reduce((sum, char) => sum + char.charCodeAt(0), 0);
@@ -96,8 +90,6 @@ const SubjectCard = ({ subject, onUpdate, onDelete }) => {
     const subjectColor = getSubjectColor();
 
     const handleDeleteClick = () => {
-        // En lugar de usar window.confirm, simplemente llamamos a onDelete
-        // El componente padre ahora se encargará de mostrar el modal de confirmación
         onDelete(subject.id);
     };
 

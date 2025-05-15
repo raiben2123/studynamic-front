@@ -1,10 +1,8 @@
-// src/api/users.js
 import { getAuthToken } from '../utils/authUtils';
 import { getTokenSync } from './auth';
 
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 
-// Obtener información de un usuario
 export const getUserById = async (userId) => {
   try {
     const token = getAuthToken();
@@ -27,7 +25,6 @@ export const getUserById = async (userId) => {
   }
 };
 
-// Actualizar información de un usuario
 export const updateUser = async (userId, userData) => {
   try {
     const token = getAuthToken();
@@ -54,20 +51,17 @@ export const updateUser = async (userId, userData) => {
   }
 };
 
-// Subir foto de perfil
 export const uploadProfilePicture = async (userId, file) => {
   try {
-    // Usar el método síncrono para obtener el token
     const token = getTokenSync();
     const formData = new FormData();
     formData.append('file', file);
 
-    // Comprobar que el token existe
     if (!token) {
       throw new Error('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.');
     }
 
-    console.log('Enviando con token:', token); // Debugging
+    console.log('Enviando con token:', token);
     console.log('Enviando a userId:', userId);
 
     const response = await fetch(`${API_URL}/users/${userId}/profile-picture`, {

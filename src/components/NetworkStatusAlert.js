@@ -1,8 +1,6 @@
-// src/components/NetworkStatusAlert.js
 import React, { useState, useEffect, memo } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Network } from '@capacitor/network';
-// Importamos solo los íconos específicos que necesitamos
 import { FaWifi, FaBan } from 'react-icons/fa';
 
 const NetworkStatusAlert = memo(function NetworkStatusAlert() {
@@ -11,16 +9,13 @@ const NetworkStatusAlert = memo(function NetworkStatusAlert() {
   const isNative = Capacitor.isNativePlatform();
 
   useEffect(() => {
-    // Función para manejar los cambios de estado de la red
     const handleNetworkStatusChange = (status) => {
       const connected = status.connected;
       
-      // Si el estado de conexión cambia, actualizarlo y mostrar la alerta
       if (connected !== isConnected) {
         setIsConnected(connected);
         setShowAlert(true);
         
-        // Ocultar la alerta después de 5 segundos si estamos conectados
         if (connected) {
           setTimeout(() => {
             setShowAlert(false);
@@ -31,23 +26,19 @@ const NetworkStatusAlert = memo(function NetworkStatusAlert() {
 
     const setupNetworkListener = async () => {
       try {
-        // Obtener el estado inicial de la red
         const initialStatus = await Network.getStatus();
         setIsConnected(initialStatus.connected);
         
-        // Registrar el listener para cambios en la red
         Network.addListener('networkStatusChange', handleNetworkStatusChange);
       } catch (error) {
         console.error('Error al configurar el listener de red:', error);
       }
     };
 
-    // Configurar el listener solo en dispositivos nativos o permitir comprobación web
     if (isNative || window.navigator.onLine !== undefined) {
       if (isNative) {
         setupNetworkListener();
       } else {
-        // Para la web, usamos los eventos estándar de navegador
         const handleOnline = () => {
           setIsConnected(true);
           setShowAlert(true);
@@ -59,14 +50,11 @@ const NetworkStatusAlert = memo(function NetworkStatusAlert() {
           setShowAlert(true);
         };
         
-        // Estado inicial
         setIsConnected(window.navigator.onLine);
         
-        // Añadir listeners
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
         
-        // Limpieza
         return () => {
           window.removeEventListener('online', handleOnline);
           window.removeEventListener('offline', handleOffline);
@@ -74,7 +62,6 @@ const NetworkStatusAlert = memo(function NetworkStatusAlert() {
       }
     }
 
-    // Función de limpieza para eliminar el listener de red
     return () => {
       if (isNative) {
         Network.removeAllListeners();
@@ -82,7 +69,6 @@ const NetworkStatusAlert = memo(function NetworkStatusAlert() {
     };
   }, [isConnected, isNative]);
 
-  // No mostrar nada si no hay alerta o si estamos en simulador/navegador sin soporte
   if (!showAlert) {
     return null;
   }

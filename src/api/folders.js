@@ -1,18 +1,13 @@
-// src/api/folders.js
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 
-// Función para obtener el token de autenticación
 const getAuthToken = () => {
-  // Intenta obtener el token del localStorage
   const token = localStorage.getItem('token');
   if (!token) {
-    // Si no existe en localStorage, intentar obtenerlo desde la sesión
     return sessionStorage.getItem('token');
   }
   return token;
 };
 
-// Obtener carpetas por grupo
 export const getGroupFolders = async (groupId) => {
   try {
     const token = getAuthToken();
@@ -35,7 +30,6 @@ export const getGroupFolders = async (groupId) => {
   }
 };
 
-// Obtener carpetas del usuario
 export const getUserFolders = async () => {
   try {
     const token = getAuthToken();
@@ -58,7 +52,6 @@ export const getUserFolders = async () => {
   }
 };
 
-// Obtener carpetas por asignatura
 export const getFoldersBySubject = async (subjectId) => {
   try {
     const token = getAuthToken();
@@ -81,7 +74,6 @@ export const getFoldersBySubject = async (subjectId) => {
   }
 };
 
-// Crear una nueva carpeta
 export const createFolder = async (name, description, userId = null, groupId = null, subjectId = null, type = 4) => {
   try {
     const token = getAuthToken();
@@ -112,23 +104,18 @@ export const createFolder = async (name, description, userId = null, groupId = n
   }
 };
 
-// Crear carpetas estándar para una asignatura si no existen
 export const createStandardFoldersForSubject = async (subjectId, userId) => {
   try {
-    // Obtenemos las carpetas existentes para la asignatura
     const existingFolders = await getFoldersBySubject(subjectId);
-    
-    // Definimos las carpetas estándar y sus tipos
+
     const standardFolders = [
-      { name: 'Apuntes', type: 1, description: 'Apuntes de clase' }, // Type 1 = Notes
-      { name: 'Exámenes', type: 2, description: 'Exámenes anteriores' }, // Type 2 = Exams
-      { name: 'Trabajos', type: 3, description: 'Trabajos y tareas' }, // Type 3 = Assignments
+      { name: 'Apuntes', type: 1, description: 'Apuntes de clase' },
+      { name: 'Exámenes', type: 2, description: 'Exámenes anteriores' },
+      { name: 'Trabajos', type: 3, description: 'Trabajos y tareas' },
     ];
-    
-    // Mapa para almacenar las carpetas creadas
+
     const folderMap = {};
-    
-    // Verificamos las carpetas existentes
+
     for (const existingFolder of existingFolders) {
       if (existingFolder.name === 'Apuntes') {
         folderMap.Apuntes = existingFolder.id;
@@ -138,19 +125,17 @@ export const createStandardFoldersForSubject = async (subjectId, userId) => {
         folderMap.Trabajos = existingFolder.id;
       }
     }
-    
-    // Creamos las carpetas que no existan
+
     const createdFolders = [];
     for (const folder of standardFolders) {
       let folderType = folder.name;
-      
-      // Si esta carpeta aún no existe
+
       if (!folderMap[folderType]) {
         const newFolder = await createFolder(
           folder.name,
           folder.description,
           userId,
-          null, // No groupId
+          null,
           subjectId,
           folder.type
         );
@@ -158,8 +143,7 @@ export const createStandardFoldersForSubject = async (subjectId, userId) => {
         createdFolders.push(newFolder);
       }
     }
-    
-    // Retornar el mapeo y las carpetas creadas
+
     return {
       folders: existingFolders.concat(createdFolders),
       folderMap: {
@@ -174,7 +158,6 @@ export const createStandardFoldersForSubject = async (subjectId, userId) => {
   }
 };
 
-// Actualizar carpeta
 export const updateFolder = async (id, name, description, type) => {
   try {
     const token = getAuthToken();
@@ -203,7 +186,6 @@ export const updateFolder = async (id, name, description, type) => {
   }
 };
 
-// Eliminar carpeta
 export const deleteFolder = async (id) => {
   try {
     const token = getAuthToken();
@@ -226,7 +208,6 @@ export const deleteFolder = async (id) => {
   }
 };
 
-// Añadir archivo a carpeta
 export const addFileToFolder = async (folderId, fileId) => {
   try {
     const token = getAuthToken();
@@ -249,7 +230,6 @@ export const addFileToFolder = async (folderId, fileId) => {
   }
 };
 
-// Mover archivo a otra carpeta
 export const moveFileToFolder = async (fileId, newFolderId) => {
   try {
     const token = getAuthToken();

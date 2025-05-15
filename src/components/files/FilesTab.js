@@ -15,27 +15,22 @@ const FilesTab = ({ groupId }) => {
   const [files, setFiles] = useState([]);
   const [fileLoading, setFileLoading] = useState(false);
   
-  // Cargar carpetas del grupo
   useEffect(() => {
     const loadFolders = async () => {
       if (!groupId) return;
       
       setLoading(true);
       try {
-        // Obtener las carpetas del grupo
         const groupFolders = await getGroupFolders(groupId);
         console.log('Carpetas del grupo obtenidas:', groupFolders);
         
-        // Establecer las carpetas obtenidas
         setFolders(groupFolders);
         
-        // Activar la primera carpeta por defecto si hay alguna
         if (groupFolders.length > 0 && !activeFolder) {
           setActiveFolder(groupFolders[0].id);
         }
       } catch (error) {
         console.error('Error loading group folders:', error);
-        // Si hay un error, cargar carpetas simuladas para que la UI no se rompa
         const defaultFolders = [
           { id: 'general', name: 'General', files: [] },
           { id: 'assignments', name: 'Tareas', files: [] },
@@ -55,53 +50,6 @@ const FilesTab = ({ groupId }) => {
     loadFolders();
   }, [groupId]);
   
-  // Nota: Esta función está disponible para uso futuro si es necesario
-  // pero no se utiliza actualmente
-  /*
-  const createStandardFolders = async () => {
-    try {
-      // Definición de tipos de carpeta (no se usa actualmente)
-      const folderTypes = {
-        'General': 0,   // FolderType.General = 0
-        'Apuntes': 1,   // FolderType.Notes = 1
-        'Exámenes': 2,  // FolderType.Exams = 2
-        'Trabajos': 3    // FolderType.Assignments = 3
-      };
-      
-      const standardFolders = [
-        { name: 'General', description: 'Carpeta general para archivos diversos', type: 0 },
-        { name: 'Apuntes', description: 'Apuntes de clase y material de estudio', type: 1 },
-        { name: 'Trabajos', description: 'Trabajos y proyectos del grupo', type: 3 },
-        { name: 'Exámenes', description: 'Exámenes previos y material de preparación', type: 2 }
-      ];
-      
-      const createdFolders = [];
-      
-      // Crear las carpetas estándar
-      for (const folder of standardFolders) {
-        console.log(`Creando carpeta estándar: ${folder.name} (tipo ${folder.type})`);
-        
-        const newFolder = await createFolder(
-          folder.name,
-          folder.description,
-          null, // userId
-          parseInt(groupId),
-          null, // subjectId
-          folder.type
-        );
-        
-        createdFolders.push(newFolder);
-      }
-      
-      return createdFolders;
-    } catch (error) {
-      console.error('Error creating standard folders:', error);
-      throw error;
-    }
-  };
-  */
-  
-  // Cargar archivos cuando cambia la carpeta activa
   useEffect(() => {
     const loadFiles = async () => {
       if (!activeFolder) return;
@@ -110,12 +58,9 @@ const FilesTab = ({ groupId }) => {
       try {
         let folderFiles;
         
-        // Verificar si estamos usando IDs de simulación (string) o reales (number)
         if (typeof activeFolder === 'string') {
-          // En modo de simulación, cargar archivos por grupo
           folderFiles = await getFilesByGroup(parseInt(groupId));
         } else {
-          // En modo real, cargar archivos por carpeta
           folderFiles = await getFilesByFolder(activeFolder);
         }
         
@@ -131,7 +76,6 @@ const FilesTab = ({ groupId }) => {
     loadFiles();
   }, [activeFolder, groupId]);
   
-  // Función para añadir una nueva carpeta
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return;
     
@@ -139,33 +83,27 @@ const FilesTab = ({ groupId }) => {
       const newFolder = await createFolder(
         newFolderName.trim(),
         `Carpeta creada por usuario`,
-        null, // userId
+        null,
         parseInt(groupId),
-        null, // subjectId
-        4 // Custom folder type
+        null,
+        4
       );
-      
-      // Añadir la nueva carpeta a la lista
+
       setFolders([...folders, newFolder]);
       
-      // Limpiar el formulario
       setNewFolderName('');
       setShowNewFolderInput(false);
       
-      // Activar la nueva carpeta
       setActiveFolder(newFolder.id);
     } catch (error) {
       console.error('Error creating folder:', error);
     }
   };
   
-  // Función para manejar archivos subidos exitosamente
   const handleFileUploaded = (file) => {
-    // Añadir el archivo nuevo a la lista de archivos
     setFiles([...files, file]);
   };
   
-  // Función para recargar los archivos
   const handleRefreshFiles = async () => {
     if (!activeFolder) return;
     
@@ -188,7 +126,6 @@ const FilesTab = ({ groupId }) => {
     }
   };
   
-  // Función para obtener la información de la carpeta activa
   const getActiveFolder = () => {
     if (!activeFolder) return null;
     return folders.find(f => f.id === activeFolder);
@@ -201,7 +138,6 @@ const FilesTab = ({ groupId }) => {
       </div>
       
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Panel lateral con carpetas */}
         <div className="w-full md:w-64 space-y-2">
           {folders.length === 0 && !loading ? (
             <div className="text-center p-4 border border-dashed border-primary/50 rounded-lg bg-primary/5">
@@ -255,7 +191,6 @@ const FilesTab = ({ groupId }) => {
             ))
           )}
           
-          {/* Botón o input para añadir carpeta */}
           {showNewFolderInput ? (
             <div className="flex items-center space-x-2 mt-2">
               <input
@@ -292,7 +227,6 @@ const FilesTab = ({ groupId }) => {
           )}
         </div>
         
-        {/* Panel de contenido */}
         <div className="flex-1 border border-border rounded-lg p-4">
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -305,7 +239,6 @@ const FilesTab = ({ groupId }) => {
                   {getActiveFolder()?.name || 'Carpeta'} 
                 </h3>
                 
-                {/* Componente de subida de archivos */}
                 <FileUpload 
                   fileType="GroupResource"
                   groupId={parseInt(groupId)}
@@ -315,7 +248,6 @@ const FilesTab = ({ groupId }) => {
                 />
               </div>
               
-              {/* Lista de archivos */}
               {fileLoading ? (
                 <div className="flex justify-center items-center py-8">
                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>

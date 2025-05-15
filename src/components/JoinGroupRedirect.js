@@ -1,4 +1,3 @@
-// src/components/JoinGroupRedirect.js - Corregido para asignar rol de miembro (no admin)
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -12,7 +11,6 @@ const JoinGroupRedirect = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Estados para manejar el proceso de unión
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
     const [error, setError] = useState(null);
@@ -21,29 +19,23 @@ const JoinGroupRedirect = () => {
     const [requiresPassword, setRequiresPassword] = useState(false);
 
     useEffect(() => {
-        // Si el usuario no está autenticado, guardamos la URL y redirigimos
         if (!token || !userId) {
             localStorage.setItem('redirectAfterLogin', location.pathname);
             navigate('/');
             return;
         }
 
-        // Si el usuario está autenticado, intentamos unirlo al grupo
         const joinUserToGroup = async () => {
             setLoading(true);
             try {
-                // Intentamos unir al usuario al grupo a través del enlace de invitación
-                // NOTA: joinGroupWithLink debe asegurar que se asigne RoleId=2 (miembro)
                 const result = await joinGroupWithLink(groupId);
 
                 if (result.success) {
-                    // La unión fue exitosa
                     setSuccess(true);
                     setTimeout(() => {
                         navigate(`/groups/${groupId}`);
                     }, 1500);
                 } else if (result.requiresPassword) {
-                    // El grupo requiere contraseña para unirse
                     setRequiresPassword(true);
                 } else {
                     setError('Hubo un problema al unirse al grupo.');
@@ -51,7 +43,6 @@ const JoinGroupRedirect = () => {
             } catch (error) {
                 console.error("Error uniendo al grupo:", error);
 
-                // Si el error es por contraseña incorrecta, pedimos la contraseña
                 if (error.message && (
                     error.message.includes('Contraseña incorrecta') ||
                     error.message.includes('password') ||
@@ -80,7 +71,6 @@ const JoinGroupRedirect = () => {
         setError(null);
 
         try {
-            // IMPORTANTE: La función joinGroup debe asegurar que el rol asignado sea 2 (miembro)
             await joinGroup(groupId, password);
             setSuccess(true);
             setTimeout(() => {
@@ -214,7 +204,6 @@ const JoinGroupRedirect = () => {
         );
     }
 
-    // Fallback en caso de un estado no manejado
     return null;
 };
 

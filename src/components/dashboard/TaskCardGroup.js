@@ -4,9 +4,8 @@ import { FaEdit, FaTrash, FaBookmark, FaExclamationCircle, FaCheck } from 'react
 import dayjs from '../../utils/dayjsConfig';
 
 const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
-    console.log('Task recibido:', task); // Log para depuración
+    console.log('Task recibido:', task);
 
-    // Verifica si task existe
     if (!task) {
         console.warn('Task es undefined o null');
         return <div className="text-error">Error: Tarea no disponible</div>;
@@ -16,7 +15,6 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
         onDelete(task.id);
     };
 
-    // Calculate days remaining
     const calculateDaysRemaining = () => {
         if (!task.dueDate) {
             console.warn('No hay dueDate:', task);
@@ -35,7 +33,6 @@ const TaskCardGroup = ({ task, onUpdate, onDelete }) => {
 
     const daysRemaining = calculateDaysRemaining();
 
-    // Apply different styling based on status and days remaining
     const getTaskStatusColor = () => {
         if (task.status === 'Finalizada') return 'bg-task-finalizada text-task-finalizada';
         if (daysRemaining === null) return 'bg-task-normal text-task-normal';

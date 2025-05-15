@@ -7,7 +7,7 @@ import Logo from '../assets/Logo_opacidad33.png';
 import TaskCard from '../components/dashboard/TaskCard';
 import TaskModal from '../components/modals/TaskModal';
 import SubjectModal from '../components/modals/SubjectModal';
-import ConfirmationModal from '../components/modals/ConfirmationModal'; // Importar el modal de confirmación
+import ConfirmationModal from '../components/modals/ConfirmationModal';
 import { FaFilter, FaTasks, FaCheckCircle, FaPlus, FaChartBar } from 'react-icons/fa';
 
 const TasksPage = () => {
@@ -19,11 +19,10 @@ const TasksPage = () => {
     const [editingTask, setEditingTask] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [view, setView] = useState('all'); // 'all', 'pending', 'completed'
+    const [view, setView] = useState('all');
     const { token, userId } = useAuth();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // Estado para el modal de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
@@ -49,7 +48,6 @@ const TasksPage = () => {
                     return task;
                 });
 
-                // Ordenamos las tareas por fecha
                 const sortedTasks = [...tasksData].sort((a, b) => {
                     return new Date(a.dueDate) - new Date(b.dueDate);
                 });
@@ -70,10 +68,8 @@ const TasksPage = () => {
     const handleAddTask = async (newTask) => {
         setLoading(true);
         try {
-            // Asegurarnos que la tarea tenga un nombre de asignatura
             let taskToAdd = { ...newTask };
 
-            // Si la tarea tiene subjectId pero no subject, asignar el nombre
             if (taskToAdd.subjectId && (!taskToAdd.subject || taskToAdd.subject === '')) {
                 const subject = subjects.find(s => s.id === parseInt(taskToAdd.subjectId));
                 if (subject) {
@@ -83,10 +79,8 @@ const TasksPage = () => {
 
             const addedTask = await addTask(taskToAdd);
 
-            // Asegurarnos que la tarea devuelta tenga el nombre de la asignatura
             let processedTask = { ...addedTask };
 
-            // Si la tarea devuelta no tiene un nombre de asignatura pero tiene ID, buscar el nombre
             if (!processedTask.subject && processedTask.subjectId) {
                 const subject = subjects.find(s => s.id === parseInt(processedTask.subjectId));
                 if (subject) {
@@ -94,7 +88,6 @@ const TasksPage = () => {
                 }
             }
 
-            // Añadimos la nueva tarea al estado y reordenamos
             const updatedTasks = [...tasks, processedTask].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
@@ -119,10 +112,8 @@ const TasksPage = () => {
     const handleTaskUpdate = async (updatedTask) => {
         setLoading(true);
         try {
-            // Asegurarnos que la tarea tenga un nombre de asignatura
             let taskToUpdate = { ...updatedTask };
 
-            // Si la tarea tiene subjectId pero no subject, asignar el nombre
             if (taskToUpdate.subjectId && (!taskToUpdate.subject || taskToUpdate.subject === '')) {
                 const subject = subjects.find(s => s.id === parseInt(taskToUpdate.subjectId));
                 if (subject) {
@@ -132,10 +123,8 @@ const TasksPage = () => {
 
             const updatedTaskFromBackend = await updateTask(updatedTask.id, taskToUpdate);
 
-            // Asegurarnos que la tarea devuelta tenga el nombre de la asignatura
             let processedTask = { ...updatedTaskFromBackend };
 
-            // Si la tarea devuelta no tiene un nombre de asignatura pero tiene ID, buscar el nombre
             if (!processedTask.subject && processedTask.subjectId) {
                 const subject = subjects.find(s => s.id === parseInt(processedTask.subjectId));
                 if (subject) {
@@ -143,7 +132,6 @@ const TasksPage = () => {
                 }
             }
 
-            // Actualizamos la tarea en el estado y reordenamos
             const updatedTasks = tasks
                 .map((task) => (task.id === updatedTask.id ? processedTask : task))
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
@@ -173,7 +161,6 @@ const TasksPage = () => {
                     await deleteTask(taskId);
                     setTasks(tasks.filter(t => t.id !== taskId));
                     setError(null);
-                    // Podríamos añadir una notificación de éxito aquí
                 } catch (err) {
                     console.error('Error deleting task:', err);
                     setError('Error al eliminar la tarea');
@@ -202,7 +189,6 @@ const TasksPage = () => {
         }
     };
 
-    // Cerrar el modal de confirmación
     const closeConfirmationModal = () => {
         setConfirmationModal({
             ...confirmationModal,
@@ -210,7 +196,6 @@ const TasksPage = () => {
         });
     };
 
-    // Filtrar tareas por asignatura y estado
     const filteredTasks = tasks.filter((task) => {
         const matchesSubject = selectedSubject ? task.subject === selectedSubject : true;
 
@@ -223,11 +208,9 @@ const TasksPage = () => {
         return matchesSubject;
     });
 
-    // Separar tareas pendientes y completadas para la vista
     const pendingTasks = filteredTasks.filter((task) => task.status !== 'Finalizada');
     const completedTasks = filteredTasks.filter((task) => task.status === 'Finalizada');
 
-    // Estadísticas para el panel superior
     const totalTasks = tasks.length;
     const completedTasksCount = tasks.filter(task => task.status === 'Finalizada').length;
     const completionRate = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
@@ -259,7 +242,6 @@ const TasksPage = () => {
                         </div>
                     )}
 
-                    {/* Panel superior con estadísticas */}
                     <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md mb-6 opacity-95 border border-border">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
@@ -284,7 +266,6 @@ const TasksPage = () => {
                             </div>
                         </div>
 
-                        {/* Estadísticas en tarjetas */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             <div className="bg-primary-light p-3 rounded-lg border border-primary/20">
                                 <div className="text-sm text-text-secondary">Total de tareas</div>
@@ -304,7 +285,6 @@ const TasksPage = () => {
                             </div>
                         </div>
 
-                        {/* Filtros */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div className="flex flex-wrap gap-2">
                                 <button
@@ -336,7 +316,6 @@ const TasksPage = () => {
                                 </button>
                             </div>
 
-                            {/* Filtro de asignaturas */}
                             <div className="relative w-full md:w-auto">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                     <FaFilter className="text-primary" />
@@ -357,9 +336,7 @@ const TasksPage = () => {
                         </div>
                     </div>
 
-                    {/* Lista de tareas */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Vista pendientes */}
                         {(view === 'all' || view === 'pending') && (
                             <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md opacity-95 border border-border">
                                 <div className="flex items-center mb-4">
@@ -401,7 +378,6 @@ const TasksPage = () => {
                             </div>
                         )}
 
-                        {/* Vista completadas */}
                         {(view === 'all' || view === 'completed') && (
                             <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md opacity-95 border border-border">
                                 <div className="flex items-center mb-4">
@@ -434,7 +410,6 @@ const TasksPage = () => {
                             </div>
                         )}
 
-                        {/* Gráfico resumen (visible en todas las pantallas) */}
                         {view === 'all' && subjects.length > 0 && (
                             <div className="md:col-span-2 bg-card-bg p-4 md:p-6 rounded-xl shadow-md mt-4 opacity-95 border border-border">
                                 <div className="flex items-center mb-4">
@@ -492,7 +467,6 @@ const TasksPage = () => {
                 onSave={handleAddSubject}
             />
 
-            {/* Modal de Confirmación para eliminaciones */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
                 onClose={closeConfirmationModal}

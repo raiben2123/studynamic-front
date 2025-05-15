@@ -1,13 +1,12 @@
-// src/components/modals/SubjectScheduleModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedule }) => {
     const [scheduleData, setScheduleData] = useState({
-        dayOfWeek: 1, // Lunes por defecto
+        dayOfWeek: 1,
         startTime: '08:00',
         durationMinutes: 60,
-        weekType: 0, // 0: Todas las semanas, 1: Semanas pares, 2: Semanas impares
+        weekType: 0,
         subjectId: subject?.id || ''
     });
     const [error, setError] = useState('');
@@ -21,12 +20,10 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
         }
 
         if (editingSchedule) {
-            // Ajustar el formato de la hora para que funcione con input time
             let formattedTime = '';
             if (typeof editingSchedule.startTime === 'string') {
                 formattedTime = editingSchedule.startTime;
             } else if (editingSchedule.startTime) {
-                // Si es un objeto TimeSpan (como el backend devuelve)
                 const hours = String(editingSchedule.startTime.hours || 0).padStart(2, '0');
                 const minutes = String(editingSchedule.startTime.minutes || 0).padStart(2, '0');
                 formattedTime = `${hours}:${minutes}`;
@@ -38,7 +35,7 @@ const SubjectScheduleModal = ({ isOpen, onClose, onSave, subject, editingSchedul
                 durationMinutes: editingSchedule.durationMinutes || 60,
                 weekType: editingSchedule.weekType || 0,
                 subjectId: subject?.id || editingSchedule.subjectId,
-                id: editingSchedule.id // Solo si estamos editando
+                id: editingSchedule.id
             });
         } else {
             setScheduleData({

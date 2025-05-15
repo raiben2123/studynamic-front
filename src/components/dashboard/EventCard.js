@@ -4,7 +4,6 @@ import { FaEdit, FaTrash, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import dayjs from '../../utils/dayjsConfig';
 
 const EventCard = ({ event, onUpdate, onDelete }) => {
-    // Verifica si event existe
     if (!event) {
         console.warn('Event es undefined o null');
         return <div className="text-error">Error: Evento no disponible</div>;
@@ -51,7 +50,6 @@ const EventCard = ({ event, onUpdate, onDelete }) => {
 
     const timeUntil = getTimeUntil();
 
-    // Determine badge color based on time until event
     const getBadgeColor = () => {
         if (timeUntil === 'Evento pasado') return 'bg-event-pasado-bg text-event-pasado';
         if (timeUntil === 'Sin fecha' || timeUntil === 'Fecha inválida') return 'bg-event-futuro-bg text-event-futuro';

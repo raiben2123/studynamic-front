@@ -1,18 +1,15 @@
 // src/config/constants.js
 import { Capacitor } from '@capacitor/core';
 
-// Información de la aplicación
 export const APP_VERSION = '1.0.0';
 export const APP_NAME = 'Studynamic';
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
-// Detección de plataforma
 export const IS_NATIVE = Capacitor.isNativePlatform();
 export const IS_ANDROID = Capacitor.getPlatform() === 'android';
 export const IS_IOS = Capacitor.getPlatform() === 'ios';
 export const IS_WEB = !IS_NATIVE;
 
-// Configuración de temas
 export const THEMES = {
   DEFAULT: 'default',
   DARK: 'dark',
@@ -20,7 +17,6 @@ export const THEMES = {
   PURPLE: 'purple'
 };
 
-// Configuración de almacenamiento
 export const STORAGE_KEYS = {
   TOKEN: 'token',
   USER_ID: 'userId',
@@ -35,21 +31,18 @@ export const STORAGE_KEYS = {
   STORAGE_MIGRATED: '_storage_migrated_'
 };
 
-// Estados de tareas
 export const TASK_STATUS = {
   PENDING: 'Pendiente',
   IN_PROGRESS: 'En curso',
   COMPLETED: 'Finalizada'
 };
 
-// Niveles de importancia
 export const IMPORTANCE_LEVELS = {
   LOW: 'Baja',
   MEDIUM: 'Media',
   HIGH: 'Alta'
 };
 
-// Tipos de archivo
 export const FILE_TYPES = {
   SUBJECT_RESOURCE: 0,
   TASK_ATTACHMENT: 1,
@@ -57,7 +50,6 @@ export const FILE_TYPES = {
   PROFILE_PICTURE: 3
 };
 
-// Tipos de carpeta
 export const FOLDER_TYPES = {
   NOTES: 'Apuntes',
   EXAMS: 'Exámenes',
@@ -65,14 +57,12 @@ export const FOLDER_TYPES = {
   CUSTOM: 'Custom'
 };
 
-// Configuración de notificaciones
 export const NOTIFICATION_CONFIG = {
   SMALL_ICON: 'ic_stat_icon_config_sample',
   ICON_COLOR: '#467BAA',
   SOUND: 'beep.wav'
 };
 
-// Rutas de la aplicación
 export const ROUTES = {
   HOME: '/home',
   AUTH: '/',
@@ -85,7 +75,6 @@ export const ROUTES = {
   SETTINGS: '/settings'
 };
 
-// Configuración de colores principales
 export const COLORS = {
   PRIMARY: '#467BAA',
   SECONDARY: '#3B5998',
@@ -109,15 +98,13 @@ export const COLORS = {
   }
 };
 
-// Tiempo de caché (en milisegundos)
 export const CACHE_DURATION = {
-  SHORT: 5 * 60 * 1000, // 5 minutos
-  MEDIUM: 30 * 60 * 1000, // 30 minutos
-  LONG: 2 * 60 * 60 * 1000, // 2 horas
-  DAY: 24 * 60 * 60 * 1000 // 1 día
+  SHORT: 5 * 60 * 1000,
+  MEDIUM: 30 * 60 * 1000,
+  LONG: 2 * 60 * 60 * 1000,
+  DAY: 24 * 60 * 60 * 1000 
 };
 
-// Mensajes comunes
 export const MESSAGES = {
   NETWORK: {
     OFFLINE: 'Sin conexión a Internet',
@@ -139,7 +126,6 @@ export const MESSAGES = {
   }
 };
 
-// Formatos de fecha
 export const DATE_FORMATS = {
   FULL: 'DD/MM/YYYY HH:mm',
   DATE_ONLY: 'DD/MM/YYYY',
@@ -149,7 +135,6 @@ export const DATE_FORMATS = {
   CALENDAR_HEADER: 'MMMM YYYY'
 };
 
-// Configuración específica para Capacitor
 export const CAPACITOR_CONFIG = {
   SPLASH_SCREEN: {
     DURATION: 2000,

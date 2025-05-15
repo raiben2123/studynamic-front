@@ -1,4 +1,3 @@
-// src/context/AuthContext.js - Actualizado para el manejo de contraseña
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { 
     login, 
@@ -25,7 +24,6 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     
-    // Para la configuración de temas
     const [userTheme, setUserTheme] = useState('default');
 
     useEffect(() => {
@@ -38,19 +36,16 @@ export const AuthProvider = ({ children }) => {
                     setToken(storedToken);
                     setUserId(storedUserId);
                     
-                    // Obtener datos del usuario
                     const email = await getUserEmail();
                     const name = await getName();
                     const theme = await getUserTheme();
                     const username = await getUserUsername();
                     const password = await getPassword();
                     
-                    // Cargar tema del usuario
                     const savedTheme = theme || localStorage.getItem('theme') || 'default';
                     setUserTheme(savedTheme);
                     applyTheme(savedTheme);
                     
-                    // Establecer datos del usuario
                     setUser({ 
                         id: storedUserId,
                         name: name || '',
@@ -78,7 +73,6 @@ export const AuthProvider = ({ children }) => {
             setToken(token);
             setUserId(userId);
             
-            // Cargar el tema del usuario o el predeterminado
             const userTheme = theme || localStorage.getItem('theme') || 'default';
             setUserTheme(userTheme);
             applyTheme(userTheme);
@@ -107,7 +101,6 @@ export const AuthProvider = ({ children }) => {
             setToken(token);
             setUserId(userId);
             
-            // Cargar el tema del usuario o el predeterminado
             const userTheme = theme || localStorage.getItem('theme') || 'default';
             setUserTheme(userTheme);
             applyTheme(userTheme);
@@ -138,19 +131,15 @@ export const AuthProvider = ({ children }) => {
     
     const updateUserTheme = async (themeId) => {
         try {
-            // Actualizar estado local
             setUserTheme(themeId);
             
-            // Aplicar tema visualmente
             applyTheme(themeId);
             
-            // Actualizar el estado del usuario
             setUser(prevUser => ({
                 ...prevUser,
                 theme: themeId
             }));
             
-            // Actualizar en el backend y localStorage
             if (token && userId) {
                 await updateUserProfile({
                     theme: themeId
@@ -172,13 +161,11 @@ export const AuthProvider = ({ children }) => {
                 throw new Error('No autenticado');
             }
             
-            // Si hay cambio de foto de perfil
             let updatedProfilePicture = updateData.profilePicture;
             if (updateData.profilePicture instanceof File) {
                 updatedProfilePicture = await updateProfilePicture(updateData.profilePicture);
             }
             
-            // Preparar los datos para actualizar
             const dataToUpdate = {};
             if (updateData.name !== undefined) dataToUpdate.name = updateData.name;
             if (updateData.email !== undefined) dataToUpdate.email = updateData.email;
@@ -186,12 +173,10 @@ export const AuthProvider = ({ children }) => {
             if (updateData.username !== undefined) dataToUpdate.username = updateData.username;
             if (updateData.password !== undefined) dataToUpdate.password = updateData.password;
             
-            // Actualizar información del usuario en el backend
             if (Object.keys(dataToUpdate).length > 0) {
                 await updateUserProfile(dataToUpdate);
             }
             
-            // Guardar en localStorage para respaldo
             if (updateData.name !== undefined) {
                 localStorage.setItem('name', updateData.name);
             }
@@ -211,8 +196,7 @@ export const AuthProvider = ({ children }) => {
             if (updateData.password !== undefined) {
                 localStorage.setItem('password', updateData.password);
             }
-            
-            // Actualizar el estado del usuario
+
             setUser(prevUser => ({
                 ...prevUser,
                 name: updateData.name !== undefined ? updateData.name : prevUser?.name,

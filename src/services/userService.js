@@ -1,11 +1,7 @@
-// src/services/userService.js
 import { getToken, getUserId } from '../api/auth';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
-/**
- * Obtiene los datos del perfil del usuario
- */
 export const getUserProfile = async () => {
     const token = await getToken();
     const userId = await getUserId();
@@ -31,7 +27,6 @@ export const getUserProfile = async () => {
     } catch (error) {
         console.error('Error en getUserProfile:', error);
         
-        // Si estamos en desarrollo, devolvemos datos simulados
         if (process.env.NODE_ENV === 'development') {
             return {
                 firstName: localStorage.getItem('firstName') || '',
@@ -50,9 +45,6 @@ export const getUserProfile = async () => {
     }
 };
 
-/**
- * Actualiza los datos del perfil del usuario
- */
 export const updateUserProfile = async (profileData) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -79,9 +71,7 @@ export const updateUserProfile = async (profileData) => {
     } catch (error) {
         console.error('Error en updateUserProfile:', error);
         
-        // Si estamos en desarrollo, simulamos la actualización
         if (process.env.NODE_ENV === 'development') {
-            // Guardar en localStorage para simular persistencia
             if (profileData.firstName !== undefined) {
                 localStorage.setItem('firstName', profileData.firstName);
             }
@@ -125,9 +115,6 @@ export const updateUserProfile = async (profileData) => {
     }
 };
 
-/**
- * Actualiza la foto de perfil del usuario
- */
 export const updateProfilePicture = async (file) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -156,9 +143,7 @@ export const updateProfilePicture = async (file) => {
     } catch (error) {
         console.error('Error en updateProfilePicture:', error);
         
-        // Si estamos en desarrollo
         if (process.env.NODE_ENV === 'development') {
-            // Convertir a base64 para almacenar en localStorage
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -174,16 +159,10 @@ export const updateProfilePicture = async (file) => {
     }
 };
 
-/**
- * Obtiene las preferencias de apariencia del usuario
- */
 export const getUserTheme = () => {
     return localStorage.getItem('theme') || 'default';
 };
 
-/**
- * Guarda las preferencias de apariencia del usuario
- */
 export const saveUserTheme = (themeId) => {
     localStorage.setItem('theme', themeId);
 };

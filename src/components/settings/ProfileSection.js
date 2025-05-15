@@ -1,4 +1,3 @@
-// src/components/settings/ProfileSection.js
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
@@ -14,7 +13,6 @@ const ProfileSection = ({
     const [newLastName, setNewLastName] = useState(lastName);
     const fileInputRef = useRef(null);
     
-    // Actualizar estados locales cuando cambien las props
     useEffect(() => {
         setNewFirstName(firstName);
         setNewLastName(lastName);
@@ -24,13 +22,11 @@ const ProfileSection = ({
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validar que sea una imagen
             if (!file.type.startsWith('image/')) {
                 alert('Por favor, selecciona un archivo de imagen válido.');
                 return;
             }
             
-            // Limitar tamaño a 2MB
             if (file.size > 2 * 1024 * 1024) {
                 alert('La imagen es demasiado grande. El tamaño máximo es 2MB.');
                 return;
@@ -54,7 +50,6 @@ const ProfileSection = ({
     
     const handleRemovePhoto = () => {
         setPreviewImage(null);
-        // Limpiar el input de archivo
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }

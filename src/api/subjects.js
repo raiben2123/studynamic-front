@@ -1,10 +1,8 @@
-// src/api/subjects.js
 import { getToken, getUserId } from './auth';
 import { addSchedule } from './subjectSchedules';
 
 const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
-// Mapear objeto de DTO a nuestro formato
 const mapSubjectFromDTO = (dto) => ({
     id: dto.id,
     title: dto.title,
@@ -13,7 +11,6 @@ const mapSubjectFromDTO = (dto) => ({
     schedules: dto.schedules || []
 });
 
-// Obtener todas las asignaturas
 export const getSubjects = async () => {
     const token = await getToken();
     const userId = await getUserId();
@@ -23,7 +20,6 @@ export const getSubjects = async () => {
     }
 
     try {
-        // Usamos la API que incluye los horarios
         const response = await fetch(`${BASE_URL}/subjects/withSchedules`, {
             method: 'GET',
             headers: {
@@ -46,7 +42,6 @@ export const getSubjects = async () => {
     }
 };
 
-// Obtener asignaturas por usuario
 export const getSubjectsByUser = async () => {
     const token = await getToken();
     const userId = await getUserId();
@@ -56,7 +51,6 @@ export const getSubjectsByUser = async () => {
     }
 
     try {
-        // Usamos la API que incluye los horarios
         const response = await fetch(`${BASE_URL}/subjects/user/${userId}/withSchedules`, {
             method: 'GET',
             headers: {
@@ -79,7 +73,6 @@ export const getSubjectsByUser = async () => {
     }
 };
 
-// Añadir una nueva asignatura
 export const addSubject = async (subject, schedules = []) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -89,7 +82,6 @@ export const addSubject = async (subject, schedules = []) => {
     }
 
     try {
-        // Crear la asignatura
         const subjectDTO = {
             title: subject.title || subject,
             userId: parseInt(userId, 10)
@@ -111,26 +103,23 @@ export const addSubject = async (subject, schedules = []) => {
 
         const addedSubject = await response.json();
         
-        // Si hay horarios, añadirlos ahora que tenemos el ID de la asignatura
         if (schedules && schedules.length > 0) {
             const addedSchedules = [];
             
             for (const schedule of schedules) {
                 if (schedule.isTemporary) {
-                    // Actualizar el subjectId con el ID real de la asignatura
                     const scheduleToAdd = {
                         ...schedule,
                         subjectId: addedSubject.id
                     };
                     delete scheduleToAdd.isTemporary;
-                    delete scheduleToAdd.id; // Eliminar el id temporal
+                    delete scheduleToAdd.id;
                     
                     const addedSchedule = await addSchedule(scheduleToAdd);
                     addedSchedules.push(addedSchedule);
                 }
             }
             
-            // Devolver la asignatura con sus horarios
             return {
                 ...mapSubjectFromDTO(addedSubject),
                 schedules: addedSchedules
@@ -144,7 +133,6 @@ export const addSubject = async (subject, schedules = []) => {
     }
 };
 
-// Actualizar una asignatura existente
 export const updateSubject = async (subjectId, subject, schedules = []) => {
     const token = await getToken();
     const userId = await getUserId();
@@ -154,7 +142,6 @@ export const updateSubject = async (subjectId, subject, schedules = []) => {
     }
 
     try {
-        // Actualizar la asignatura
         const subjectDTO = {
             id: parseInt(subjectId, 10),
             title: subject.title || subject,
@@ -175,24 +162,21 @@ export const updateSubject = async (subjectId, subject, schedules = []) => {
             throw new Error(`Error al actualizar la asignatura: ${errorText || response.statusText}`);
         }
 
-        // Si hay horarios nuevos, añadirlos
         if (schedules && schedules.length > 0) {
             for (const schedule of schedules) {
                 if (schedule.isTemporary) {
-                    // Actualizar el subjectId con el ID real de la asignatura
                     const scheduleToAdd = {
                         ...schedule,
                         subjectId: parseInt(subjectId, 10)
                     };
                     delete scheduleToAdd.isTemporary;
-                    delete scheduleToAdd.id; // Eliminar el id temporal
+                    delete scheduleToAdd.id;
                     
                     await addSchedule(scheduleToAdd);
                 }
             }
         }
 
-        // Si es 204 No Content
         if (response.status === 204) {
             return {
                 id: parseInt(subjectId, 10),
@@ -209,7 +193,6 @@ export const updateSubject = async (subjectId, subject, schedules = []) => {
     }
 };
 
-// Eliminar una asignatura
 export const deleteSubject = async (subjectId) => {
     const token = await getToken();
     const userId = await getUserId();

@@ -31,14 +31,11 @@ const ResourcesPage = () => {
                 const subjectsData = await getSubjectsByUser(token);
                 setSubjects(subjectsData || []);
 
-                // Inicializar estructura de recursos
                 const initialResources = {};
                 for (const subject of subjectsData) {
                     try {
-                        // Verificar y crear carpetas estándar si no existen
                         const { folderMap } = await createStandardFoldersForSubject(subject.id, userId);
 
-                        // Inicializar estructura de recursos por carpeta
                         const subjectResources = {
                             Apuntes: [],
                             Exámenes: [],
@@ -46,7 +43,6 @@ const ResourcesPage = () => {
                             folderIds: folderMap
                         };
 
-                        // Para cada carpeta, obtener sus archivos
                         for (const [folderName, folderId] of Object.entries(folderMap)) {
                             if (folderId) {
                                 try {
@@ -107,10 +103,8 @@ const ResourcesPage = () => {
         }
 
         try {
-            // Eliminar el archivo del backend
             await deleteFile(fileId);
 
-            // Actualizar el estado local
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
                 if (updatedResources[subjectId] && updatedResources[subjectId][folder]) {
@@ -152,12 +146,9 @@ const ResourcesPage = () => {
                     throw new Error(`Tipo de archivo inválido: ${folder}`);
                 }
 
-                // Verificar que tenemos los IDs de carpetas
                 if (!resources[subjectId]?.folderIds || !resources[subjectId].folderIds[folder]) {
-                    // Si no tenemos las carpetas, intentamos crearlas
                     const result = await createStandardFoldersForSubject(subjectId, userId);
 
-                    // Actualizar el estado con los IDs de carpeta
                     setResources(prev => ({
                         ...prev,
                         [subjectId]: {
@@ -174,10 +165,8 @@ const ResourcesPage = () => {
                 const folderId = resources[subjectId].folderIds[folder];
                 console.log('Subiendo archivo:', { fileName: file.name, folder, subjectId, folderId });
 
-                // Subimos el archivo directamente a la carpeta correcta
                 const uploadedFile = await uploadFile(file, 0, userId, subjectId, null, null, folderId);
 
-                // Actualizamos la UI
                 setResources(prevResources => {
                     const updatedResources = { ...prevResources };
                     if (!updatedResources[subjectId]) {
@@ -206,10 +195,8 @@ const ResourcesPage = () => {
 
     const handleDownloadFile = async (fileId, fileName) => {
         try {
-            // Obtener URL de descarga
             const downloadUrl = downloadFile(fileId);
 
-            // Crear enlace de descarga
             const link = document.createElement('a');
             link.href = downloadUrl;
             link.setAttribute('download', fileName);
@@ -243,23 +230,20 @@ const ResourcesPage = () => {
             return;
         }
 
-        // Comprobamos si ya existe esta carpeta en el estado actual
         if (resources[currentSubject] && Object.keys(resources[currentSubject]).includes(folderName)) {
             showNotification('Ya existe una carpeta con ese nombre para esta asignatura.', 'error');
             return;
         }
 
-        // Crear la carpeta en el backend
         createFolder(
-            folderName, // Ya no necesitamos el prefijo [SubjectID:X]
+            folderName,
             `Carpeta personalizada para la asignatura ${subjects.find(s => s.id === currentSubject)?.title}`,
             userId,
-            null, // No groupId
-            currentSubject, // Asociar con la asignatura
-            4 // FolderType.Custom
+            null,
+            currentSubject,
+            4
         )
             .then(newFolder => {
-                // Actualizar el estado con la nueva carpeta
                 setResources(prevResources => {
                     const updatedResources = { ...prevResources };
                     if (!updatedResources[currentSubject]) {
@@ -270,9 +254,7 @@ const ResourcesPage = () => {
                             folderIds: { ...prevResources[currentSubject]?.folderIds || {} }
                         };
                     }
-                    // Añadir la nueva carpeta
                     updatedResources[currentSubject][folderName] = [];
-                    // Guardar el ID de la carpeta
                     updatedResources[currentSubject].folderIds[folderName] = newFolder.id;
                     return updatedResources;
                 });
@@ -288,13 +270,11 @@ const ResourcesPage = () => {
 
 
 
-    // Función para iniciar la edición del nombre de un archivo
     const handleStartEditFileName = (file) => {
         setEditingFileId(file.id);
         setEditingFileName(file.name);
     };
 
-    // Función para guardar el nuevo nombre del archivo
     const handleSaveFileName = async (subjectId, folder, fileId) => {
         if (!editingFileName.trim()) {
             showNotification('El nombre del archivo no puede estar vacío', 'error');
@@ -302,10 +282,8 @@ const ResourcesPage = () => {
         }
 
         try {
-            // Llamar a la API para renombrar el archivo
             await renameFile(fileId, editingFileName);
 
-            // Actualizar el estado local
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
                 if (updatedResources[subjectId] && updatedResources[subjectId][folder]) {
@@ -323,7 +301,6 @@ const ResourcesPage = () => {
 
             showNotification('Nombre del archivo actualizado con éxito', 'success');
 
-            // Limpiar el estado de edición
             setEditingFileId(null);
             setEditingFileName('');
         } catch (err) {
@@ -332,49 +309,37 @@ const ResourcesPage = () => {
         }
     };
 
-    // Función para cancelar la edición del nombre del archivo
     const handleCancelEditFileName = () => {
         setEditingFileId(null);
         setEditingFileName('');
     };
 
-    // Función para abrir el editor de archivos
     const handleEditFile = (file) => {
         setEditFile(file);
     };
 
-    // Función para cerrar el editor
     const handleCloseEditor = () => {
         setEditFile(null);
     };
 
-    // Función para guardar cambios en un archivo
     const handleSaveFile = async (fileId, updatedFile) => {
         try {
-            // Actualizar el archivo en el backend
             const updatedFileData = await updateFileContent(fileId, updatedFile);
 
-            // Buscar el archivo en los recursos y actualizarlo
             setResources(prevResources => {
                 const updatedResources = { ...prevResources };
-                // Recorrer todas las asignaturas
                 Object.keys(updatedResources).forEach(subjectId => {
-                    // Recorrer todas las carpetas de cada asignatura
                     Object.keys(updatedResources[subjectId]).forEach(folder => {
-                        // Ignorar la propiedad folderIds
                         if (folder === 'folderIds') return;
 
-                        // Si la carpeta tiene archivos, buscar el archivo por su ID
                         if (Array.isArray(updatedResources[subjectId][folder])) {
                             const fileIndex = updatedResources[subjectId][folder].findIndex(
                                 file => file.id === fileId
                             );
 
-                            // Si se encuentra el archivo, actualizarlo
                             if (fileIndex !== -1) {
                                 updatedResources[subjectId][folder][fileIndex] = {
                                     ...updatedResources[subjectId][folder][fileIndex],
-                                    // Actualizar propiedades relevantes
                                     name: updatedFileData.fileName || updatedFile.name,
                                     url: updatedFileData.fileUrl || updatedResources[subjectId][folder][fileIndex].url,
                                     date: updatedFileData.uploadDate || new Date().toISOString(),
@@ -403,13 +368,11 @@ const ResourcesPage = () => {
 
         const filteredResources = {};
         Object.keys(resources[selectedSubject]).forEach(folder => {
-            // Ignorar la propiedad folderIds que no es un array
             if (folder === 'folderIds') {
                 filteredResources.folderIds = resources[selectedSubject].folderIds;
                 return;
             }
 
-            // Procesar solo arrays (carpetas con archivos)
             if (Array.isArray(resources[selectedSubject][folder])) {
                 const filteredFiles = resources[selectedSubject][folder].filter(
                     resource => resource.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -464,7 +427,6 @@ const ResourcesPage = () => {
                         </div>
                     )}
 
-                    {/* Header con título y búsqueda */}
                     <div className="bg-card-bg p-4 md:p-6 rounded-xl shadow-md mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                             <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center">
@@ -537,7 +499,6 @@ const ResourcesPage = () => {
                                     ) : (
                                         <div className="space-y-6">
                                             {Object.keys(filteredSubjectResources)
-                                                // Filtrar propiedades que no son carpetas de archivos
                                                 .filter(key => key !== 'folderIds')
                                                 .map(folder => (
                                                     <div key={folder} className="border border-border rounded-lg overflow-hidden">

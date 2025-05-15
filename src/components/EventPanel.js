@@ -1,4 +1,3 @@
-// src/components/EventPanel.js - Con mejoras de responsividad
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -49,7 +48,6 @@ const EventPanel = ({ selectedDay, events, position = 'bottom', onAddEvent }) =>
             );
         }
 
-        // Formato adaptativo para móvil o desktop
         return (
             <div className="space-y-3 max-h-[300px] overflow-y-auto">
                 {events.map((event, index) => {
@@ -120,7 +118,6 @@ const EventPanel = ({ selectedDay, events, position = 'bottom', onAddEvent }) =>
         );
     };
 
-    // Versión simplificada para mantener la consistencia entre los diferentes dispositivos y layouts
     return (
         <div className={`bg-gray-50 p-4 ${position === 'side' ? 'md:w-1/3 md:border-t-0 md:border-l' : 'border-t'}`}>
             <h3 className="text-lg font-medium text-gray-800 mb-4">

@@ -1,4 +1,3 @@
-// src/components/modals/TaskModalCalendar.js
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { extractDateFromIso } from '../../utils/dateUtils';
@@ -20,7 +19,6 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
         console.log('TaskModalCalendar - subjects:', subjects);
         
         if (task) {
-            // Normalizar fechas
             const normalizedDueDate = extractDateFromIso(task.dueDate);
             const normalizedNotificationDate = extractDateFromIso(task.notificationDate);
             
@@ -30,13 +28,13 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                 dueDate: normalizedDueDate,
                 importance: task.importance || 'Baja',
                 status: task.status || 'Pendiente',
-                subjectId: task.subjectId ? String(task.subjectId) : '', // Convertir a string para <select>
+                subjectId: task.subjectId ? String(task.subjectId) : '',
                 notificationDate: normalizedNotificationDate,
             });
         } else {
             setFormData({
                 title: '',
-                dueDate: defaultDate ? extractDateFromIso(defaultDate) : '', // Usar defaultDate normalizado
+                dueDate: defaultDate ? extractDateFromIso(defaultDate) : '',
                 importance: 'Baja',
                 status: 'Pendiente',
                 subjectId: '',
@@ -55,7 +53,6 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
             newErrors.dueDate = 'La fecha de entrega es obligatoria';
         }
         
-        // Validar que la fecha de notificación no sea posterior a la fecha de entrega
         if (formData.notificationDate && formData.dueDate && 
             new Date(formData.notificationDate) > new Date(formData.dueDate)) {
             newErrors.notificationDate = 'La notificación no puede ser posterior a la fecha de entrega';
@@ -72,16 +69,13 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
             return;
         }
         
-        // Preparar los datos de la tarea para enviar
         const taskData = {
             ...formData,
             subjectId: formData.subjectId ? parseInt(formData.subjectId) : null,
-            // Si existe, buscar la asignatura para incluir su título
             subject: formData.subjectId ? 
                 subjects.find(s => s.id === parseInt(formData.subjectId))?.title || '' : '',
         };
         
-        // Enviar datos
         onSave(taskData);
         
         if (!task) {
@@ -187,21 +181,6 @@ const TaskModalCalendar = ({ isOpen, onClose, onSave, subjects, task, defaultDat
                             <option value="Finalizada">Finalizada</option>
                         </select>
                     </div>
-                    {/* <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700">Notificación</label>
-                        <input
-                            type="date"
-                            name="notificationDate"
-                            value={formData.notificationDate}
-                            onChange={handleChange}
-                            className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary ${
-                                errors.notificationDate ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                        />
-                        {errors.notificationDate && (
-                            <p className="text-red-500 text-xs mt-1">{errors.notificationDate}</p>
-                        )}
-                    </div> */}
                     <div className="flex justify-end space-x-2">
                         <button
                             type="button"
@@ -239,7 +218,7 @@ TaskModalCalendar.propTypes = {
         dueDate: PropTypes.string,
         importance: PropTypes.string,
         status: PropTypes.string,
-        subjectId: PropTypes.number, // Cambiado a subjectId
+        subjectId: PropTypes.number,
         notificationDate: PropTypes.string,
     }),
     defaultDate: PropTypes.string,

@@ -8,16 +8,13 @@ const FileUpload = ({ fileType, subjectId, groupId, taskId, folderId, onUploadSu
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
-  const { userId } = useAuth(); // Obtener el userId del contexto de autenticación
+  const { userId } = useAuth();
 
-  // Validar el tipo de archivo
   const validateFile = (file) => {
-    // Extensiones permitidas
     const allowedExtensions = [
       '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'
     ];
     
-    // Tamaño máximo en bytes (10MB)
     const maxSize = 10 * 1024 * 1024;
     
     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
@@ -39,17 +36,14 @@ const FileUpload = ({ fileType, subjectId, groupId, taskId, folderId, onUploadSu
     return { valid: true };
   };
 
-  // Manejar click en el botón de subida
   const handleUploadClick = () => {
     fileInputRef.current.click();
   };
 
-  // Manejar cambio en el input de archivo
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
   
-    // Validar el archivo
     const validation = validateFile(file);
     if (!validation.valid) {
       setError(validation.error);
@@ -76,7 +70,6 @@ const FileUpload = ({ fileType, subjectId, groupId, taskId, folderId, onUploadSu
         onUploadSuccess(uploadedFile);
       }
       
-      // Limpiar el input para permitir subir el mismo archivo de nuevo si es necesario
       fileInputRef.current.value = '';
     } catch (error) {
       console.error('Error uploading file:', error);

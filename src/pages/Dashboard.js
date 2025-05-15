@@ -1,4 +1,3 @@
-// src/pages/Dashboard.js - Actualizado para usar las variables de los temas correctamente
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -37,7 +36,6 @@ const Dashboard = () => {
     const { token, userId, userTheme } = useAuth();
     const navigate = useNavigate();
 
-    // Estados para los modales de confirmación
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
@@ -55,7 +53,6 @@ const Dashboard = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Función para cargar datos (se declara con useCallback para poder reutilizarla)
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
@@ -66,12 +63,10 @@ const Dashboard = () => {
                 getGroupsByUserId(),
             ]);
 
-            // Ordenamos las tareas por fecha
             const sortedTasks = [...tasksData].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
 
-            // Ordenamos los eventos por fecha
             const sortedEvents = [...eventsData].sort((a, b) => {
                 return new Date(a.startDateTime) - new Date(b.startDateTime);
             });
@@ -89,7 +84,6 @@ const Dashboard = () => {
         }
     }, []);
 
-    // Cargar datos al montar el componente
     useEffect(() => {
         if (token && userId) fetchData();
     }, [token, userId, fetchData]);
@@ -97,13 +91,10 @@ const Dashboard = () => {
     const handleAddTask = async (newTask) => {
         setLoading(true);
         try {
-            // Añadir la tarea a través de la API
             const addedTask = await addTask(newTask);
 
-            // Asegurar que la tarea tenga la asignatura correcta
             let taskWithSubject = { ...addedTask };
 
-            // Buscar el nombre de la asignatura si tenemos el subjectId
             if (addedTask.subjectId) {
                 const subject = subjects.find(s => s.id === parseInt(addedTask.subjectId));
                 if (subject) {
@@ -111,7 +102,6 @@ const Dashboard = () => {
                 }
             }
 
-            // Ordenar las tareas por fecha
             const updatedTasks = [...tasks, taskWithSubject].sort((a, b) => {
                 return new Date(a.dueDate) - new Date(b.dueDate);
             });
@@ -135,13 +125,10 @@ const Dashboard = () => {
     const handleTaskUpdate = async (updatedTask) => {
         setLoading(true);
         try {
-            // Actualizar la tarea a través de la API
             const updatedTaskFromBackend = await updateTask(updatedTask.id, updatedTask);
 
-            // Asegurar que la tarea tenga la asignatura correcta
             let taskWithSubject = { ...updatedTaskFromBackend };
 
-            // Buscar el nombre de la asignatura si tenemos el subjectId
             if (updatedTaskFromBackend.subjectId) {
                 const subject = subjects.find(s => s.id === parseInt(updatedTaskFromBackend.subjectId));
                 if (subject) {
@@ -149,7 +136,6 @@ const Dashboard = () => {
                 }
             }
 
-            // Actualizar el estado con la tarea actualizada
             const updatedTasks = tasks
                 .map((task) => (task.id === updatedTask.id ? taskWithSubject : task))
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
@@ -196,8 +182,6 @@ const Dashboard = () => {
         try {
             const newSubject = await addSubject({ title: subjectName }, schedules);
 
-            // Actualizamos todos los datos después de añadir una asignatura
-            // para asegurar que tenemos los horarios correctos
             await fetchData();
 
             setIsSubjectModalOpen(false);
@@ -223,8 +207,6 @@ const Dashboard = () => {
         try {
             await updateSubject(editingSubject.id, { title: subjectName }, schedules);
 
-            // Actualizamos todos los datos después de actualizar una asignatura
-            // para asegurar que tenemos los horarios correctos
             await fetchData();
 
             setIsSubjectModalOpen(false);
@@ -344,7 +326,6 @@ const Dashboard = () => {
         navigate('/groups');
     };
 
-    // Cerrar el modal de confirmación
     const closeConfirmationModal = () => {
         setConfirmationModal({
             ...confirmationModal,
@@ -352,14 +333,12 @@ const Dashboard = () => {
         });
     };
 
-    // Filtramos las tareas pendientes y las ordenamos por fecha
     const pendingTasks = useMemo(() => {
         if (!Array.isArray(tasks)) return [];
         return tasks
             .filter(task => task && task.status !== 'Finalizada')
             .sort((a, b) => new Date(a?.dueDate || 0) - new Date(b?.dueDate || 0));
     }, [tasks]);
-    // Ordenamos los eventos próximos por fecha
     const upcomingEvents = useMemo(() => {
         if (!Array.isArray(events)) return [];
         return events
@@ -389,14 +368,12 @@ const Dashboard = () => {
 
     const sortedGroups = groups.sort((a, b) => b.memberCount - a.memberCount);
 
-    // Prepare items for carousel
     const createCarouselItems = (items, Component, onUpdate, onDelete, props = {}) => {
         if (!Array.isArray(items)) {
             console.warn('Items no es un array:', items);
             return [];
         }
 
-        // Determinar el tipo de componente
         let itemType = '';
         if (Component === TaskCard) itemType = 'task';
         else if (Component === EventCard) itemType = 'event';
@@ -449,7 +426,7 @@ const Dashboard = () => {
         <div className="flex flex-col min-h-screen md:flex-row">
             <Sidebar />
             <div
-                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8" // Modificado el padding-bottom
+                className="flex-1 bg-background p-4 pb-20 md:p-8 md:pb-8"
                 style={{
                     backgroundImage: `url(${Logo})`,
                     backgroundSize: '50%',
@@ -470,13 +447,10 @@ const Dashboard = () => {
                         <div className="text-center mb-4 text-text">Cargando...</div>
                     )}
 
-                    {/* Welcome Section - Using theme variables */}
                     <div className="bg-card-bg p-4 sm:p-6 rounded-xl shadow-md mb-6 opacity-95 border border-border">
                         <h1 className="text-2xl md:text-3xl mb-2 text-primary font-bold">
                             ¡Bienvenido a StudyNamic!
                         </h1>
-
-                        {/* Stats in a simplified row */}
                         <div className="mt-4 grid grid-cols-4 gap-2 text-center">
                             <div className="bg-card-bg rounded">
                                 <p className="text-sm text-primary font-medium">Tareas</p>
@@ -501,7 +475,6 @@ const Dashboard = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        {/* Tareas Pendientes con Carousel */}
                         <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
@@ -546,7 +519,6 @@ const Dashboard = () => {
                             )}
                         </div>
 
-                        {/* Próximos Eventos con Carousel */}
                         <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
@@ -587,7 +559,6 @@ const Dashboard = () => {
                             )}
                         </div>
 
-                        {/* Mis Grupos con Carousel */}
                         <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center">
@@ -626,7 +597,6 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Sección de Asignaturas */}
                     <div className="bg-card-bg p-4 rounded-xl shadow-md md:p-6 opacity-95 border border-border">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center">
@@ -649,7 +619,6 @@ const Dashboard = () => {
                             <p className="text-text-secondary">No tienes asignaturas registradas.</p>
                         ) : (
                             <>
-                                {/* Desktop View - Grid */}
                                 <div className="hidden md:grid md:grid-cols-3 gap-4">
                                     {subjects.map((subject) => (
                                         <SubjectCard
@@ -660,8 +629,6 @@ const Dashboard = () => {
                                         />
                                     ))}
                                 </div>
-
-                                {/* Mobile View - Carousel */}
                                 <div className="md:hidden relative">
                                     <Carousel autoSlide={false} autoSlideInterval={4000} showArrows={true} showDots={true}>
                                         {subjects.map((subject) => (
@@ -681,7 +648,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Modales */}
             <TaskModal
                 isOpen={isTaskModalOpen}
                 onClose={() => {
@@ -714,7 +680,6 @@ const Dashboard = () => {
                 subject={editingSubject}
             />
 
-            {/* Modal de Confirmación */}
             <ConfirmationModal
                 isOpen={confirmationModal.isOpen}
                 onClose={closeConfirmationModal}

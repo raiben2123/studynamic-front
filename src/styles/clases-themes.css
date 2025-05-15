@@ -1,8 +1,4 @@
-/***************************************
- * CLASES UTILITARIAS DE TEMAS
- ***************************************/
 
-/* Clases utilitarias para componentes */
 .bg-primary {
   background-color: var(--primary-color);
 }
@@ -51,7 +47,6 @@
   background-color: var(--color-error);
 }
 
-/* Clases para tareas */
 .bg-task-finalizada {
   background-color: var(--color-task-finalizada-bg);
 }
@@ -112,7 +107,6 @@
   color: var(--color-task-baja);
 }
 
-/* Clases para eventos */
 .bg-event-pasado {
   background-color: var(--color-event-pasado-bg);
 }

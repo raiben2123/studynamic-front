@@ -1,10 +1,8 @@
-// src/components/modals/Modal.js - Actualizado para usar variables de tema
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaTimes } from 'react-icons/fa';
 
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
-    // Prevenir el scroll en el body cuando el modal está abierto
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -17,13 +15,11 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
         };
     }, [isOpen]);
     
-    // Detectar si es móvil
     const isMobile = window.innerWidth < 768;
     
     if (!isOpen) return null;
     
-    // Determinar el tamaño del modal
-    let sizeClass = 'max-w-md'; // Default (medium)
+    let sizeClass = 'max-w-md';
     if (size === 'sm') sizeClass = 'max-w-sm';
     if (size === 'lg') sizeClass = 'max-w-lg';
     if (size === 'xl') sizeClass = 'max-w-xl';

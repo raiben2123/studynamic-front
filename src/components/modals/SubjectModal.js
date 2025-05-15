@@ -1,4 +1,3 @@
-// src/components/modals/SubjectModal.js - Actualizado para usar variables de tema
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
@@ -14,7 +13,6 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
     const [loading, setLoading] = useState(false);
     const isMobile = window.innerWidth < 768;
 
-    // Obtener los horarios cuando se edita una asignatura existente
     useEffect(() => {
         const fetchSchedules = async () => {
             if (subject?.id) {
@@ -63,30 +61,26 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
             let updatedSchedule;
             
             if (editingSchedule?.id) {
-                // Actualizar horario existente
                 updatedSchedule = await updateSchedule(editingSchedule.id, scheduleData);
                 setSchedules(schedules.map(s => 
                     s.id === editingSchedule.id ? updatedSchedule : s
                 ));
             } else {
-                // Añadir nuevo horario
                 if (subject?.id) {
-                    // Si estamos editando una asignatura existente, podemos guardar directamente
                     updatedSchedule = await addSchedule(scheduleData);
-                    setSchedules(prevSchedules => [...prevSchedules, updatedSchedule]); // Actualización inmediata del estado
+                    setSchedules(prevSchedules => [...prevSchedules, updatedSchedule]);
                 } else {
-                    // Si es una nueva asignatura, añadimos a la lista temporal
                     const newTempSchedule = { 
                         ...scheduleData, 
                         id: `temp-${Date.now()}`, 
                         isTemporary: true 
                     };
-                    setSchedules(prevSchedules => [...prevSchedules, newTempSchedule]); // Actualización inmediata del estado
+                    setSchedules(prevSchedules => [...prevSchedules, newTempSchedule]);
                 }
             }
             
             setEditingSchedule(null);
-            setIsScheduleModalOpen(false); // Cerrar modal después de guardar
+            setIsScheduleModalOpen(false);
         } catch (error) {
             console.error("Error al guardar horario:", error);
             setError("No se pudo guardar el horario.");
@@ -105,10 +99,8 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
             setLoading(true);
             
             if (scheduleId.toString().startsWith('temp-')) {
-                // Si es un horario temporal (nuevo), solo lo eliminamos del array
                 setSchedules(prevSchedules => prevSchedules.filter(s => s.id !== scheduleId));
             } else {
-                // Si es un horario existente, lo eliminamos en el backend
                 await deleteSchedule(scheduleId);
                 setSchedules(prevSchedules => prevSchedules.filter(s => s.id !== scheduleId));
             }
@@ -137,13 +129,11 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
     const formatTime = (timeString) => {
         if (!timeString) return '';
         
-        // Si ya está en formato HH:MM
         if (typeof timeString === 'string' && timeString.includes(':')) {
             return timeString;
         }
         
         try {
-            // Si es un objeto con horas y minutos
             if (typeof timeString === 'object' && 'hours' in timeString) {
                 const hours = String(timeString.hours).padStart(2, '0');
                 const minutes = String(timeString.minutes).padStart(2, '0');
@@ -183,7 +173,6 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
             title={subject ? 'Editar Asignatura' : 'Añadir Asignatura'}
             size="lg"
         >
-            {/* Nombre de la asignatura */}
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1 text-text">
                     Nombre de la asignatura
@@ -205,7 +194,6 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                 )}
             </div>
             
-            {/* Sección de horarios */}
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                     <h3 className="text-lg font-medium text-primary">Horarios</h3>
@@ -273,7 +261,6 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                 )}
             </div>
             
-            {/* Botones de acción */}
             <div className="flex justify-end space-x-2 pt-2">
                 <button
                     onClick={onClose}
@@ -291,7 +278,6 @@ const SubjectModal = ({ isOpen, onClose, onSave, subject }) => {
                 </button>
             </div>
             
-            {/* Modal para añadir/editar horarios */}
             <SubjectScheduleModal
                 isOpen={isScheduleModalOpen}
                 onClose={() => {

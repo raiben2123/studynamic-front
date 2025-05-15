@@ -1,4 +1,3 @@
-// src/api/auth.js
 import { Capacitor } from '@capacitor/core';
 import { setSecureValue, getSecureValue, removeSecureValue } from '../services/storageService';
 
@@ -57,7 +56,6 @@ export const register = async (username, email, password, name = '') => {
 };
 
 export const saveAuthData = async (token, userId, email, name, theme, username, password) => {
-    // Guardar usando el servicio de almacenamiento seguro
     await setSecureValue('token', token);
     await setSecureValue('userId', userId.toString());
 
@@ -67,7 +65,6 @@ export const saveAuthData = async (token, userId, email, name, theme, username, 
     if (username) await setSecureValue('username', username);
     await setSecureValue('password', password);
 
-    // También guardar en localStorage para acceso síncrono en apps web
     if (!isNative) {
         localStorage.setItem('token', token);
         localStorage.setItem('userId', userId.toString());
@@ -83,12 +80,10 @@ export const getToken = async () => {
     return await getSecureValue('token');
 };
 
-// Método síncrono para obtener el token (para uso en API)
 export const getTokenSync = () => {
     return localStorage.getItem('token');
 };
 
-// Método síncrono para obtener el ID de usuario
 export const getUserIdSync = () => {
     return localStorage.getItem('userId');
 };
@@ -118,7 +113,6 @@ export const getPassword = async () => {
 };
 
 export const removeAuthData = async () => {
-    // Eliminar datos del almacenamiento seguro
     await removeSecureValue('token');
     await removeSecureValue('userId');
     await removeSecureValue('loginDate');
@@ -129,7 +123,6 @@ export const removeAuthData = async () => {
     await removeSecureValue('password');
     await removeSecureValue('profilePicture');
 
-    // Eliminar datos de localStorage (solo para web)
     if (!isNative) {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
@@ -173,14 +166,12 @@ export const updateUserProfile = async (userData) => {
             throw new Error('Error al actualizar perfil');
         }
 
-        // Actualizar en almacenamiento seguro
         if (userData.email) await setSecureValue('userEmail', userData.email);
         if (userData.name) await setSecureValue('name', userData.name);
         if (userData.theme) await setSecureValue('userTheme', userData.theme);
         if (userData.username) await setSecureValue('username', userData.username);
         if (userData.password) await setSecureValue('password', userData.password);
 
-        // Actualizar también en localStorage para web
         if (!isNative) {
             if (userData.email) localStorage.setItem('userEmail', userData.email);
             if (userData.name) localStorage.setItem('name', userData.name);
@@ -222,11 +213,9 @@ export const updateProfilePicture = async (file) => {
 
         const data = await response.json();
         
-        // Guardar la URL de la imagen en almacenamiento seguro
         if (data.profilePicture) {
             await setSecureValue('profilePicture', data.profilePicture);
             
-            // Guardar también en localStorage para web
             if (!isNative) {
                 localStorage.setItem('profilePicture', data.profilePicture);
             }
@@ -236,7 +225,6 @@ export const updateProfilePicture = async (file) => {
     } catch (error) {
         console.error('Error actualizando foto de perfil:', error);
 
-        // En desarrollo, simular la subida
         if (process.env.NODE_ENV === 'development') {
             return new Promise((resolve) => {
                 const reader = new FileReader();

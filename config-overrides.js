@@ -2,7 +2,6 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = function override(config, env) {
-    // Configuración para compatibilidad con Capacitor
     config.resolve.fallback = {
         ...config.resolve.fallback,
         "crypto": require.resolve("crypto-browserify"),
@@ -17,7 +16,6 @@ module.exports = function override(config, env) {
         "process": require.resolve("process/browser"),
     };
 
-    // Agregar plugins necesarios
     config.plugins = [
         ...config.plugins,
         new webpack.ProvidePlugin({
@@ -30,12 +28,9 @@ module.exports = function override(config, env) {
         }),
     ];
 
-    // Configuración de producción
     if (env === 'production') {
-        // Desactivar source maps en producción
         config.devtool = false;
 
-        // Optimizaciones para producción
         config.optimization = {
             ...config.optimization,
             minimize: true,
@@ -107,7 +102,6 @@ module.exports = function override(config, env) {
             },
         };
 
-        // Configuración adicional para el manejo de módulos
         config.module.rules.push({
             test: /\.js$/,
             exclude: /node_modules/,
@@ -133,13 +127,12 @@ module.exports = function override(config, env) {
             },
         });
 
-        // Configuración para el manejo de imágenes y assets
         config.module.rules.push({
             test: /\.(png|jpg|jpeg|gif|svg|webp)$/,
             type: 'asset',
             parser: {
                 dataUrlCondition: {
-                    maxSize: 10 * 1024 // 10kb
+                    maxSize: 10 * 1024
                 }
             }
         });
